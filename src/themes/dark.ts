@@ -1,0 +1,10 @@
+import { createTheme } from "@mui/material";
+
+export const darkTheme = createTheme({
+  palette: {
+    background: { default: "#182233", paper: "#182233" },
+    text: { primary: "#E2E8F0", secondary: "#9F9FA9" },
+    primary: { main: "#E2E8F0" },
+    secondary: { main: "#FFD230" },
+  },
+});
