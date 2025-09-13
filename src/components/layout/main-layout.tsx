@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
+import { Fragment } from "react";
 import { Outlet } from "react-router";
-import { Fragment } from "react/jsx-runtime";
 import { Sidebar } from "./sidebar";
 
 export function MainLayout() {

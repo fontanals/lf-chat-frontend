@@ -1,24 +1,19 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Typography,
-  alpha,
-} from "@mui/material";
+import { Box, IconButton, List, ListItemButton } from "@mui/material";
 import {
   MonitorCheckIcon,
   MoonIcon,
-  SaveIcon,
   SettingsIcon,
   SunIcon,
 } from "lucide-react";
-import { Input } from "../ui/input";
+import { useState } from "react";
+import { Text } from "../ui/text";
 
 export function SettingsTab() {
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
+  const [language, setLanguage] = useState<"en" | "pt">("en");
+
   return (
-    <Box>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <Box
         sx={{
           display: "flex",
@@ -28,81 +23,68 @@ export function SettingsTab() {
         }}
       >
         <SettingsIcon size="20px" />
-        <Typography variant="body1">Settings</Typography>
+        <Text variant="body1">Settings</Text>
       </Box>
-      <Box sx={{ marginTop: "16px" }}>
-        <Typography variant="body2">Theme</Typography>
+      <Box>
+        <Text>Theme</Text>
         <Box sx={{ display: "flex", gap: "8px" }}>
-          <IconButton sx={{ color: "primary.main" }}>
+          <IconButton
+            sx={{
+              color: theme === "light" ? "secondary.main" : "text.primary",
+            }}
+            onClick={() => setTheme("light")}
+          >
             <SunIcon size="20px" />
           </IconButton>
-          <IconButton sx={{ color: "secondary.main" }}>
+          <IconButton
+            sx={{ color: theme === "dark" ? "secondary.main" : "text.primary" }}
+            onClick={() => setTheme("dark")}
+          >
             <MoonIcon size="20px" />
           </IconButton>
-          <IconButton sx={{ color: "primary.main" }}>
+          <IconButton
+            sx={{
+              color: theme === "system" ? "secondary.main" : "text.primary",
+            }}
+            onClick={() => setTheme("system")}
+          >
             <MonitorCheckIcon size="20px" />
           </IconButton>
         </Box>
       </Box>
-      <form>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            marginTop: "16px",
-            marginBottom: "24px",
-          }}
+      <Box>
+        <Text>Language</Text>
+        <List
+          sx={{ display: "flex", gap: "16px", margin: "0px", padding: "0px" }}
         >
-          <FormControl>
-            <FormLabel
-              sx={{ fontSize: "14px", color: "text.primary" }}
-              htmlFor="display-name"
-            >
-              How the assistant should call you
-            </FormLabel>
-            <Input id="display-name" placeholder="Name" />
-          </FormControl>
-          <FormControl>
-            <FormLabel
-              sx={{ fontSize: "14px", color: "text.primary" }}
-              htmlFor="preferences"
-            >
-              Personal preferences to share with assistant
-            </FormLabel>
-            <Input id="preferences" placeholder="Name" multiline rows={3} />
-          </FormControl>
-        </Box>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-          <Button
+          <ListItemButton
             sx={{
+              maxWidth: "fit-content",
+              height: "40px",
+              padding: "0px",
               fontSize: "14px",
-              fontWeight: "400",
-              textTransform: "none",
-              borderRadius: "8px",
-              backgroundColor: (theme) =>
-                alpha(theme.palette.primary.main, 0.1),
+              color: language === "en" ? "secondary.main" : "text.primary",
             }}
+            disableRipple
+            onClick={() => setLanguage("en")}
           >
-            Cancel
-          </Button>
-          <Button
+            English
+          </ListItemButton>
+          <ListItemButton
             sx={{
-              gap: "8px",
+              maxWidth: "fit-content",
+              height: "40px",
+              padding: "0px",
               fontSize: "14px",
-              fontWeight: "400",
-              textTransform: "none",
-              borderRadius: "8px",
-              color: "secondary.main",
-              backgroundColor: (theme) =>
-                alpha(theme.palette.secondary.main, 0.2),
+              color: language === "pt" ? "secondary.main" : "text.primary",
             }}
+            disableRipple
+            onClick={() => setLanguage("pt")}
           >
-            <SaveIcon size="16px" />
-            Save Changes
-          </Button>
-        </Box>
-      </form>
+            Portuguese
+          </ListItemButton>
+        </List>
+      </Box>
     </Box>
   );
 }

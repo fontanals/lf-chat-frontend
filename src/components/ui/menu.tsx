@@ -31,8 +31,8 @@ export function MenuItem(props: MenuItemProps) {
         alignItems: "center",
         gap: "8px",
         height: "36px",
-        fontSize: "14px",
         padding: "4px 8px",
+        fontSize: "14px",
         borderRadius: "8px",
         "&:hover": {
           color: "secondary.main",

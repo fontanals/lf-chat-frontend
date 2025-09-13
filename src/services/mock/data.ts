@@ -2,11 +2,18 @@ import { addDays, addSeconds } from "date-fns";
 import { v4 as uuid } from "uuid";
 import { Chat } from "../../models/entities/chat";
 import { Message } from "../../models/entities/message";
-import { User } from "../../models/entities/user";
 import { Session } from "../../models/entities/session";
+import { User } from "../../models/entities/user";
 
 const users: User[] = [
-  { id: uuid(), name: "Lucas Fontana", email: "lucas.fontana@aichat.com" },
+  {
+    id: uuid(),
+    name: "Lucas Fontana",
+    email: "lucas.fontana@aichat.com",
+    displayName: "Lucas",
+    customPreferences: null,
+    createdAt: addDays(new Date(), -25),
+  },
 ];
 
 const sessions: Session[] = [

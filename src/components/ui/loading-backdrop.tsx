@@ -7,10 +7,10 @@ export type LoadingBackdropProps = {
 export function LoadingBackdrop(props: LoadingBackdropProps) {
   return (
     <Backdrop
-      sx={(theme) => ({
+      sx={{
         color: "secondary.main",
-        zIndex: theme.zIndex.drawer + 1,
-      })}
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+      }}
       open={props.isLoading}
     >
       <CircularProgress color="inherit" />

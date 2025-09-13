@@ -1,12 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, FormControl, Typography, useTheme } from "@mui/material";
+import { Box, FormControl, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import z from "zod";
-import { Button } from "../components/ui/button";
+import { ContainedButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
+import { Text } from "../components/ui/text";
 import { SigninRequest } from "../models/requests/auth";
 import { services } from "../services/provider";
 import { useAuthStore } from "../state/auth";
@@ -20,7 +23,6 @@ type SigninFormSchema = z.infer<typeof signinFormSchema>;
 
 export function SigninPage() {
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -59,36 +61,32 @@ export function SigninPage() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 2,
+          gap: "16px",
           width: { xs: "80vw", sm: "40vw", lg: "30vw" },
         }}
       >
         <Box sx={{ textAlign: "center" }}>
-          <Typography
-            sx={{ fontWeight: "bold" }}
+          <Text
+            sx={{ fontWeight: "bold", color: "secondary.main" }}
             variant="h4"
-            color="secondary"
           >
-            Ai Chat
-          </Typography>
-          <Typography sx={{ marginTop: 1 }} variant="body2">
-            Don't have an account?{" "}
-            <Link style={{ color: theme.palette.secondary.main }} to="/signup">
-              Signup
-            </Link>
-          </Typography>
+            AI CHAT
+          </Text>
+          <Text>
+            Don't have an account? <Link to="/signup">Sign Up</Link>
+          </Text>
         </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 2,
+              gap: "16px",
               width: { xs: "80vw", sm: "40vw", lg: "30vw" },
             }}
           >
             <FormControl>
-              <label htmlFor="email">Email</label>
+              <Label htmlFor="email">Email</Label>
               <Input placeholder="Email" {...register("email")} />
               {errors.email != null && (
                 <Typography variant="caption" color="error">
@@ -97,21 +95,21 @@ export function SigninPage() {
               )}
             </FormControl>
             <FormControl>
-              <label htmlFor="password">Password</label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 type="password"
                 placeholder="Password"
                 {...register("password")}
               />
               {errors.password != null && (
-                <Typography variant="caption" color="error">
+                <Text variant="caption" color="error">
                   {errors.password.message}
-                </Typography>
+                </Text>
               )}
             </FormControl>
-            <Button sx={{ marginTop: 2 }} type="submit" variant="contained">
-              Signin
-            </Button>
+            <ContainedButton sx={{ marginTop: "16px" }} type="submit">
+              Sign In
+            </ContainedButton>
           </Box>
         </form>
       </Box>

@@ -1,8 +1,17 @@
+import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet } from "react-router";
-import { useAuthStore } from "../state/auth";
+import { LoadingBackdrop } from "../components/ui/loading-backdrop";
+import { services } from "../services/provider";
 
 export function PrivateRoute() {
-  const user = useAuthStore((state) => state.user);
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => services.user.getUser(),
+  });
 
-  return user != null ? <Outlet /> : <Navigate to="/signin" />;
+  if (isLoading) {
+    return <LoadingBackdrop isLoading />;
+  }
+
+  return user != null ? <Outlet /> : <Navigate to="signin" replace />;
 }

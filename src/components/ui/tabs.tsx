@@ -1,12 +1,12 @@
 import { Box, Button, SxProps } from "@mui/material";
+import { Link } from "react-router";
 
-export type Tab = { value: string; label: string };
+export type Tab = { href: string; value: string; label: string };
 
 export type TabsProps = {
   sx?: SxProps;
   tabs: Tab[];
   selectedTab: string;
-  onSelectTab: (tab: string) => void;
 };
 
 export function Tabs(props: TabsProps) {
@@ -23,21 +23,21 @@ export function Tabs(props: TabsProps) {
       }}
     >
       {props.tabs.map((tab) => (
-        <Button
-          key={tab.value}
-          sx={{
-            padding: "4px",
-            fontSize: "14px",
-            textTransform: "none",
-            borderRadius: "8px",
-            backgroundColor:
-              tab.value === props.selectedTab ? "#0F172B" : "inherit",
-          }}
-          disableRipple
-          onClick={() => props.onSelectTab(tab.value)}
-        >
-          {tab.label}
-        </Button>
+        <Link key={tab.value} to={tab.href}>
+          <Button
+            sx={{
+              padding: "4px",
+              fontSize: "14px",
+              textTransform: "none",
+              borderRadius: "8px",
+              backgroundColor:
+                tab.value === props.selectedTab ? "#0F172B" : "inherit",
+            }}
+            disableRipple
+          >
+            {tab.label}
+          </Button>
+        </Link>
       ))}
     </Box>
   );

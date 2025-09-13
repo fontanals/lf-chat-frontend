@@ -18,8 +18,8 @@ export function ContentPanel(props: PropsWithChildren) {
         margin: "16px",
         marginLeft: isOpen ? "256px" : "72px",
         padding: "16px",
-        backgroundColor: "#0F172B",
         borderRadius: "8px",
+        backgroundColor: "background.paper",
         transition: theme.transitions.create("margin", {
           easing: theme.transitions.easing.sharp,
           duration: isOpen
@@ -39,9 +39,9 @@ export function ContentPanel(props: PropsWithChildren) {
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (
-          <PanelLeftCloseIcon width="20px" height="20px" />
+          <PanelLeftCloseIcon size="20px" />
         ) : (
-          <PanelLeftOpenIcon width="20px" height="20px" />
+          <PanelLeftOpenIcon size="20px" />
         )}
       </IconButton>
       {props.children}

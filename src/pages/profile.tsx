@@ -1,13 +1,19 @@
 import { Box } from "@mui/material";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
 import { ContentPanel } from "../components/layout/content-panel";
 import { ProfileTab } from "../components/profile/profile-tab";
-import { SecurityTab } from "../components/profile/security-tab";
 import { SettingsTab } from "../components/profile/settings-tab";
 import { Tabs } from "../components/ui/tabs";
+import { services } from "../services/provider";
 
 export function Profile() {
-  const [selectedTab, setSelectedTab] = useState("profile");
+  const { tab = "profile" } = useParams();
+
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => services.user.getUser(),
+  });
 
   return (
     <ContentPanel>
@@ -16,16 +22,17 @@ export function Profile() {
           <Tabs
             sx={{ marginTop: "36px" }}
             tabs={[
-              { value: "profile", label: "Profile" },
-              { value: "settings", label: "Settings" },
-              { value: "security", label: "Security" },
+              { href: "/profile", value: "profile", label: "Profile" },
+              {
+                href: "/profile/settings",
+                value: "settings",
+                label: "Settings",
+              },
             ]}
-            selectedTab={selectedTab}
-            onSelectTab={setSelectedTab}
+            selectedTab={tab}
           />
-          {selectedTab === "profile" && <ProfileTab />}
-          {selectedTab === "settings" && <SettingsTab />}
-          {selectedTab === "security" && <SecurityTab />}
+          {user != null && tab === "profile" && <ProfileTab user={user} />}
+          {user != null && tab === "settings" && <SettingsTab />}
         </Box>
       </Box>
     </ContentPanel>

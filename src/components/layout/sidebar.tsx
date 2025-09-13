@@ -1,8 +1,9 @@
-import { Avatar, Box, Drawer, Typography, useTheme } from "@mui/material";
+import { Avatar, Box, Drawer, useTheme } from "@mui/material";
 import { MessageCircleMoreIcon, MessageCirclePlusIcon } from "lucide-react";
 import { Link } from "react-router";
 import { useSidebarStore } from "../../state/sidebar";
 import { ChatHistory } from "../chat/chat-history";
+import { Text } from "../ui/text";
 import { SidebarMenu, SidebarMenuItem } from "./sidebar-menu";
 import { SidebarUser } from "./sidebar-user";
 
@@ -18,11 +19,10 @@ export function Sidebar() {
         paper: {
           sx: {
             width: isOpen ? "240px" : "56px",
-            paddingTop: "16px",
-            paddingBottom: "16px",
-            paddingLeft: "16px",
+            padding: "16px 0px 16px 16px",
             border: "none",
             overflow: "hidden",
+            backgroundColor: "background.default",
             transition: theme.transitions.create("width", {
               easing: theme.transitions.easing.sharp,
               duration: isOpen
@@ -54,25 +54,22 @@ export function Sidebar() {
               height: "36px",
               fontWeight: "bold",
               color: "secondary.main",
-              backgroundColor: "background.paper",
+              backgroundColor: "background.default",
             }}
           >
             AI
           </Avatar>
           <Box>
-            <Typography
-              sx={{ fontWeight: "bold", lineHeight: 1 }}
-              variant="body1"
-            >
-              AI-CHAT
-            </Typography>
-            <Typography
+            <Text sx={{ fontWeight: "bold", lineHeight: 1 }} variant="body1">
+              AI CHAT
+            </Text>
+            <Text
               sx={{ lineHeight: 1, color: "text.secondary" }}
               variant="caption"
               component="p"
             >
               Free
-            </Typography>
+            </Text>
           </Box>
         </Box>
       </Link>
@@ -80,12 +77,14 @@ export function Sidebar() {
         <SidebarMenuItem
           href="/"
           text="New Chat"
-          icon={<MessageCirclePlusIcon width="24px" height="24px" />}
+          tooltip={!isOpen ? "New Chat" : ""}
+          icon={<MessageCirclePlusIcon size="24px" />}
         />
         <SidebarMenuItem
           href="/history"
           text="Chat History"
-          icon={<MessageCircleMoreIcon width="24px" height="24px" />}
+          tooltip={!isOpen ? "Chat History" : ""}
+          icon={<MessageCircleMoreIcon size="24px" />}
         />
       </SidebarMenu>
       <ChatHistory isOpen={isOpen} />

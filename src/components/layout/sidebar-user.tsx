@@ -1,4 +1,5 @@
-import { alpha, Avatar, Box, Button, Typography } from "@mui/material";
+import { alpha, Avatar, Box, Button } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronsUpDownIcon,
   LogOutIcon,
@@ -6,26 +7,38 @@ import {
   UserIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import { Link } from "react-router";
+import { services } from "../../services/provider";
 import { Menu, MenuItem } from "../ui/menu";
+import { Text } from "../ui/text";
 
 export function SidebarUser() {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
+
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => services.user.getUser(),
+  });
+
+  if (user == null) {
+    return null;
+  }
 
   return (
     <Fragment>
       <Button
         sx={{
-          width: "100%",
-          minWidth: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          textAlign: "start",
           gap: "8px",
+          width: "100%",
+          minWidth: "100%",
           padding: "4px",
-          borderRadius: "8px",
-          overflowX: "hidden",
+          textAlign: "start",
           textTransform: "none",
+          overflowX: "hidden",
+          borderRadius: "8px",
           "&:hover": {
             color: "secondary.main",
             backgroundColor: (theme) =>
@@ -40,27 +53,27 @@ export function SidebarUser() {
             height: "32px",
             fontWeight: "bold",
             color: "background.default",
-            backgroundColor: "secondary.main",
             borderRadius: "8px",
+            backgroundColor: "secondary.main",
           }}
           variant="square"
         >
           L
         </Avatar>
         <Box sx={{ display: "grid", flex: 1 }}>
-          <Typography sx={{ lineHeight: 1 }} variant="body2" noWrap>
-            Lucas Fontana
-          </Typography>
-          <Typography
+          <Text sx={{ lineHeight: 1 }} noWrap>
+            {user.name}
+          </Text>
+          <Text
             sx={{ lineHeight: 1.1, color: "text.secondary" }}
             variant="caption"
             component="p"
             noWrap
           >
-            fontana_ls@outlook.com
-          </Typography>
+            {user.email}
+          </Text>
         </Box>
-        <ChevronsUpDownIcon width="16px" height="16px" />
+        <ChevronsUpDownIcon style={{ marginRight: "4px" }} size="16px" />
       </Button>
       <Menu
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -69,14 +82,18 @@ export function SidebarUser() {
         open={Boolean(anchorElement)}
         onClose={() => setAnchorElement(null)}
       >
-        <MenuItem>
-          <UserIcon size="16px" />
-          Profile
-        </MenuItem>
-        <MenuItem>
-          <SettingsIcon size="16px" />
-          Settings
-        </MenuItem>
+        <Link to="/profile" onClick={() => setAnchorElement(null)}>
+          <MenuItem>
+            <UserIcon size="16px" />
+            Profile
+          </MenuItem>
+        </Link>
+        <Link to="/profile/settings" onClick={() => setAnchorElement(null)}>
+          <MenuItem>
+            <SettingsIcon size="16px" />
+            Settings
+          </MenuItem>
+        </Link>
         <MenuItem>
           <LogOutIcon size="16px" />
           Log out

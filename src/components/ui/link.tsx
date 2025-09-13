@@ -7,6 +7,9 @@ export function Link(props: LinkProps) {
   const theme = useTheme();
 
   return (
-    <RRLink style={{ color: theme.palette.primary.main, ...style }} {...rest} />
+    <RRLink
+      style={{ color: theme.palette.secondary.main, ...style }}
+      {...rest}
+    />
   );
 }
