@@ -1,7 +1,6 @@
-import { Box, Typography } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Box } from "@mui/material";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
@@ -9,194 +8,39 @@ import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { AssistantMessage, UserMessage } from "../components/chat/message";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
-import { Chat } from "../models/entities/chat";
+import { Text } from "../components/ui/text";
 import {
-  CreateChatRequest,
-  DeleteChatParams,
-  SendMessageParams,
-  SendMessageRequest,
-  UpdateChatParams,
-  UpdateChatRequest,
-} from "../models/requests/chat";
-import { services } from "../services/provider";
+  useChat,
+  useCreateChat,
+  useDeleteChat,
+  useSendMessage,
+  useUpdateChat,
+} from "../hooks/chat";
 import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
   const { chatId: paramsChatId } = useParams();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const [chatId, setChatId] = useState(paramsChatId ?? uuid());
   const [message, setMessage] = useState("");
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: chat } = useQuery({
-    queryKey: ["chat", chatId],
-    queryFn: () => services.chat.getChat({ chatId }, { expand: ["messages"] }),
-  });
-
-  const { mutate: createChat } = useMutation({
-    mutationFn: (args: { request: CreateChatRequest }) =>
-      services.chat.createChat(args.request, (event) => {
-        if (event.event === "start") {
-          queryClient.setQueryData<Chat>(["chat", args.request.id], () => ({
-            id: args.request.id,
-            title: "",
-            messages: [
-              {
-                id: uuid(),
-                role: "user",
-                content: args.request.message,
-                chatId: args.request.id,
-              },
-              {
-                id: event.data.messageId,
-                role: "assistant",
-                content: "",
-                chatId: args.request.id,
-              },
-            ],
-          }));
-        } else if (event.event === "delta") {
-          queryClient.setQueryData<Chat>(["chat", args.request.id], (chat) =>
-            chat != null
-              ? {
-                  ...chat,
-                  messages: chat.messages?.map((message) =>
-                    message.id === event.data.messageId
-                      ? {
-                          ...message,
-                          content: message.content + event.data.delta,
-                        }
-                      : message
-                  ),
-                }
-              : chat
-          );
-
-          scrollContainerRef.current?.scrollTo({
-            top: scrollContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          });
-        }
-      }),
-    onSuccess: (_, args) => {
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
-
-      navigate(`/chat/${args.request.id}`);
-    },
-  });
-
-  const { mutate: sendMessage } = useMutation({
-    mutationFn: (args: {
-      params: SendMessageParams;
-      request: SendMessageRequest;
-    }) =>
-      services.chat.sendMessage(args.params, args.request, (event) => {
-        if (event.event === "start") {
-          queryClient.setQueryData<Chat>(["chat", args.params.chatId], (chat) =>
-            chat != null
-              ? {
-                  ...chat,
-                  messages: chat.messages?.concat(
-                    {
-                      id: args.request.id,
-                      role: "user",
-                      content: args.request.content,
-                      chatId: args.params.chatId,
-                    },
-                    {
-                      id: event.data.messageId,
-                      role: "assistant",
-                      content: "",
-                      chatId: args.params.chatId,
-                    }
-                  ),
-                }
-              : chat
-          );
-        } else if (event.event === "delta") {
-          queryClient.setQueryData<Chat>(["chat", args.params.chatId], (chat) =>
-            chat != null
-              ? {
-                  ...chat,
-                  messages: chat.messages?.map((message) =>
-                    message.id === event.data.messageId
-                      ? {
-                          ...message,
-                          content: message.content + event.data.delta,
-                        }
-                      : message
-                  ),
-                }
-              : chat
-          );
-
-          scrollContainerRef.current?.scrollTo({
-            top: scrollContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          });
-        }
-      }),
-  });
-
-  const { mutate: updateChat } = useMutation({
-    mutationFn: (args: {
-      params: UpdateChatParams;
-      request: UpdateChatRequest;
-    }) => services.chat.updateChat(args.params, args.request),
-    onMutate: async (args) => {
-      const previousChat = queryClient.getQueryData<Chat>([
-        "chat",
-        args.params.chatId,
-      ]);
-
-      queryClient.setQueryData<Chat>(["chat", args.params.chatId], (chat) =>
-        chat != null ? { ...chat, title: args.request.title } : chat
-      );
-
-      return { previousChat };
-    },
-    onError: (_, args, context) => {
-      queryClient.setQueryData<Chat>(
-        ["chat", args.params.chatId],
-        context?.previousChat
-      );
-    },
-  });
-
-  const { mutate: deleteChat } = useMutation({
-    mutationFn: (args: { params: DeleteChatParams }) =>
-      services.chat.deleteChat(args.params),
-    onMutate: async (args) => {
-      await queryClient.cancelQueries({ queryKey: ["chats"] });
-
-      const previousChats = queryClient.getQueryData<Chat[]>(["chats"]);
-
-      queryClient.setQueryData<Chat[]>(["chats"], (chats) =>
-        chats?.filter((chat) => chat.id !== args.params.chatId)
-      );
-
-      navigate("/");
-
-      return { previousChats };
-    },
-    onError: (_, __, context) => {
-      queryClient.setQueryData<Chat[]>(["chats"], context?.previousChats);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["chats"] }),
-  });
+  const { data: chat } = useChat(chatId);
+  const { mutate: createChat } = useCreateChat(messagesContainerRef);
+  const { mutate: sendMessage } = useSendMessage(messagesContainerRef);
+  const { mutate: updateChat } = useUpdateChat();
+  const { mutate: deleteChat } = useDeleteChat();
 
   useEffect(() => {
     setChatId(paramsChatId ?? uuid());
   }, [paramsChatId]);
 
   useEffect(() => {
-    scrollContainerRef.current?.scrollTo({
-      top: scrollContainerRef.current.scrollHeight,
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
       behavior: "instant",
     });
   }, [chat?.messages]);
@@ -251,11 +95,11 @@ export function ChatPage() {
               marginBottom: "16px",
             }}
           >
-            <Typography variant="h5">Welcome back, Lucas!</Typography>
+            <Text variant="h5">Welcome back, Lucas!</Text>
           </Box>
         ) : (
           <Box
-            ref={scrollContainerRef}
+            ref={messagesContainerRef}
             sx={{
               flex: 1,
               display: "flex",

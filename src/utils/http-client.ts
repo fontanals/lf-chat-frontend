@@ -1,9 +1,7 @@
-export type Query = Record<string, string | number | boolean | string[]>;
+export type Query = Record<string, any>;
+export type StreamResponse = ReadableStream<Uint8Array<ArrayBuffer>>;
 
 export interface IHttpClient {
-  setBaseUrl(url: string): void;
-  setHeader(name: string, value: string): void;
-  removeHeader(name: string): void;
   get<TResponse = unknown, TQuery extends Query = Query>(
     url: string,
     query?: TQuery
@@ -27,23 +25,19 @@ export interface IHttpClient {
     url: string,
     query?: TQuery
   ): Promise<TResponse>;
+  streamPost<TRequest = unknown, TQuery extends Query = Query>(
+    url: string,
+    request: TRequest,
+    query?: TQuery
+  ): Promise<StreamResponse>;
 }
 
 export class HttpClient implements IHttpClient {
-  private baseUrl = "";
-  private headers = new Headers();
-
-  setBaseUrl(url: string): void {
-    this.baseUrl = url;
-  }
-
-  setHeader(name: string, value: string): void {
-    this.headers.append(name, value);
-  }
-
-  removeHeader(name: string): void {
-    this.headers.delete(name);
-  }
+  private baseUrl = import.meta.env.VITE_API_BASE_URL;
+  private headers = new Headers({
+    "Content-Type": "application/json",
+    accept: "application/json",
+  });
 
   async get<TResponse = unknown, TQuery extends Query = Query>(
     url: string,
@@ -156,11 +150,60 @@ export class HttpClient implements IHttpClient {
     const authorizationHeader = response.headers.get("Authorization");
 
     if (authorizationHeader != null) {
-      this.setHeader("Authorization", authorizationHeader);
+      this.headers.set("Authorization", authorizationHeader);
     }
 
     const data = await response.json();
 
     return data as TResponse;
+  }
+
+  async streamPost<TRequest = unknown, TQuery extends Query = Query>(
+    url: string,
+    request: TRequest,
+    query?: TQuery
+  ): Promise<StreamResponse> {
+    const response = await this.streamRequest<TQuery, TRequest>({
+      method: "POST",
+      url,
+      query,
+      request,
+    });
+
+    return response;
+  }
+
+  async streamRequest<
+    TQuery extends Query = Query,
+    TRequest = unknown
+  >(options: {
+    url: string;
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    query?: TQuery;
+    request?: TRequest;
+  }): Promise<StreamResponse> {
+    const url = this.getUrl(options.url, options.query);
+
+    const headers = new Headers(this.headers);
+    headers.append("accept", "text/event-stream");
+
+    const response = await fetch(url.toString(), {
+      method: options.method,
+      headers,
+      body: JSON.stringify(options.request),
+      credentials: "include",
+    });
+
+    const authorizationHeader = response.headers.get("Authorization");
+
+    if (authorizationHeader != null) {
+      this.headers.set("Authorization", authorizationHeader);
+    }
+
+    if (response.body == null) {
+      throw new Error("Response body is null");
+    }
+
+    return response.body;
   }
 }

@@ -1,5 +1,4 @@
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -8,6 +7,7 @@ import {
 } from "@mui/material";
 import { EditIcon } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 
 export type RenameChatDialogProps = {
@@ -31,7 +31,17 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
 
   return (
     <Dialog
-      slotProps={{ paper: { sx: { minWidth: "300px", borderRadius: "8px" } } }}
+      slotProps={{
+        paper: {
+          sx: { minWidth: "300px", borderRadius: "16px" },
+        },
+        backdrop: {
+          sx: {
+            backgroundColor: (theme) =>
+              alpha(theme.palette.secondary.main, 0.3),
+          },
+        },
+      }}
       open={props.isOpen}
       onClose={props.onCancel}
     >
@@ -47,35 +57,13 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
         </form>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
-        <Button
-          sx={{
-            fontSize: "14px",
-            fontWeight: "400",
-            textTransform: "none",
-            borderRadius: "8px",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-          }}
-          onClick={props.onCancel}
-        >
+        <ShadowButton primary onClick={props.onCancel}>
           Cancel
-        </Button>
-        <Button
-          sx={{
-            gap: "8px",
-            fontSize: "14px",
-            fontWeight: "400",
-            textTransform: "none",
-            borderRadius: "8px",
-            color: "secondary.main",
-            backgroundColor: (theme) =>
-              alpha(theme.palette.secondary.main, 0.2),
-          }}
-          type="submit"
-          form="rename-chat-form"
-        >
+        </ShadowButton>
+        <ShadowButton type="submit" form="rename-chat-form">
           <EditIcon size="16px" />
           Rename
-        </Button>
+        </ShadowButton>
       </DialogActions>
     </Dialog>
   );

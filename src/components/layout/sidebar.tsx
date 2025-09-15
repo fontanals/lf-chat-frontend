@@ -2,7 +2,7 @@ import { Avatar, Box, Drawer, useTheme } from "@mui/material";
 import { MessageCircleMoreIcon, MessageCirclePlusIcon } from "lucide-react";
 import { Link } from "react-router";
 import { useSidebarStore } from "../../state/sidebar";
-import { ChatHistory } from "../chat/chat-history";
+import { PreviousChats } from "../chat/previous-chats";
 import { Text } from "../ui/text";
 import { SidebarMenu, SidebarMenuItem } from "./sidebar-menu";
 import { SidebarUser } from "./sidebar-user";
@@ -87,7 +87,7 @@ export function Sidebar() {
           icon={<MessageCircleMoreIcon size="24px" />}
         />
       </SidebarMenu>
-      <ChatHistory isOpen={isOpen} />
+      <PreviousChats isOpen={isOpen} />
       <SidebarUser />
     </Drawer>
   );

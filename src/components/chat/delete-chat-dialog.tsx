@@ -1,13 +1,13 @@
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Typography,
   alpha,
 } from "@mui/material";
 import { Trash2Icon } from "lucide-react";
+import { ShadowButton } from "../ui/button";
+import { Text } from "../ui/text";
 
 export type DeleteChatDialogProps = {
   isOpen: boolean;
@@ -18,7 +18,17 @@ export type DeleteChatDialogProps = {
 export function DeleteChatDialog(props: DeleteChatDialogProps) {
   return (
     <Dialog
-      slotProps={{ paper: { sx: { minWidth: "300px", borderRadius: "8px" } } }}
+      slotProps={{
+        paper: {
+          sx: { minWidth: "300px", borderRadius: "16px" },
+        },
+        backdrop: {
+          sx: {
+            backgroundColor: (theme) =>
+              alpha(theme.palette.secondary.main, 0.3),
+          },
+        },
+      }}
       open={props.isOpen}
       onClose={props.onCancel}
     >
@@ -26,30 +36,14 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
         Delete Chat
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
-        <Typography variant="body2">
-          Are you sure you want to delete this chat?
-        </Typography>
+        <Text>Are you sure you want to delete this chat?</Text>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
-        <Button
-          sx={{
-            fontSize: "14px",
-            fontWeight: "400",
-            textTransform: "none",
-            borderRadius: "8px",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-          }}
-          onClick={props.onCancel}
-        >
+        <ShadowButton primary onClick={props.onCancel}>
           Cancel
-        </Button>
-        <Button
+        </ShadowButton>
+        <ShadowButton
           sx={{
-            gap: "8px",
-            fontSize: "14px",
-            fontWeight: "400",
-            textTransform: "none",
-            borderRadius: "8px",
             color: "error.main",
             backgroundColor: (theme) => alpha(theme.palette.error.main, 0.2),
           }}
@@ -57,7 +51,7 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
         >
           <Trash2Icon size="16px" />
           Delete
-        </Button>
+        </ShadowButton>
       </DialogActions>
     </Dialog>
   );

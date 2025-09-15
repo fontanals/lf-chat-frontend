@@ -72,7 +72,11 @@ export class ChatService implements IChatService {
     request: CreateChatRequest,
     onEvent: (event: ChatServerSentEvent) => void
   ): Promise<void> {
-    throw new Error("Method not implemented.");
+    await this.baseService.streamPost<ChatServerSentEvent, CreateChatRequest>(
+      "/api/chats",
+      request,
+      onEvent
+    );
   }
 
   async sendMessage(
@@ -80,7 +84,11 @@ export class ChatService implements IChatService {
     request: SendMessageRequest,
     onEvent: (event: ChatServerSentEvent) => void
   ): Promise<void> {
-    throw new Error("Method not implemented.");
+    await this.baseService.streamPost<ChatServerSentEvent, SendMessageRequest>(
+      `/api/chats/${params.chatId}/messages`,
+      request,
+      onEvent
+    );
   }
 
   async updateChat(

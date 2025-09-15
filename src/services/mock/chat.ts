@@ -42,15 +42,27 @@ export class MockChatService implements IChatService {
         const limit = query?.limit ?? 20;
 
         const chats = data.chats
+          .filter(
+            (chat) =>
+              query?.search == null ||
+              chat.title?.toLowerCase().includes(query.search.toLowerCase())
+          )
           .sort(
             (chatA, chatB) =>
               (chatB.createdAt?.getTime() ?? 0) -
               (chatA.createdAt?.getTime() ?? 0)
+          );
+
+        const paginatedChats = chats
+          .filter(
+            (chat) =>
+              query?.cursor == null ||
+              (chat.createdAt?.getTime() ?? 0) > query.cursor.getTime()
           )
           .slice(0, limit)
           .map((chat) => ({ ...chat }));
 
-        resolve(chats);
+        resolve({ chats: paginatedChats, totalChats: chats.length });
       }, 300)
     );
   }
@@ -68,12 +80,14 @@ export class MockChatService implements IChatService {
         }
 
         resolve({
-          ...chat,
-          messages: query?.expand?.includes("messages")
-            ? data.messages
-                .filter((message) => message.chatId === chat.id)
-                .map((message) => ({ ...message }))
-            : undefined,
+          chat: {
+            ...chat,
+            messages: query?.expand?.includes("messages")
+              ? data.messages
+                  .filter((message) => message.chatId === chat.id)
+                  .map((message) => ({ ...message }))
+              : undefined,
+          },
         });
       }, 300)
     );
@@ -234,7 +248,7 @@ export class MockChatService implements IChatService {
           chat.id === params.chatId ? { ...chat, ...request } : chat
         );
 
-        resolve(params.chatId);
+        resolve({ chatId: params.chatId });
       }, 300)
     );
   }
@@ -250,7 +264,7 @@ export class MockChatService implements IChatService {
 
         data.chats = data.chats.filter((chat) => chat.id !== params.chatId);
 
-        resolve(params.chatId);
+        resolve({ chatId: params.chatId });
       }, 300)
     );
   }

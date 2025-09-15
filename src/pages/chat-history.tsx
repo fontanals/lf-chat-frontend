@@ -1,0 +1,152 @@
+import { Box } from "@mui/material";
+import { ChangeEvent, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
+import { ChatList, ChatListItem } from "../components/chat/chat-list";
+import { ChatMenu } from "../components/chat/chat-menu";
+import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
+import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
+import { ContentPanel } from "../components/layout/content-panel";
+import { Input } from "../components/ui/input";
+import { Text } from "../components/ui/text";
+import { useChats, useDeleteChat, useUpdateChat } from "../hooks/chat";
+import { Chat } from "../models/entities/chat";
+import { SearchParamsUtils } from "../utils/search-params";
+
+export function ChatHistoryPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const paramsSearch = searchParams.get("search") ?? "";
+  const cursor = SearchParamsUtils.getDate(searchParams, "cursor");
+
+  const [search, setSearch] = useState(paramsSearch);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [chatMenuAnchorElement, setChatMenuAnchorElement] =
+    useState<HTMLElement | null>(null);
+  const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
+  const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
+
+  const debouncedSearchTimeoutRef = useRef<any>(null);
+
+  const { data: paginatedChats } = useChats({
+    search: paramsSearch,
+    cursor: cursor ?? undefined,
+    limit: 20,
+  });
+  const { mutate: updateChat } = useUpdateChat();
+  const { mutate: deleteChat } = useDeleteChat();
+
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    setSearch(event.target.value);
+
+    if (debouncedSearchTimeoutRef.current) {
+      clearTimeout(debouncedSearchTimeoutRef.current);
+    }
+
+    debouncedSearchTimeoutRef.current = setTimeout(() => {
+      searchParams.set("search", event.target.value);
+      setSearchParams(searchParams);
+    }, 300);
+  }
+
+  function handleRenameChat(title: string) {
+    if (selectedChat != null) {
+      updateChat({ params: { chatId: selectedChat.id }, request: { title } });
+    }
+
+    setIsRenameChatDialogOpen(false);
+    setSelectedChat(null);
+  }
+
+  function handleDeleteChat() {
+    if (selectedChat != null) {
+      deleteChat({ params: { chatId: selectedChat.id } });
+    }
+
+    setIsDeleteChatDialogOpen(false);
+    setSelectedChat(null);
+  }
+
+  return (
+    <ContentPanel>
+      <Box sx={{ display: "flex", justifyContent: "center", padding: "48px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            width: "100%",
+            maxWidth: "800px",
+          }}
+        >
+          <Text>Chat History</Text>
+          <Input
+            placeholder="Search"
+            fullWidth
+            value={search}
+            onChange={handleSearchChange}
+          />
+          <Text sx={{ color: "secondary.ma" }}>{`${
+            paginatedChats?.totalChats ?? 0
+          } chats found`}</Text>
+          <ChatList
+            sx={{
+              height: "calc(100vh - 236px)",
+              overflow: "auto",
+              scrollbarWidth: "none",
+              "&::-webkit-scrollbar": { display: "none" },
+              msOverflowStyle: "none",
+            }}
+          >
+            {paginatedChats?.chats.map((chat) => (
+              <Link key={chat.id} to={`/chat/${chat.id}`}>
+                <ChatListItem
+                  chat={chat}
+                  onMenuClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setSelectedChat(chat);
+                    setChatMenuAnchorElement(event.currentTarget);
+                  }}
+                />
+              </Link>
+            ))}
+          </ChatList>
+          <ChatMenu
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            anchorElement={chatMenuAnchorElement}
+            onRename={() => {
+              setChatMenuAnchorElement(null);
+              setIsRenameChatDialogOpen(true);
+            }}
+            onDelete={() => {
+              setChatMenuAnchorElement(null);
+              setIsDeleteChatDialogOpen(true);
+            }}
+            onClose={() => {
+              setSelectedChat(null);
+              setChatMenuAnchorElement(null);
+            }}
+          />
+        </Box>
+      </Box>
+      <RenameChatDialog
+        isOpen={isRenameChatDialogOpen}
+        title={selectedChat?.title ?? ""}
+        onRename={handleRenameChat}
+        onCancel={() => {
+          setIsRenameChatDialogOpen(false);
+          setSelectedChat(null);
+        }}
+      />
+      <DeleteChatDialog
+        isOpen={isDeleteChatDialogOpen}
+        onDelete={handleDeleteChat}
+        onCancel={() => {
+          setIsDeleteChatDialogOpen(false);
+          setSelectedChat(null);
+        }}
+      />
+    </ContentPanel>
+  );
+}

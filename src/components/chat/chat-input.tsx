@@ -39,8 +39,8 @@ export function ChatInput(props: ChatInputProps) {
           minHeight: "32px",
           padding: "0px",
           color: "background.default",
-          backgroundColor: "secondary.main",
           borderRadius: "8px",
+          backgroundColor: "secondary.main",
           "&:hover": { backgroundColor: "secondary.main" },
           "&:disabled": {
             backgroundColor: "secondary.main",
@@ -52,7 +52,7 @@ export function ChatInput(props: ChatInputProps) {
         onClick={props.onSubmit}
         disabled={props.disabled}
       >
-        <ArrowUpRightIcon style={{ width: "24px", height: "24px" }} />
+        <ArrowUpRightIcon size="24px" />
       </IconButton>
     </Box>
   );

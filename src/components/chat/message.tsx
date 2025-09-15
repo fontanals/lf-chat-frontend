@@ -1,6 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { Message } from "../../models/entities/message";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
+import { Text } from "../ui/text";
 
 export type MessageProps = {
   message: Message;
@@ -17,7 +18,7 @@ export function UserMessage(props: MessageProps) {
         borderRadius: "16px 0px 16px 16px",
       }}
     >
-      <Typography variant="body2">{props.message.content}</Typography>
+      <Text>{props.message.content}</Text>
     </Box>
   );
 }

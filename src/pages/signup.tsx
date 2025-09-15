@@ -1,8 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import z from "zod";
 import { ContainedButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -10,9 +8,7 @@ import { Label } from "../components/ui/label";
 import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
-import { SignupRequest } from "../models/requests/auth";
-import { services } from "../services/provider";
-import { useAuthStore } from "../state/auth";
+import { useSignup } from "../hooks/auth";
 
 const signupFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -23,10 +19,6 @@ const signupFormSchema = z.object({
 type SignupFormSchema = z.infer<typeof signupFormSchema>;
 
 export function SignupPage() {
-  const navigate = useNavigate();
-
-  const setUser = useAuthStore((state) => state.setUser);
-
   const {
     register,
     handleSubmit,
@@ -35,16 +27,10 @@ export function SignupPage() {
     resolver: zodResolver(signupFormSchema),
   });
 
-  const { mutate: signup, isPending } = useMutation({
-    mutationFn: (request: SignupRequest) => services.auth.signup(request),
-    onSuccess: (response) => {
-      setUser(response.user);
-      navigate("/chat");
-    },
-  });
+  const { mutate: signup, isPending } = useSignup();
 
   function onSubmit(formValues: SignupFormSchema) {
-    signup(formValues);
+    signup({ request: formValues });
   }
 
   return (

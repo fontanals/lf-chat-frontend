@@ -9,16 +9,22 @@ import { data } from "./data";
 export class MockUserService implements IUserService {
   async getUser(): Promise<GetUserResponse> {
     return new Promise((resolve) =>
-      setTimeout(() => resolve({ ...data.users[0] }), 300)
+      setTimeout(() => {
+        const user = data.users[0];
+
+        resolve({ user: { ...user } });
+      }, 300)
     );
   }
 
   async updateUser(request: UpdateUserRequest): Promise<UpdateUserResponse> {
     return new Promise((resolve) =>
       setTimeout(() => {
-        data.users[0] = { ...data.users[0], ...request };
+        const user = data.users[0];
 
-        resolve(data.users[0].id);
+        data.users[0] = { ...user, ...request };
+
+        resolve({ userId: user.id });
       }, 300)
     );
   }

@@ -1,8 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl, Typography } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import z from "zod";
 import { ContainedButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -10,9 +8,7 @@ import { Label } from "../components/ui/label";
 import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
-import { SigninRequest } from "../models/requests/auth";
-import { services } from "../services/provider";
-import { useAuthStore } from "../state/auth";
+import { useSignin } from "../hooks/auth";
 
 const signinFormSchema = z.object({
   email: z.email("Invalid email address").min(1, "Email is required"),
@@ -22,10 +18,6 @@ const signinFormSchema = z.object({
 type SigninFormSchema = z.infer<typeof signinFormSchema>;
 
 export function SigninPage() {
-  const navigate = useNavigate();
-
-  const setUser = useAuthStore((state) => state.setUser);
-
   const {
     register,
     handleSubmit,
@@ -34,16 +26,10 @@ export function SigninPage() {
     resolver: zodResolver(signinFormSchema),
   });
 
-  const { mutate: signin, isPending } = useMutation({
-    mutationFn: (request: SigninRequest) => services.auth.signin(request),
-    onSuccess: (response) => {
-      setUser(response.user);
-      navigate("/chat");
-    },
-  });
+  const { mutate: signin, isPending } = useSignin();
 
   function onSubmit(formValues: SigninFormSchema) {
-    signin(formValues);
+    signin({ request: formValues });
   }
 
   return (

@@ -1,26 +1,21 @@
 import { Box } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { ContentPanel } from "../components/layout/content-panel";
 import { ProfileTab } from "../components/profile/profile-tab";
 import { SettingsTab } from "../components/profile/settings-tab";
 import { Tabs } from "../components/ui/tabs";
-import { services } from "../services/provider";
+import { useUser } from "../hooks/user";
 
-export function Profile() {
+export function ProfilePage() {
   const { tab = "profile" } = useParams();
 
-  const { data: user } = useQuery({
-    queryKey: ["user"],
-    queryFn: () => services.user.getUser(),
-  });
+  const { data: user } = useUser();
 
   return (
     <ContentPanel>
-      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-        <Box sx={{ width: "100%", maxWidth: "800px", padding: "32px" }}>
+      <Box sx={{ display: "flex", justifyContent: "center", padding: "48px" }}>
+        <Box sx={{ width: "100%", maxWidth: "800px" }}>
           <Tabs
-            sx={{ marginTop: "36px" }}
             tabs={[
               { href: "/profile", value: "profile", label: "Profile" },
               {

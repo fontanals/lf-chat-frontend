@@ -3,9 +3,6 @@ import { ApplicationError } from "../utils/errors";
 import { IHttpClient, Query } from "../utils/http-client";
 
 export interface IBaseService {
-  setBaseUrl(url: string): void;
-  setHeader(name: string, value: string): void;
-  removeHeader(name: string): void;
   get<TResponse = unknown, TQuery extends Query = Query>(
     url: string,
     query?: TQuery
@@ -29,6 +26,16 @@ export interface IBaseService {
     url: string,
     query?: TQuery
   ): Promise<TResponse>;
+  streamPost<
+    TEvent = unknown,
+    TRequest = unknown,
+    TQuery extends Query = Query
+  >(
+    url: string,
+    request: TRequest,
+    onEvent: (event: TEvent) => void,
+    query?: TQuery
+  ): Promise<void>;
 }
 
 export class BaseService implements IBaseService {
@@ -36,20 +43,6 @@ export class BaseService implements IBaseService {
 
   constructor(httpClient: IHttpClient) {
     this.httpClient = httpClient;
-    this.httpClient.setBaseUrl(import.meta.env.VITE_API_BASE_URL);
-    this.httpClient.setHeader("Content-Type", "application/json");
-  }
-
-  setBaseUrl(url: string): void {
-    this.httpClient.setBaseUrl(url);
-  }
-
-  setHeader(name: string, value: string): void {
-    this.httpClient.setHeader(name, value);
-  }
-
-  removeHeader(name: string): void {
-    this.httpClient.removeHeader(name);
   }
 
   async get<TResponse = unknown, TQuery extends Query = Query>(
@@ -136,5 +129,39 @@ export class BaseService implements IBaseService {
     }
 
     return response.data;
+  }
+
+  async streamPost<
+    TEvent = unknown,
+    TRequest = unknown,
+    TQuery extends Query = Query
+  >(
+    url: string,
+    request: TRequest,
+    onEvent: (event: TEvent) => void,
+    query?: TQuery
+  ): Promise<void> {
+    const stream = await this.httpClient.streamPost<TRequest, TQuery>(
+      url,
+      request,
+      query
+    );
+
+    const reader = stream.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+
+      console.log("Buffer:", buffer);
+    }
   }
 }

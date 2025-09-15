@@ -1,5 +1,4 @@
 import { alpha, Avatar, Box, Button } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import {
   ChevronsUpDownIcon,
   LogOutIcon,
@@ -8,17 +7,17 @@ import {
 } from "lucide-react";
 import { Fragment, useState } from "react";
 import { Link } from "react-router";
-import { services } from "../../services/provider";
+import { useSignout } from "../../hooks/auth";
+import { useUser } from "../../hooks/user";
 import { Menu, MenuItem } from "../ui/menu";
 import { Text } from "../ui/text";
 
 export function SidebarUser() {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
-  const { data: user } = useQuery({
-    queryKey: ["user"],
-    queryFn: () => services.user.getUser(),
-  });
+  const { data: user } = useUser();
+
+  const { mutate: signout } = useSignout();
 
   if (user == null) {
     return null;
@@ -94,9 +93,9 @@ export function SidebarUser() {
             Settings
           </MenuItem>
         </Link>
-        <MenuItem>
+        <MenuItem onClick={() => signout()}>
           <LogOutIcon size="16px" />
-          Log out
+          Sign out
         </MenuItem>
       </Menu>
     </Fragment>

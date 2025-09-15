@@ -1,4 +1,4 @@
-export type GetChatsQuery = { limit?: number };
+export type GetChatsQuery = { search?: string; cursor?: Date; limit?: number };
 
 export type GetChatParams = { chatId: string };
 

@@ -1,13 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl } from "@mui/material";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EditIcon, SaveIcon, UserIcon } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { useUpdateUser } from "../../hooks/user";
 import { User } from "../../models/entities/user";
-import { UpdateUserRequest } from "../../models/requests/user";
-import { services } from "../../services/provider";
 import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -26,8 +24,6 @@ export type ProfileTabProps = {
 };
 
 export function ProfileTab(props: ProfileTabProps) {
-  const queryClient = useQueryClient();
-
   const [isEditing, setIsEditing] = useState(false);
 
   const {
@@ -44,17 +40,13 @@ export function ProfileTab(props: ProfileTabProps) {
     resolver: zodResolver(profileFormSchema),
   });
 
-  const { mutate: updateUser } = useMutation({
-    mutationFn: (args: { request: UpdateUserRequest }) =>
-      services.user.updateUser(args.request),
-    onSuccess: () => {
-      setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-  });
+  const { mutate: updateUser } = useUpdateUser();
 
   function onSubmit(formValues: ProfileFormSchema) {
-    updateUser({ request: formValues });
+    updateUser(
+      { request: formValues },
+      { onSuccess: () => setIsEditing(false) }
+    );
   }
 
   function handleCancel() {

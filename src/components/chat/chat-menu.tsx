@@ -14,6 +14,11 @@ export type ChatMenuProps = {
 export function ChatMenu(props: ChatMenuProps) {
   return (
     <Menu
+      slotProps={{
+        paper: {
+          sx: { borderRadius: "8px", backgroundColor: "background.default" },
+        },
+      }}
       anchorOrigin={props.anchorOrigin}
       transformOrigin={props.transformOrigin}
       anchorEl={props.anchorElement}
