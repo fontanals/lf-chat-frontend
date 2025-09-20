@@ -1,40 +1,45 @@
 import { ApplicationResponse } from "../models/responses/response";
 import { ApplicationError } from "../utils/errors";
-import { IHttpClient, Query } from "../utils/http-client";
+import {
+  DeleteRequestOptions,
+  GetRequestOptions,
+  IHttpClient,
+  PatchRequestOptions,
+  PostRequestOptions,
+  PutRequestOptions,
+  Query,
+} from "../utils/http-client";
+
+export type StreamPostRequestOptions<
+  TEvent = unknown,
+  TQuery extends Query = Query,
+  TRequest = unknown
+> = PostRequestOptions<TQuery, TRequest> & {
+  onEvent: (event: TEvent) => void;
+};
 
 export interface IBaseService {
   get<TResponse = unknown, TQuery extends Query = Query>(
-    url: string,
-    query?: TQuery
+    args: GetRequestOptions<TQuery>
   ): Promise<TResponse>;
   post<TResponse = unknown, TRequest = unknown, TQuery extends Query = Query>(
-    url: string,
-    request: TRequest,
-    query?: TQuery
+    args: PostRequestOptions<TQuery, TRequest>
   ): Promise<TResponse>;
   put<TResponse = unknown, TRequest = unknown, TQuery extends Query = Query>(
-    url: string,
-    request: TRequest,
-    query?: TQuery
+    args: PutRequestOptions<TQuery, TRequest>
   ): Promise<TResponse>;
   patch<TResponse = unknown, TRequest = unknown, TQuery extends Query = Query>(
-    url: string,
-    request: TRequest,
-    query?: TQuery
+    args: PatchRequestOptions<TQuery, TRequest>
   ): Promise<TResponse>;
   delete<TResponse = unknown, TQuery extends Query = Query>(
-    url: string,
-    query?: TQuery
+    args: DeleteRequestOptions<TQuery>
   ): Promise<TResponse>;
   streamPost<
     TEvent = unknown,
     TRequest = unknown,
     TQuery extends Query = Query
   >(
-    url: string,
-    request: TRequest,
-    onEvent: (event: TEvent) => void,
-    query?: TQuery
+    args: StreamPostRequestOptions<TEvent, TQuery, TRequest>
   ): Promise<void>;
 }
 
@@ -46,13 +51,12 @@ export class BaseService implements IBaseService {
   }
 
   async get<TResponse = unknown, TQuery extends Query = Query>(
-    url: string,
-    query?: TQuery
+    args: GetRequestOptions<TQuery>
   ): Promise<TResponse> {
     const response = await this.httpClient.get<
       ApplicationResponse<TResponse>,
       TQuery
-    >(url, query);
+    >(args);
 
     if (!response.success) {
       throw ApplicationError.copy(response.error);
@@ -65,12 +69,12 @@ export class BaseService implements IBaseService {
     TResponse = unknown,
     TRequest = unknown,
     TQuery extends Query = Query
-  >(url: string, request: TRequest, query?: TQuery): Promise<TResponse> {
+  >(args: PostRequestOptions<TQuery, TRequest>): Promise<TResponse> {
     const response = await this.httpClient.post<
       ApplicationResponse<TResponse>,
       TRequest,
       TQuery
-    >(url, request, query);
+    >(args);
 
     if (!response.success) {
       throw ApplicationError.copy(response.error);
@@ -83,12 +87,12 @@ export class BaseService implements IBaseService {
     TResponse = unknown,
     TRequest = unknown,
     TQuery extends Query = Query
-  >(url: string, request: TRequest, query?: TQuery): Promise<TResponse> {
+  >(args: PutRequestOptions<TQuery, TRequest>): Promise<TResponse> {
     const response = await this.httpClient.put<
       ApplicationResponse<TResponse>,
       TRequest,
       TQuery
-    >(url, request, query);
+    >(args);
 
     if (!response.success) {
       throw ApplicationError.copy(response.error);
@@ -101,12 +105,12 @@ export class BaseService implements IBaseService {
     TResponse = unknown,
     TRequest = unknown,
     TQuery extends Query = Query
-  >(url: string, request: TRequest, query?: TQuery): Promise<TResponse> {
+  >(args: PatchRequestOptions<TQuery, TRequest>): Promise<TResponse> {
     const response = await this.httpClient.patch<
       ApplicationResponse<TResponse>,
       TRequest,
       TQuery
-    >(url, request, query);
+    >(args);
 
     if (!response.success) {
       throw ApplicationError.copy(response.error);
@@ -116,13 +120,12 @@ export class BaseService implements IBaseService {
   }
 
   async delete<TResponse = unknown, TQuery extends Query = Query>(
-    url: string,
-    query?: TQuery
+    args: DeleteRequestOptions<TQuery>
   ): Promise<TResponse> {
     const response = await this.httpClient.delete<
       ApplicationResponse<TResponse>,
       TQuery
-    >(url, query);
+    >(args);
 
     if (!response.success) {
       throw ApplicationError.copy(response.error);
@@ -135,22 +138,11 @@ export class BaseService implements IBaseService {
     TEvent = unknown,
     TRequest = unknown,
     TQuery extends Query = Query
-  >(
-    url: string,
-    request: TRequest,
-    onEvent: (event: TEvent) => void,
-    query?: TQuery
-  ): Promise<void> {
-    const stream = await this.httpClient.streamPost<TRequest, TQuery>(
-      url,
-      request,
-      query
-    );
+  >(args: StreamPostRequestOptions<TEvent, TQuery, TRequest>): Promise<void> {
+    const stream = await this.httpClient.streamPost<TRequest, TQuery>(args);
 
     const reader = stream.getReader();
     const decoder = new TextDecoder("utf-8");
-
-    let buffer = "";
 
     while (true) {
       const { done, value } = await reader.read();
@@ -159,9 +151,17 @@ export class BaseService implements IBaseService {
         break;
       }
 
-      buffer += decoder.decode(value, { stream: true });
+      const chunk = decoder.decode(value, { stream: true });
 
-      console.log("Buffer:", buffer);
+      const events = chunk
+        .split("data: ")
+        .filter((event) => event.trim() !== "");
+
+      for (const event of events) {
+        const parsedEvent = JSON.parse(event) as TEvent;
+
+        args.onEvent(parsedEvent);
+      }
     }
   }
 }

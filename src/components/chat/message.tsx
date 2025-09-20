@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { alpha, Box } from "@mui/material";
 import { Message } from "../../models/entities/message";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
 import { Text } from "../ui/text";
@@ -13,8 +13,8 @@ export function UserMessage(props: MessageProps) {
       sx={{
         alignSelf: "flex-end",
         width: "fit-content",
-        padding: "16px",
-        backgroundColor: "background.default",
+        padding: "12px",
+        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
         borderRadius: "16px 0px 16px 16px",
       }}
     >

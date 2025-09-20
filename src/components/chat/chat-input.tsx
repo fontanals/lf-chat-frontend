@@ -30,6 +30,12 @@ export function ChatInput(props: ChatInputProps) {
         maxRows={5}
         value={props.value}
         onChange={props.onChange}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            props.onSubmit();
+          }
+        }}
       />
       <IconButton
         sx={{

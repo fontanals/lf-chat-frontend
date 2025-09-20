@@ -73,24 +73,25 @@ export function ChatHistoryPage() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
             width: "100%",
             maxWidth: "800px",
           }}
         >
-          <Text>Chat History</Text>
+          <Text sx={{ padding: "8px" }} variant="body1">
+            Chat History
+          </Text>
           <Input
             placeholder="Search"
             fullWidth
             value={search}
             onChange={handleSearchChange}
           />
-          <Text sx={{ color: "secondary.ma" }}>{`${
-            paginatedChats?.totalChats ?? 0
-          } chats found`}</Text>
+          <Text
+            sx={{ padding: "8px", color: "secondary.main" }}
+            variant="caption"
+          >{`${paginatedChats?.totalChats ?? 0} chats found`}</Text>
           <ChatList
             sx={{
-              height: "calc(100vh - 236px)",
               overflow: "auto",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },

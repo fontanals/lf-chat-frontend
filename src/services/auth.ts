@@ -21,27 +21,25 @@ export class AuthService implements IAuthService {
 
   async signup(request: SignupRequest): Promise<SignupResponse> {
     const response = await this.baseService.post<SignupResponse, SignupRequest>(
-      `/api/signup`,
-      request
+      { url: `/api/signup`, request }
     );
 
     return response;
   }
 
   async signin(request: SigninRequest): Promise<SigninReponse> {
-    const response = await this.baseService.post<SigninReponse, SigninRequest>(
-      `/api/signin`,
-      request
-    );
+    const response = await this.baseService.post<SigninReponse, SigninRequest>({
+      url: `/api/signin`,
+      request,
+    });
 
     return response;
   }
 
   async signout(): Promise<SignoutResponse> {
-    const response = await this.baseService.post<SignoutResponse, null>(
-      `/api/signout`,
-      null
-    );
+    const response = await this.baseService.post<SignoutResponse>({
+      url: `/api/signout`,
+    });
 
     return response;
   }

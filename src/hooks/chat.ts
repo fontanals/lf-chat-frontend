@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { RefObject } from "react";
 import {
   useLocation,
@@ -24,6 +29,7 @@ export function useChats(query?: GetChatsQuery) {
   return useQuery({
     queryKey: query != null ? ["chats", query] : ["chats"],
     queryFn: () => services.chat.getChats(query),
+    placeholderData: keepPreviousData,
   });
 }
 

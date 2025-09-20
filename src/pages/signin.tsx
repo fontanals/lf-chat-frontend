@@ -58,7 +58,7 @@ export function SigninPage() {
           >
             AI CHAT
           </Text>
-          <Text>
+          <Text sx={{ marginTop: "8px" }}>
             Don't have an account? <Link to="/signup">Sign Up</Link>
           </Text>
         </Box>

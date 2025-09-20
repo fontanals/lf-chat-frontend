@@ -10,6 +10,7 @@ import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Text } from "../ui/text";
+import { StringUtils } from "../../utils/strings";
 
 const profileFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -43,15 +44,20 @@ export function ProfileTab(props: ProfileTabProps) {
   const { mutate: updateUser } = useUpdateUser();
 
   function onSubmit(formValues: ProfileFormSchema) {
-    updateUser(
-      { request: formValues },
-      { onSuccess: () => setIsEditing(false) }
-    );
+    setIsEditing(false);
+
+    if (StringUtils.isNullOrWhitespace(formValues.displayName)) {
+      formValues.displayName = formValues.name.split(" ")[0];
+    }
+
+    updateUser({ request: formValues });
   }
 
   function handleCancel() {
     setIsEditing(false);
     setValue("name", props.user.name);
+    setValue("displayName", props.user.displayName);
+    setValue("customPreferences", props.user.customPreferences ?? "");
   }
 
   return (

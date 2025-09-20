@@ -3,6 +3,7 @@ import { Fragment, useState } from "react";
 import { Link } from "react-router";
 import { useChats, useDeleteChat, useUpdateChat } from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
+import { ArrayUtils } from "../../utils/arrays";
 import { Text } from "../ui/text";
 import { ChatList, ChatListItem } from "./chat-list";
 import { ChatMenu } from "./chat-menu";
@@ -55,9 +56,11 @@ export function PreviousChats(props: PreviousChatsProps) {
           overflowY: "auto",
         }}
       >
-        <Text sx={{ padding: "0px 8px", color: "text.secondary" }}>
-          Previous Chats
-        </Text>
+        {!ArrayUtils.isNullOrEmpty(paginatedChats?.chats) && (
+          <Text sx={{ padding: "0px 8px", color: "text.secondary" }}>
+            Previous Chats
+          </Text>
+        )}
         <ChatList sx={{ marginTop: "8px", padding: "0px" }}>
           {paginatedChats?.chats.map((chat) => (
             <Link key={chat.id} to={`/chat/${chat.id}`}>

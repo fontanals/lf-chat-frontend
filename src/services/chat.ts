@@ -51,7 +51,7 @@ export class ChatService implements IChatService {
     const response = await this.baseService.get<
       GetChatsResponse,
       GetChatsQuery
-    >("/api/chats", query);
+    >({ url: "/api/chats", query });
 
     return response;
   }
@@ -60,10 +60,10 @@ export class ChatService implements IChatService {
     params: GetChatParams,
     query?: GetChatQuery
   ): Promise<GetChatResponse> {
-    const response = await this.baseService.get<GetChatResponse, GetChatQuery>(
-      `/api/chats/${params.chatId}`,
-      query
-    );
+    const response = await this.baseService.get<GetChatResponse, GetChatQuery>({
+      url: `/api/chats/${params.chatId}`,
+      query,
+    });
 
     return response;
   }
@@ -72,11 +72,11 @@ export class ChatService implements IChatService {
     request: CreateChatRequest,
     onEvent: (event: ChatServerSentEvent) => void
   ): Promise<void> {
-    await this.baseService.streamPost<ChatServerSentEvent, CreateChatRequest>(
-      "/api/chats",
+    await this.baseService.streamPost<ChatServerSentEvent, CreateChatRequest>({
+      url: "/api/chats",
       request,
-      onEvent
-    );
+      onEvent,
+    });
   }
 
   async sendMessage(
@@ -84,11 +84,11 @@ export class ChatService implements IChatService {
     request: SendMessageRequest,
     onEvent: (event: ChatServerSentEvent) => void
   ): Promise<void> {
-    await this.baseService.streamPost<ChatServerSentEvent, SendMessageRequest>(
-      `/api/chats/${params.chatId}/messages`,
+    await this.baseService.streamPost<ChatServerSentEvent, SendMessageRequest>({
+      url: `/api/chats/${params.chatId}/messages`,
       request,
-      onEvent
-    );
+      onEvent,
+    });
   }
 
   async updateChat(
@@ -98,15 +98,15 @@ export class ChatService implements IChatService {
     const response = await this.baseService.patch<
       UpdateChatResponse,
       UpdateChatRequest
-    >(`/api/chats/${params.chatId}`, request);
+    >({ url: `/api/chats/${params.chatId}`, request });
 
     return response;
   }
 
   async deleteChat(params: DeleteChatParams): Promise<DeleteChatResponse> {
-    const response = await this.baseService.delete<DeleteChatResponse>(
-      `/api/chats/${params.chatId}`
-    );
+    const response = await this.baseService.delete<DeleteChatResponse>({
+      url: `/api/chats/${params.chatId}`,
+    });
 
     return response;
   }

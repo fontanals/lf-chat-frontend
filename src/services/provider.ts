@@ -1,3 +1,4 @@
+import { config } from "../config";
 import { HttpClient, IHttpClient } from "../utils/http-client";
 import { AuthService, IAuthService } from "./auth";
 import { BaseService, IBaseService } from "./base";
@@ -35,4 +36,4 @@ export class Services {
   }
 }
 
-export const services = new Services("mock");
+export const services = new Services(config.VITE_SERVICE_TYPE);

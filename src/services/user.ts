@@ -15,7 +15,9 @@ export class UserService implements IUserService {
   }
 
   async getUser(): Promise<GetUserResponse> {
-    const response = await this.baseService.get<GetUserResponse>(`/api/user`);
+    const response = await this.baseService.get<GetUserResponse>({
+      url: `/api/user`,
+    });
 
     return response;
   }
@@ -24,7 +26,7 @@ export class UserService implements IUserService {
     const response = await this.baseService.patch<
       UpdateUserResponse,
       UpdateUserRequest
-    >(`/api/user`, request);
+    >({ url: `/api/user`, request });
 
     return response;
   }

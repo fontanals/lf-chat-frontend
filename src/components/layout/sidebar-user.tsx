@@ -19,6 +19,11 @@ export function SidebarUser() {
 
   const { mutate: signout } = useSignout();
 
+  function handleSignout() {
+    setAnchorElement(null);
+    signout();
+  }
+
   if (user == null) {
     return null;
   }
@@ -93,7 +98,7 @@ export function SidebarUser() {
             Settings
           </MenuItem>
         </Link>
-        <MenuItem onClick={() => signout()}>
+        <MenuItem onClick={handleSignout}>
           <LogOutIcon size="16px" />
           Sign out
         </MenuItem>
