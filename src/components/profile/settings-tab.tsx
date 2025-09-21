@@ -5,12 +5,15 @@ import {
   SettingsIcon,
   SunIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useThemeStore } from "../../state/theme";
 import { Text } from "../ui/text";
+import { Tooltip } from "../ui/Tooltip";
 
 export function SettingsTab() {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
-  const [language, setLanguage] = useState<"en" | "pt">("en");
+  const { t, i18n } = useTranslation();
+
+  const { theme, setTheme } = useThemeStore();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -23,37 +26,45 @@ export function SettingsTab() {
         }}
       >
         <SettingsIcon size="20px" />
-        <Text variant="body1">Settings</Text>
+        <Text variant="body1">{t("settings")}</Text>
       </Box>
       <Box>
-        <Text>Theme</Text>
+        <Text>{t("theme")}</Text>
         <Box sx={{ display: "flex", gap: "8px" }}>
-          <IconButton
-            sx={{
-              color: theme === "light" ? "secondary.main" : "text.primary",
-            }}
-            onClick={() => setTheme("light")}
-          >
-            <SunIcon size="20px" />
-          </IconButton>
-          <IconButton
-            sx={{ color: theme === "dark" ? "secondary.main" : "text.primary" }}
-            onClick={() => setTheme("dark")}
-          >
-            <MoonIcon size="20px" />
-          </IconButton>
-          <IconButton
-            sx={{
-              color: theme === "system" ? "secondary.main" : "text.primary",
-            }}
-            onClick={() => setTheme("system")}
-          >
-            <MonitorCheckIcon size="20px" />
-          </IconButton>
+          <Tooltip title={t("light")} placement="top">
+            <IconButton
+              sx={{
+                color: theme === "light" ? "secondary.main" : "text.primary",
+              }}
+              onClick={() => setTheme("light")}
+            >
+              <SunIcon size="20px" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t("dark")} placement="top">
+            <IconButton
+              sx={{
+                color: theme === "dark" ? "secondary.main" : "text.primary",
+              }}
+              onClick={() => setTheme("dark")}
+            >
+              <MoonIcon size="20px" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t("match_system")} placement="top">
+            <IconButton
+              sx={{
+                color: theme === "system" ? "secondary.main" : "text.primary",
+              }}
+              onClick={() => setTheme("system")}
+            >
+              <MonitorCheckIcon size="20px" />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Box>
       <Box>
-        <Text>Language</Text>
+        <Text>{t("language")}</Text>
         <List
           sx={{ display: "flex", gap: "16px", margin: "0px", padding: "0px" }}
         >
@@ -63,12 +74,12 @@ export function SettingsTab() {
               height: "40px",
               padding: "0px",
               fontSize: "14px",
-              color: language === "en" ? "secondary.main" : "text.primary",
+              color: i18n.language === "en" ? "secondary.main" : "text.primary",
             }}
             disableRipple
-            onClick={() => setLanguage("en")}
+            onClick={() => i18n.changeLanguage("en")}
           >
-            English
+            {t("english")}
           </ListItemButton>
           <ListItemButton
             sx={{
@@ -76,12 +87,12 @@ export function SettingsTab() {
               height: "40px",
               padding: "0px",
               fontSize: "14px",
-              color: language === "pt" ? "secondary.main" : "text.primary",
+              color: i18n.language === "pt" ? "secondary.main" : "text.primary",
             }}
             disableRipple
-            onClick={() => setLanguage("pt")}
+            onClick={() => i18n.changeLanguage("pt")}
           >
-            Portuguese
+            {t("portuguese")}
           </ListItemButton>
         </List>
       </Box>

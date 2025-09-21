@@ -1,5 +1,14 @@
-import { Avatar, Box, Drawer, useTheme } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Drawer,
+  DrawerProps,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { MessageCircleMoreIcon, MessageCirclePlusIcon } from "lucide-react";
+import { Fragment, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useSidebarStore } from "../../state/sidebar";
 import { PreviousChats } from "../chat/previous-chats";
@@ -7,34 +16,72 @@ import { Text } from "../ui/text";
 import { SidebarMenu, SidebarMenuItem } from "./sidebar-menu";
 import { SidebarUser } from "./sidebar-user";
 
-export function Sidebar() {
-  const theme = useTheme();
-
-  const isOpen = useSidebarStore((state) => state.isOpen);
+function DesktopDrawer(props: DrawerProps) {
+  const { slotProps, ...rest } = props;
 
   return (
     <Drawer
-      sx={{ width: isOpen ? "240px" : "56px" }}
+      sx={{ width: props.open ? "240px" : "56px" }}
       slotProps={{
         paper: {
           sx: {
-            width: isOpen ? "240px" : "56px",
+            width: props.open ? "240px" : "56px",
             padding: "16px 0px 16px 16px",
             border: "none",
             overflow: "hidden",
             backgroundColor: "background.default",
-            transition: theme.transitions.create("width", {
-              easing: theme.transitions.easing.sharp,
-              duration: isOpen
-                ? theme.transitions.duration.leavingScreen
-                : theme.transitions.duration.enteringScreen,
-            }),
+            transition: (theme) =>
+              theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: props.open
+                  ? theme.transitions.duration.leavingScreen
+                  : theme.transitions.duration.enteringScreen,
+              }),
           },
         },
       }}
       variant="permanent"
       open
-    >
+      {...rest}
+    />
+  );
+}
+
+function MobileDrawer(props: DrawerProps) {
+  const { slotProps, ...rest } = props;
+
+  return (
+    <Drawer
+      slotProps={{
+        paper: {
+          sx: {
+            width: "240px",
+            padding: "16px",
+            border: "none",
+            backgroundColor: "background.default",
+          },
+        },
+      }}
+      {...rest}
+    />
+  );
+}
+
+export function Sidebar() {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const { isOpen, setIsOpen } = useSidebarStore();
+
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }, [isMobile]);
+
+  const content = (
+    <Fragment>
       <Link to="/">
         <Box
           sx={{
@@ -74,21 +121,45 @@ export function Sidebar() {
         </Box>
       </Link>
       <SidebarMenu sx={{ marginTop: "16px" }}>
-        <SidebarMenuItem
-          href="/"
-          text="New Chat"
-          tooltip={!isOpen ? "New Chat" : ""}
-          icon={<MessageCirclePlusIcon size="24px" />}
-        />
-        <SidebarMenuItem
-          href="/history"
-          text="Chat History"
-          tooltip={!isOpen ? "Chat History" : ""}
-          icon={<MessageCircleMoreIcon size="24px" />}
-        />
+        <Link
+          to="/"
+          onClick={() => {
+            if (isMobile) {
+              setIsOpen(false);
+            }
+          }}
+        >
+          <SidebarMenuItem
+            text={t("new_chat")}
+            icon={<MessageCirclePlusIcon size="24px" />}
+          />
+        </Link>
+        <Link
+          to="/history"
+          onClick={() => {
+            if (isMobile) {
+              setIsOpen(false);
+            }
+          }}
+        >
+          <SidebarMenuItem
+            text={t("chat_history")}
+            icon={<MessageCircleMoreIcon size="24px" />}
+          />
+        </Link>
       </SidebarMenu>
-      <PreviousChats isOpen={isOpen} />
+      <PreviousChats />
       <SidebarUser />
-    </Drawer>
+    </Fragment>
   );
+
+  if (isMobile) {
+    return (
+      <MobileDrawer open={isOpen} onClose={() => setIsOpen(false)}>
+        {content}
+      </MobileDrawer>
+    );
+  }
+
+  return <DesktopDrawer open={isOpen}>{content}</DesktopDrawer>;
 }

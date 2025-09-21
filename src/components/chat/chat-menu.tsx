@@ -1,5 +1,6 @@
 import { alpha, PopoverOrigin } from "@mui/material";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Menu, MenuItem } from "../ui/menu";
 
 export type ChatMenuProps = {
@@ -12,6 +13,8 @@ export type ChatMenuProps = {
 };
 
 export function ChatMenu(props: ChatMenuProps) {
+  const { t } = useTranslation();
+
   return (
     <Menu
       slotProps={{
@@ -27,7 +30,7 @@ export function ChatMenu(props: ChatMenuProps) {
     >
       <MenuItem onClick={props.onRename}>
         <EditIcon size="16px" />
-        Rename
+        {t("rename")}
       </MenuItem>
       <MenuItem
         sx={{
@@ -39,7 +42,7 @@ export function ChatMenu(props: ChatMenuProps) {
         onClick={props.onDelete}
       >
         <Trash2Icon size="16px" />
-        Delete
+        {t("delete")}
       </MenuItem>
     </Menu>
   );

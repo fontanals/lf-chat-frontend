@@ -1,10 +1,11 @@
-import { Box, IconButton, useTheme } from "@mui/material";
+import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import { PropsWithChildren } from "react";
 import { useSidebarStore } from "../../state/sidebar";
 
 export function ContentPanel(props: PropsWithChildren) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { isOpen, setIsOpen } = useSidebarStore();
 
@@ -16,7 +17,7 @@ export function ContentPanel(props: PropsWithChildren) {
         flexDirection: "column",
         height: "calc(100vh - 32px)",
         margin: "16px",
-        marginLeft: isOpen ? "256px" : "72px",
+        marginLeft: isMobile ? "16px" : isOpen ? "256px" : "72px",
         padding: "16px",
         borderRadius: "8px",
         backgroundColor: "background.paper",

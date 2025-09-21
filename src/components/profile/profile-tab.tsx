@@ -3,17 +3,18 @@ import { Box, FormControl } from "@mui/material";
 import { EditIcon, SaveIcon, UserIcon } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 import { useUpdateUser } from "../../hooks/user";
 import { User } from "../../models/entities/user";
+import { StringUtils } from "../../utils/strings";
 import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Text } from "../ui/text";
-import { StringUtils } from "../../utils/strings";
 
 const profileFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "name_is_required"),
   displayName: z.string().optional(),
   customPreferences: z.string().optional(),
 });
@@ -25,6 +26,8 @@ export type ProfileTabProps = {
 };
 
 export function ProfileTab(props: ProfileTabProps) {
+  const { t } = useTranslation();
+
   const [isEditing, setIsEditing] = useState(false);
 
   const {
@@ -71,7 +74,7 @@ export function ProfileTab(props: ProfileTabProps) {
         }}
       >
         <UserIcon size="20px" />
-        <Text variant="body1">Profile</Text>
+        <Text variant="body1">{t("profile")}</Text>
       </Box>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box
@@ -84,37 +87,37 @@ export function ProfileTab(props: ProfileTabProps) {
           }}
         >
           <FormControl>
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("name")}</Label>
             <Input
               id="name"
-              placeholder="Name"
+              placeholder={t("name")}
               {...register("name")}
               disabled={!isEditing}
             />
             {errors.name != null && (
               <Text variant="caption" color="error">
-                {errors.name.message}
+                {t(errors.name.message!)}
               </Text>
             )}
           </FormControl>
           <FormControl>
             <Label htmlFor="display-name">
-              How the assistant should call you
+              {t("how_the_assistant_should_address_you")}
             </Label>
             <Input
               id="display-name"
-              placeholder="Name"
+              placeholder={t("display_name")}
               {...register("displayName")}
               disabled={!isEditing}
             />
           </FormControl>
           <FormControl>
             <Label htmlFor="preferences">
-              Personal preferences to share with assistant
+              {t("personal_preferences_to_share_with_assistant")}
             </Label>
             <Input
               id="preferences"
-              placeholder="Preferences"
+              placeholder={t("preferences")}
               multiline
               rows={3}
               {...register("customPreferences")}
@@ -126,17 +129,17 @@ export function ProfileTab(props: ProfileTabProps) {
           {isEditing ? (
             <Fragment>
               <ShadowButton type="button" primary onClick={handleCancel}>
-                Cancel
+                {t("cancel")}
               </ShadowButton>
               <ShadowButton type="submit">
                 <SaveIcon size="16px" />
-                Save Changes
+                {t("save_changes")}
               </ShadowButton>
             </Fragment>
           ) : (
             <ShadowButton type="button" onClick={() => setIsEditing(true)}>
               <EditIcon size="16px" />
-              Edit
+              {t("edit")}
             </ShadowButton>
           )}
         </Box>

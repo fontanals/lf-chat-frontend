@@ -6,6 +6,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useSignout } from "../../hooks/auth";
 import { useUser } from "../../hooks/user";
@@ -13,6 +14,8 @@ import { Menu, MenuItem } from "../ui/menu";
 import { Text } from "../ui/text";
 
 export function SidebarUser() {
+  const { t } = useTranslation();
+
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
   const { data: user } = useUser();
@@ -89,18 +92,18 @@ export function SidebarUser() {
         <Link to="/profile" onClick={() => setAnchorElement(null)}>
           <MenuItem>
             <UserIcon size="16px" />
-            Profile
+            {t("profile")}
           </MenuItem>
         </Link>
         <Link to="/profile/settings" onClick={() => setAnchorElement(null)}>
           <MenuItem>
             <SettingsIcon size="16px" />
-            Settings
+            {t("settings")}
           </MenuItem>
         </Link>
         <MenuItem onClick={handleSignout}>
           <LogOutIcon size="16px" />
-          Sign out
+          {t("sign_out")}
         </MenuItem>
       </Menu>
     </Fragment>

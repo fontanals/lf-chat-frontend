@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { ContentPanel } from "../components/layout/content-panel";
 import { ProfileTab } from "../components/profile/profile-tab";
@@ -8,6 +9,7 @@ import { useUser } from "../hooks/user";
 
 export function ProfilePage() {
   const { tab = "profile" } = useParams();
+  const { t } = useTranslation();
 
   const { data: user } = useUser();
 
@@ -17,11 +19,11 @@ export function ProfilePage() {
         <Box sx={{ width: "100%", maxWidth: "800px" }}>
           <Tabs
             tabs={[
-              { href: "/profile", value: "profile", label: "Profile" },
+              { href: "/profile", value: "profile", label: t("profile") },
               {
                 href: "/profile/settings",
                 value: "settings",
-                label: "Settings",
+                label: t("settings"),
               },
             ]}
             selectedTab={tab}

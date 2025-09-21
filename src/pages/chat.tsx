@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
@@ -16,9 +17,12 @@ import {
   useSendMessage,
   useUpdateChat,
 } from "../hooks/chat";
+import { useUser } from "../hooks/user";
 import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
+  const { t } = useTranslation();
+
   const { chatId: paramsChatId } = useParams();
 
   const [chatId, setChatId] = useState(paramsChatId ?? uuid());
@@ -27,6 +31,8 @@ export function ChatPage() {
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const { data: user } = useUser();
 
   const { data: chat } = useChat(chatId);
   const { mutate: createChat } = useCreateChat(messagesContainerRef);
@@ -85,7 +91,7 @@ export function ChatPage() {
             onDelete={() => setIsDeleteChatDialogOpen(true)}
           />
         </Box>
-        {chat == null ? (
+        {paramsChatId == null && chat == null ? (
           <Box
             sx={{
               flex: 0.5,
@@ -95,7 +101,11 @@ export function ChatPage() {
               marginBottom: "16px",
             }}
           >
-            <Text variant="h5">Welcome back, Lucas!</Text>
+            <Text variant="h5">
+              {t("welcome_user_name_how_are_you_doing_today", {
+                name: user?.displayName,
+              })}
+            </Text>
           </Box>
         ) : (
           <Box
@@ -121,7 +131,7 @@ export function ChatPage() {
                 maxWidth: "800px",
               }}
             >
-              {chat.messages?.map((message) =>
+              {chat?.messages?.map((message) =>
                 message.role === "user" ? (
                   <UserMessage key={message.id} message={message} />
                 ) : (
@@ -133,7 +143,9 @@ export function ChatPage() {
         )}
         <ChatInput
           placeholder={
-            chat == null ? "How can i help you today?" : "Reply to assistant..."
+            chat == null
+              ? t("how_can_i_help_you_today")
+              : t("reply_to_assistant")
           }
           value={message}
           onChange={(event) => setMessage(event.target.value)}

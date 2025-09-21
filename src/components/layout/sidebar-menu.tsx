@@ -1,18 +1,16 @@
 import { alpha, Box, List, ListItemButton, ListProps } from "@mui/material";
 import { ReactNode } from "react";
-import { Link } from "react-router";
 import { Text } from "../ui/text";
+import { Tooltip } from "../ui/tooltip";
 
 export type SidebarMenuItemProps = {
-  href: string;
   text: string;
-  tooltip: string;
   icon: ReactNode;
 };
 
 export function SidebarMenuItem(props: SidebarMenuItemProps) {
   return (
-    <Link to={props.href}>
+    <Tooltip title={props.text} placement="right-start">
       <ListItemButton
         sx={{
           display: "flex",
@@ -44,7 +42,7 @@ export function SidebarMenuItem(props: SidebarMenuItemProps) {
         </Box>
         <Text>{props.text}</Text>
       </ListItemButton>
-    </Link>
+    </Tooltip>
   );
 }
 

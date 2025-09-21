@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { EditIcon } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 
@@ -18,6 +19,8 @@ export type RenameChatDialogProps = {
 };
 
 export function RenameChatDialog(props: RenameChatDialogProps) {
+  const { t } = useTranslation();
+
   const [title, setTitle] = useState(props.title);
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
       onClose={props.onCancel}
     >
       <DialogTitle sx={{ padding: "16px" }} variant="body1">
-        Rename Chat
+        {t("rename_chat")}
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
         <form id="rename-chat-form" onSubmit={handleSubmit}>
@@ -58,11 +61,11 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
         <ShadowButton primary onClick={props.onCancel}>
-          Cancel
+          {t("cancel")}
         </ShadowButton>
         <ShadowButton type="submit" form="rename-chat-form">
           <EditIcon size="16px" />
-          Rename
+          {t("rename")}
         </ShadowButton>
       </DialogActions>
     </Dialog>

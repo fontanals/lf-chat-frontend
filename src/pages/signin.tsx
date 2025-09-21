@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 import { ContainedButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -11,13 +12,15 @@ import { Text } from "../components/ui/text";
 import { useSignin } from "../hooks/auth";
 
 const signinFormSchema = z.object({
-  email: z.email("Invalid email address").min(1, "Email is required"),
-  password: z.string().min(1, "Password is required"),
+  email: z.email("invalid_email_address").min(1, "email_is_required"),
+  password: z.string().min(1, "password_is_required"),
 });
 
 type SigninFormSchema = z.infer<typeof signinFormSchema>;
 
 export function SigninPage() {
+  const { t } = useTranslation();
+
   const {
     register,
     handleSubmit,
@@ -59,7 +62,7 @@ export function SigninPage() {
             AI CHAT
           </Text>
           <Text sx={{ marginTop: "8px" }}>
-            Don't have an account? <Link to="/signup">Sign Up</Link>
+            {t("dont_have_an_account")} <Link to="/signup">{t("sign_up")}</Link>
           </Text>
         </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -72,32 +75,38 @@ export function SigninPage() {
             }}
           >
             <FormControl>
-              <Label htmlFor="email">Email</Label>
-              <Input placeholder="Email" {...register("email")} />
+              <Label htmlFor="email">{t("email")}</Label>
+              <Input placeholder={t("email")} {...register("email")} />
               {errors.email != null && (
                 <Typography variant="caption" color="error">
-                  {errors.email.message}
+                  {t(errors.email.message!)}
                 </Typography>
               )}
             </FormControl>
             <FormControl>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder={t("password")}
                 {...register("password")}
               />
               {errors.password != null && (
                 <Text variant="caption" color="error">
-                  {errors.password.message}
+                  {t(errors.password.message!)}
                 </Text>
               )}
             </FormControl>
             <ContainedButton sx={{ marginTop: "16px" }} type="submit">
-              Sign In
+              {t("sign_in")}
             </ContainedButton>
           </Box>
         </form>
+        <Text sx={{ textAlign: "center" }}>
+          {t("by_continuing_you_agree_to_our")} <br />{" "}
+          <Link to="#">{t("terms_of_usage")}</Link>
+          {` ${t("and")} `}
+          <Link to="#">{t("privacy_policy")}</Link>.
+        </Text>
       </Box>
       <LoadingBackdrop isLoading={isPending} />
     </Box>

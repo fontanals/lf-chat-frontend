@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { ChangeEvent, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 import { ChatList, ChatListItem } from "../components/chat/chat-list";
 import { ChatMenu } from "../components/chat/chat-menu";
@@ -14,6 +15,7 @@ import { SearchParamsUtils } from "../utils/search-params";
 
 export function ChatHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   const paramsSearch = searchParams.get("search") ?? "";
   const cursor = SearchParamsUtils.getDate(searchParams, "cursor");
@@ -78,10 +80,10 @@ export function ChatHistoryPage() {
           }}
         >
           <Text sx={{ padding: "8px" }} variant="body1">
-            Chat History
+            {t("chat_history")}
           </Text>
           <Input
-            placeholder="Search"
+            placeholder={t("search")}
             fullWidth
             value={search}
             onChange={handleSearchChange}
@@ -89,7 +91,9 @@ export function ChatHistoryPage() {
           <Text
             sx={{ padding: "8px", color: "secondary.main" }}
             variant="caption"
-          >{`${paginatedChats?.totalChats ?? 0} chats found`}</Text>
+          >
+            {t("total_chats_found", { total: paginatedChats?.totalChats ?? 0 })}
+          </Text>
           <ChatList
             sx={{
               overflow: "auto",

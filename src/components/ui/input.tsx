@@ -21,9 +21,9 @@ export function Input(props: InputProps) {
             "-webkit-text-fill-color": (theme) =>
               alpha(theme.palette.text.primary, 0.2),
             "&::placeholder": {
-              color: (theme) => alpha(theme.palette.text.primary, 0.1),
+              color: (theme) => alpha(theme.palette.text.primary, 0.2),
               "-webkit-text-fill-color": (theme) =>
-                alpha(theme.palette.text.primary, 0.1),
+                alpha(theme.palette.text.primary, 0.2),
             },
           },
         },

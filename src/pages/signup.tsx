@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl } from "@mui/material";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 import { ContainedButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -11,14 +12,16 @@ import { Text } from "../components/ui/text";
 import { useSignup } from "../hooks/auth";
 
 const signupFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.email("Invalid email address").min(1, "Email is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(1, "name_is_required"),
+  email: z.email("invalid_email_address").min(1, "email_is_required"),
+  password: z.string().min(6, "password_must_be_at_least_6_characters_long"),
 });
 
 type SignupFormSchema = z.infer<typeof signupFormSchema>;
 
 export function SignupPage() {
+  const { t } = useTranslation();
+
   const {
     register,
     handleSubmit,
@@ -60,7 +63,8 @@ export function SignupPage() {
             AI CHAT
           </Text>
           <Text sx={{ marginTop: "8px" }}>
-            Already have an account? <Link to="/signin">Sign In</Link>
+            {t("already_have_an_account")}{" "}
+            <Link to="/signin">{t("sign_in")}</Link>
           </Text>
         </Box>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -73,46 +77,46 @@ export function SignupPage() {
             }}
           >
             <FormControl>
-              <Label htmlFor="name">Name</Label>
-              <Input placeholder="Name" {...register("name")} />
+              <Label htmlFor="name">{t("name")}</Label>
+              <Input placeholder={t("name")} {...register("name")} />
               {errors.name != null && (
                 <Text variant="caption" color="error">
-                  {errors.name.message}
+                  {t(errors.name.message!)}
                 </Text>
               )}
             </FormControl>
             <FormControl>
-              <Label htmlFor="email">Email</Label>
-              <Input placeholder="Email" {...register("email")} />
+              <Label htmlFor="email">{t("email")}</Label>
+              <Input placeholder={t("email")} {...register("email")} />
               {errors.email != null && (
                 <Text variant="caption" color="error">
-                  {errors.email.message}
+                  {t(errors.email.message!)}
                 </Text>
               )}
             </FormControl>
             <FormControl>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder={t("password")}
                 {...register("password")}
               />
               {errors.password != null && (
                 <Text variant="caption" color="error">
-                  {errors.password.message}
+                  {t(errors.password.message!)}
                 </Text>
               )}
             </FormControl>
             <ContainedButton sx={{ marginTop: "16px" }} type="submit">
-              Sign Up
+              {t("sign_up")}
             </ContainedButton>
           </Box>
         </form>
         <Text sx={{ textAlign: "center" }}>
-          By signing up, you agree to our <br />{" "}
-          <Link to="#">Terms of Service</Link>
-          {" and "}
-          <Link to="#">Privacy Policy</Link>.
+          {t("by_continuing_you_agree_to_our")} <br />{" "}
+          <Link to="#">{t("terms_of_usage")}</Link>
+          {` ${t("and")} `}
+          <Link to="#">{t("privacy_policy")}</Link>.
         </Text>
       </Box>
       <LoadingBackdrop isLoading={isPending} />

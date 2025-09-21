@@ -6,6 +6,7 @@ import {
   alpha,
 } from "@mui/material";
 import { Trash2Icon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ShadowButton } from "../ui/button";
 import { Text } from "../ui/text";
 
@@ -16,6 +17,8 @@ export type DeleteChatDialogProps = {
 };
 
 export function DeleteChatDialog(props: DeleteChatDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog
       slotProps={{
@@ -33,14 +36,14 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
       onClose={props.onCancel}
     >
       <DialogTitle sx={{ padding: "16px" }} variant="body2">
-        Delete Chat
+        {t("delete_chat")}
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
-        <Text>Are you sure you want to delete this chat?</Text>
+        <Text>{t("are_you_sure_you_want_to_delete_this_chat")}</Text>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
         <ShadowButton primary onClick={props.onCancel}>
-          Cancel
+          {t("cancel")}
         </ShadowButton>
         <ShadowButton
           sx={{
@@ -50,7 +53,7 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
           onClick={props.onDelete}
         >
           <Trash2Icon size="16px" />
-          Delete
+          {t("delete")}
         </ShadowButton>
       </DialogActions>
     </Dialog>
