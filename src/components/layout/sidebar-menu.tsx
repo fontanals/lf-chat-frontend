@@ -6,11 +6,15 @@ import { Tooltip } from "../ui/tooltip";
 export type SidebarMenuItemProps = {
   text: string;
   icon: ReactNode;
+  hideTooltip?: boolean;
 };
 
 export function SidebarMenuItem(props: SidebarMenuItemProps) {
   return (
-    <Tooltip title={props.text} placement="right-start">
+    <Tooltip
+      title={props.hideTooltip ? "" : props.text}
+      placement="right-start"
+    >
       <ListItemButton
         sx={{
           display: "flex",

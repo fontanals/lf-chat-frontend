@@ -1,8 +1,8 @@
 import {
   CreateChatRequest,
   DeleteChatParams,
+  GetChatMessagesParams,
   GetChatParams,
-  GetChatQuery,
   GetChatsQuery,
   SendMessageParams,
   SendMessageRequest,
@@ -12,6 +12,7 @@ import {
 import {
   ChatServerSentEvent,
   DeleteChatResponse,
+  GetChatMessagesResponse,
   GetChatResponse,
   GetChatsResponse,
   UpdateChatResponse,
@@ -20,10 +21,10 @@ import { IBaseService } from "./base";
 
 export interface IChatService {
   getChats(query?: GetChatsQuery): Promise<GetChatsResponse>;
-  getChat(
-    params: GetChatParams,
-    query?: GetChatQuery
-  ): Promise<GetChatResponse>;
+  getChat(params: GetChatParams): Promise<GetChatResponse>;
+  getChatMessages(
+    params: GetChatMessagesParams
+  ): Promise<GetChatMessagesResponse>;
   createChat(
     request: CreateChatRequest,
     onEvent: (event: ChatServerSentEvent) => void
@@ -56,13 +57,19 @@ export class ChatService implements IChatService {
     return response;
   }
 
-  async getChat(
-    params: GetChatParams,
-    query?: GetChatQuery
-  ): Promise<GetChatResponse> {
-    const response = await this.baseService.get<GetChatResponse, GetChatQuery>({
+  async getChat(params: GetChatParams): Promise<GetChatResponse> {
+    const response = await this.baseService.get<GetChatResponse>({
       url: `/api/chats/${params.chatId}`,
-      query,
+    });
+
+    return response;
+  }
+
+  async getChatMessages(
+    params: GetChatMessagesParams
+  ): Promise<GetChatMessagesResponse> {
+    const response = await this.baseService.get<GetChatMessagesResponse>({
+      url: `/api/chats/${params.chatId}/messages`,
     });
 
     return response;

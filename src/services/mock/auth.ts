@@ -1,5 +1,3 @@
-import { v4 as uuid } from "uuid";
-import { Session } from "../../models/entities/session";
 import { SigninRequest, SignupRequest } from "../../models/requests/auth";
 import {
   SigninReponse,
@@ -20,11 +18,7 @@ export class MockAuthService implements IAuthService {
           return reject(ApplicationError.invalidEmailOrPassword());
         }
 
-        const session: Session = { id: uuid(), userId: user.id };
-
-        data.sessions.push(session);
-
-        resolve({ session: { ...session }, user: { ...user } });
+        resolve({ user: { ...user } });
       }, 300)
     );
   }
@@ -38,11 +32,7 @@ export class MockAuthService implements IAuthService {
           return reject(ApplicationError.invalidEmailOrPassword());
         }
 
-        const session: Session = { id: uuid(), userId: user.id };
-
-        data.sessions.push(session);
-
-        resolve({ session: { ...session }, user: { ...user } });
+        resolve({ user: { ...user } });
       }, 300)
     );
   }
@@ -52,7 +42,7 @@ export class MockAuthService implements IAuthService {
       setTimeout(() => {
         const user = data.users[0];
 
-        resolve({ userId: user.id });
+        resolve(user.id);
       }, 300)
     );
   }

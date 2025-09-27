@@ -21,7 +21,11 @@ import {
   UpdateChatParams,
   UpdateChatRequest,
 } from "../models/requests/chat";
-import { GetChatResponse, GetChatsResponse } from "../models/responses/chat";
+import {
+  GetChatMessagesResponse,
+  GetChatResponse,
+  GetChatsResponse,
+} from "../models/responses/chat";
 import { services } from "../services/provider";
 import { SearchParamsUtils } from "../utils/search-params";
 
@@ -35,9 +39,15 @@ export function useChats(query?: GetChatsQuery) {
 
 export function useChat(chatId: string) {
   return useQuery({
-    queryKey: ["chat", chatId],
-    queryFn: () => services.chat.getChat({ chatId }, { expand: ["messages"] }),
-    select: (response) => response.chat,
+    queryKey: ["chats", chatId],
+    queryFn: () => services.chat.getChat({ chatId }),
+  });
+}
+
+export function useChatMessages(chatId: string) {
+  return useQuery({
+    queryKey: ["messages", chatId],
+    queryFn: () => services.chat.getChatMessages({ chatId }),
   });
 }
 
@@ -51,45 +61,54 @@ export function useCreateChat(
     mutationFn: (args: { request: CreateChatRequest }) =>
       services.chat.createChat(args.request, (event) => {
         if (event.event === "start") {
+          const userMessageId = uuid();
+
           queryClient.setQueryData<GetChatResponse>(
-            ["chat", args.request.id],
+            ["chats", args.request.id],
+            () => ({ id: args.request.id, title: "" })
+          );
+
+          queryClient.setQueryData<GetChatMessagesResponse>(
+            ["messages", args.request.id],
             () => ({
-              chat: {
-                id: args.request.id,
-                title: "",
-                messages: [
-                  {
-                    id: uuid(),
-                    role: "user",
-                    content: args.request.message,
-                    chatId: args.request.id,
-                  },
-                  {
-                    id: event.data.messageId,
-                    role: "assistant",
-                    content: "",
-                    chatId: args.request.id,
-                  },
-                ],
+              latestPath: [userMessageId, event.data.messageId],
+              rootMessageIds: [userMessageId],
+              messages: {
+                [userMessageId]: {
+                  id: userMessageId,
+                  role: "user",
+                  content: args.request.message,
+                  parentId: null,
+                  chatId: args.request.id,
+                  childrenIds: [event.data.messageId],
+                },
+                [event.data.messageId]: {
+                  id: event.data.messageId,
+                  role: "assistant",
+                  content: "",
+                  parentId: userMessageId,
+                  chatId: args.request.id,
+                  isIncomplete: true,
+                  childrenIds: [],
+                },
               },
             })
           );
         } else if (event.event === "delta") {
-          queryClient.setQueryData<GetChatResponse>(
-            ["chat", args.request.id],
+          queryClient.setQueryData<GetChatMessagesResponse>(
+            ["messages", args.request.id],
             (response) =>
               response != null
                 ? {
-                    chat: {
-                      ...response.chat,
-                      messages: response.chat.messages?.map((message) =>
-                        message.id === event.data.messageId
-                          ? {
-                              ...message,
-                              content: message.content + event.data.delta,
-                            }
-                          : message
-                      ),
+                    ...response,
+                    messages: {
+                      ...response.messages,
+                      [event.data.messageId]: {
+                        ...response.messages[event.data.messageId],
+                        content:
+                          response.messages[event.data.messageId].content +
+                          event.data.delta,
+                      },
                     },
                   }
                 : response
@@ -103,7 +122,9 @@ export function useCreateChat(
       }),
     onSuccess: (_, args) => {
       queryClient.invalidateQueries({ queryKey: ["chats"] });
-      queryClient.invalidateQueries({ queryKey: ["chat", args.request.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["messages", args.request.id],
+      });
 
       navigate(`/chat/${args.request.id}`);
     },
@@ -122,47 +143,72 @@ export function useSendMessage(
     }) =>
       services.chat.sendMessage(args.params, args.request, (event) => {
         if (event.event === "start") {
-          queryClient.setQueryData<GetChatResponse>(
-            ["chat", args.params.chatId],
+          queryClient.setQueryData<GetChatMessagesResponse>(
+            ["messages", args.params.chatId],
             (response) =>
               response != null
                 ? {
-                    chat: {
-                      ...response.chat,
-                      messages: response.chat.messages?.concat(
-                        {
-                          id: args.request.id,
-                          role: "user",
-                          content: args.request.content,
-                          chatId: args.params.chatId,
-                        },
-                        {
-                          id: event.data.messageId,
-                          role: "assistant",
-                          content: "",
-                          chatId: args.params.chatId,
-                        }
-                      ),
+                    latestPath: response.latestPath
+                      .slice(
+                        0,
+                        args.request.parentId != null
+                          ? response.latestPath.indexOf(args.request.parentId) +
+                              1
+                          : 0
+                      )
+                      .concat([args.request.id, event.data.messageId]),
+                    rootMessageIds:
+                      args.request.parentId == null
+                        ? response.rootMessageIds.concat(args.request.id)
+                        : response.rootMessageIds,
+                    messages: {
+                      ...response.messages,
+                      ...(args.request.parentId != null
+                        ? {
+                            [args.request.parentId]: {
+                              ...response.messages[args.request.parentId],
+                              childrenIds: response.messages[
+                                args.request.parentId
+                              ].childrenIds?.concat(args.request.id),
+                            },
+                          }
+                        : undefined),
+                      [args.request.id]: {
+                        id: args.request.id,
+                        role: "user",
+                        content: args.request.content,
+                        parentId: args.request.parentId,
+                        chatId: args.params.chatId,
+                        childrenIds: [event.data.messageId],
+                      },
+                      [event.data.messageId]: {
+                        id: event.data.messageId,
+                        role: "assistant",
+                        content: "",
+                        parentId: args.request.id,
+                        chatId: args.params.chatId,
+                        childrenIds: [],
+                        isIncomplete: true,
+                      },
                     },
                   }
                 : response
           );
         } else if (event.event === "delta") {
-          queryClient.setQueryData<GetChatResponse>(
-            ["chat", args.params.chatId],
+          queryClient.setQueryData<GetChatMessagesResponse>(
+            ["messages", args.params.chatId],
             (response) =>
               response != null
                 ? {
-                    chat: {
-                      ...response.chat,
-                      messages: response.chat.messages?.map((message) =>
-                        message.id === event.data.messageId
-                          ? {
-                              ...message,
-                              content: message.content + event.data.delta,
-                            }
-                          : message
-                      ),
+                    ...response,
+                    messages: {
+                      ...response.messages,
+                      [event.data.messageId]: {
+                        ...response.messages[event.data.messageId],
+                        content:
+                          response.messages[event.data.messageId].content +
+                          event.data.delta,
+                      },
                     },
                   }
                 : response
@@ -175,7 +221,9 @@ export function useSendMessage(
         }
       }),
     onSuccess: (_, args) => {
-      queryClient.invalidateQueries({ queryKey: ["chat", args.params.chatId] });
+      queryClient.invalidateQueries({
+        queryKey: ["messages", args.params.chatId],
+      });
     },
   });
 }
@@ -248,19 +296,14 @@ export function useUpdateChat() {
         chatId === args.params.chatId
       ) {
         context.chatPreviousChat = queryClient.getQueryData<GetChatResponse>([
-          "chat",
+          "chats",
           args.params.chatId,
         ]);
 
         queryClient.setQueryData<GetChatResponse>(
-          ["chat", args.params.chatId],
-          (response) =>
-            response != null
-              ? {
-                  ...response,
-                  chat: { ...response.chat, title: args.request.title },
-                }
-              : response
+          ["chats", args.params.chatId],
+          (chat) =>
+            chat != null ? { ...chat, title: args.request.title } : chat
         );
       }
 
@@ -284,7 +327,7 @@ export function useUpdateChat() {
         chatId === args.params.chatId
       ) {
         queryClient.setQueryData<GetChatResponse>(
-          ["chat", chatId],
+          ["chats", chatId],
           context?.chatPreviousChat
         );
       }

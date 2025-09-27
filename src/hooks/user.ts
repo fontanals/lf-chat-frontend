@@ -7,7 +7,6 @@ export function useUser() {
   return useQuery({
     queryKey: ["user"],
     queryFn: () => services.user.getUser(),
-    select: (response) => response.user,
   });
 }
 
@@ -22,10 +21,8 @@ export function useUpdateUser() {
 
       const previousUser = queryClient.getQueryData<GetUserResponse>(["user"]);
 
-      queryClient.setQueryData<GetUserResponse>(["user"], (response) =>
-        response != null
-          ? { ...response, user: { ...response.user, ...args.request } }
-          : response
+      queryClient.setQueryData<GetUserResponse>(["user"], (user) =>
+        user != null ? { ...user, ...args.request } : user
       );
 
       return { previousUser };

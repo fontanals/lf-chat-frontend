@@ -12,7 +12,7 @@ export function useSignup() {
     mutationFn: (args: { request: SignupRequest }) =>
       services.auth.signup(args.request),
     onSuccess: (response) => {
-      queryClient.setQueryData<GetUserResponse>(["user"], response);
+      queryClient.setQueryData<GetUserResponse>(["user"], response.user);
       navigate("/");
     },
   });
@@ -26,7 +26,7 @@ export function useSignin() {
     mutationFn: (args: { request: SigninRequest }) =>
       services.auth.signin(args.request),
     onSuccess: (response) => {
-      queryClient.setQueryData<GetUserResponse>(["user"], response);
+      queryClient.setQueryData<GetUserResponse>(["user"], response.user);
       navigate("/");
     },
   });

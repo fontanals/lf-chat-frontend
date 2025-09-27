@@ -44,5 +44,8 @@
   "how_can_i_help_you_today": "Como posso ajudá-lo hoje?",
   "reply_to_assistant": "Responder ao assistente...",
   "total_chats_found": "{{total}} chats encontrados",
-  "search": "Pesquisar"
+  "search": "Pesquisar",
+  "copy": "Copiar",
+  "like": "Gosto",
+  "dislike": "Desgosto"
 }

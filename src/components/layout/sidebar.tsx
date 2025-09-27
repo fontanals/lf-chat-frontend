@@ -132,6 +132,7 @@ export function Sidebar() {
           <SidebarMenuItem
             text={t("new_chat")}
             icon={<MessageCirclePlusIcon size="24px" />}
+            hideTooltip={isOpen}
           />
         </Link>
         <Link
@@ -145,6 +146,7 @@ export function Sidebar() {
           <SidebarMenuItem
             text={t("chat_history")}
             icon={<MessageCircleMoreIcon size="24px" />}
+            hideTooltip={isOpen}
           />
         </Link>
       </SidebarMenu>

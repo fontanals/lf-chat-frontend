@@ -1,8 +1,7 @@
-import { Session } from "../entities/session";
 import { User } from "../entities/user";
 
-export type SignupResponse = { session: Session; user: User };
+export type SignupResponse = { user: User };
 
-export type SigninReponse = { session: Session; user: User };
+export type SigninReponse = { user: User };
 
-export type SignoutResponse = { userId: string };
+export type SignoutResponse = string;

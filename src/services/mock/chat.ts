@@ -4,8 +4,8 @@ import { Message } from "../../models/entities/message";
 import {
   CreateChatRequest,
   DeleteChatParams,
+  GetChatMessagesParams,
   GetChatParams,
-  GetChatQuery,
   GetChatsQuery,
   SendMessageParams,
   SendMessageRequest,
@@ -15,6 +15,7 @@ import {
 import {
   ChatServerSentEvent,
   DeleteChatResponse,
+  GetChatMessagesResponse,
   GetChatResponse,
   GetChatsResponse,
   UpdateChatResponse,
@@ -159,10 +160,7 @@ export class MockChatService implements IChatService {
     );
   }
 
-  async getChat(
-    params: GetChatParams,
-    query?: GetChatQuery
-  ): Promise<GetChatResponse> {
+  async getChat(params: GetChatParams): Promise<GetChatResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
         const chat = data.chats.find((chat) => chat.id === params.chatId);
@@ -171,16 +169,58 @@ export class MockChatService implements IChatService {
           return reject(ApplicationError.notFound());
         }
 
-        resolve({
-          chat: {
-            ...chat,
-            messages: query?.expand?.includes("messages")
-              ? data.messages
-                  .filter((message) => message.chatId === chat.id)
-                  .map((message) => ({ ...message }))
-              : undefined,
-          },
+        resolve({ ...chat });
+      }, 300)
+    );
+  }
+
+  async getChatMessages(
+    params: GetChatMessagesParams
+  ): Promise<GetChatMessagesResponse> {
+    return new Promise((resolve, reject) =>
+      setTimeout(() => {
+        const chatExists = data.chats.some((chat) => chat.id === params.chatId);
+
+        if (!chatExists) {
+          return reject(ApplicationError.notFound());
+        }
+
+        const messages = data.messages
+          .filter((message) => message.chatId === params.chatId)
+          .map((message) => ({ ...message }));
+
+        const latestPath: string[] = [];
+        const rootMessageIds: string[] = [];
+        const messagesMap: Record<string, Message> = {};
+
+        messages.forEach((message) => {
+          message.childrenIds = [];
+          messagesMap[message.id] = message;
+
+          if (message.parentId != null) {
+            const parentMessage = messagesMap[message.parentId];
+
+            if (parentMessage != null) {
+              parentMessage.childrenIds!.push(message.id);
+            }
+          } else {
+            rootMessageIds.push(message.id);
+          }
         });
+
+        let currentMessage = messages[messages.length - 1] as
+          | Message
+          | undefined;
+
+        while (currentMessage != null) {
+          latestPath.unshift(currentMessage.id);
+          currentMessage =
+            currentMessage.parentId != null
+              ? messagesMap[currentMessage.parentId]
+              : undefined;
+        }
+
+        resolve({ latestPath, rootMessageIds, messages: messagesMap });
       }, 300)
     );
   }
@@ -202,6 +242,7 @@ export class MockChatService implements IChatService {
       id: uuid(),
       role: "user",
       content: request.message,
+      parentId: null,
       chatId: chat.id,
     };
 
@@ -209,6 +250,7 @@ export class MockChatService implements IChatService {
       id: uuid(),
       role: "assistant",
       content: "",
+      parentId: userMessage.id,
       chatId: chat.id,
     };
 
@@ -272,6 +314,7 @@ export class MockChatService implements IChatService {
       id: request.id,
       role: "user",
       content: request.content,
+      parentId: request.parentId,
       chatId: params.chatId,
     };
 
@@ -279,6 +322,7 @@ export class MockChatService implements IChatService {
       id: uuid(),
       role: "assistant",
       content: "",
+      parentId: userMessage.id,
       chatId: params.chatId,
     };
 
@@ -339,7 +383,7 @@ export class MockChatService implements IChatService {
           chat.id === params.chatId ? { ...chat, ...request } : chat
         );
 
-        resolve({ chatId: params.chatId });
+        resolve(params.chatId);
       }, 300)
     );
   }
@@ -355,7 +399,7 @@ export class MockChatService implements IChatService {
 
         data.chats = data.chats.filter((chat) => chat.id !== params.chatId);
 
-        resolve({ chatId: params.chatId });
+        resolve(params.chatId);
       }, 300)
     );
   }

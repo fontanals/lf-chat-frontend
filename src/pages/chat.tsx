@@ -4,14 +4,15 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
+import { ChatMessage } from "../components/chat/chat-message";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
-import { AssistantMessage, UserMessage } from "../components/chat/message";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
 import { Text } from "../components/ui/text";
 import {
   useChat,
+  useChatMessages,
   useCreateChat,
   useDeleteChat,
   useSendMessage,
@@ -26,6 +27,7 @@ export function ChatPage() {
   const { chatId: paramsChatId } = useParams();
 
   const [chatId, setChatId] = useState(paramsChatId ?? uuid());
+  const [activePath, setActivePath] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
@@ -35,6 +37,7 @@ export function ChatPage() {
   const { data: user } = useUser();
 
   const { data: chat } = useChat(chatId);
+  const { data: messageTree } = useChatMessages(chatId);
   const { mutate: createChat } = useCreateChat(messagesContainerRef);
   const { mutate: sendMessage } = useSendMessage(messagesContainerRef);
   const { mutate: updateChat } = useUpdateChat();
@@ -49,20 +52,11 @@ export function ChatPage() {
       top: messagesContainerRef.current.scrollHeight,
       behavior: "instant",
     });
-  }, [chat?.messages]);
+  }, [messageTree]);
 
-  function handleSendMessage() {
-    setMessage("");
-
-    if (chat == null) {
-      createChat({ request: { id: chatId, message } });
-    } else {
-      sendMessage({
-        params: { chatId: chat.id },
-        request: { id: uuid(), content: message },
-      });
-    }
-  }
+  useEffect(() => {
+    setActivePath(messageTree?.latestPath ?? []);
+  }, [messageTree?.latestPath]);
 
   function handleRenameChat(title: string) {
     updateChat({ params: { chatId }, request: { title } });
@@ -72,6 +66,58 @@ export function ChatPage() {
   function handleDeleteChat() {
     deleteChat({ params: { chatId } });
     setIsDeleteChatDialogOpen(false);
+  }
+
+  function handleSelectMessage(messageId: string) {
+    const message = messageTree?.messages[messageId];
+
+    if (message == null) {
+      return;
+    }
+
+    const newActivePath = activePath.slice(
+      0,
+      message.parentId != null ? activePath.indexOf(message.parentId) + 1 : 0
+    );
+
+    newActivePath.push(message.id);
+
+    let nextMessageId = message.childrenIds?.[message.childrenIds.length - 1];
+
+    while (nextMessageId != null) {
+      let nextMessage = messageTree?.messages[nextMessageId];
+
+      newActivePath.push(nextMessageId);
+
+      nextMessageId =
+        nextMessage?.childrenIds?.[nextMessage.childrenIds.length - 1];
+    }
+
+    setActivePath(newActivePath);
+  }
+
+  function handleSendMessage() {
+    setMessage("");
+
+    if (chat == null) {
+      createChat({ request: { id: chatId, message } });
+    } else {
+      sendMessage({
+        params: { chatId: chat.id },
+        request: {
+          id: uuid(),
+          content: message,
+          parentId: activePath[activePath.length - 1],
+        },
+      });
+    }
+  }
+
+  function handleEditMessage(content: string, parentId?: string | null) {
+    sendMessage({
+      params: { chatId },
+      request: { id: uuid(), content, parentId },
+    });
   }
 
   return (
@@ -131,13 +177,13 @@ export function ChatPage() {
                 maxWidth: "800px",
               }}
             >
-              {chat?.messages?.map((message) =>
-                message.role === "user" ? (
-                  <UserMessage key={message.id} message={message} />
-                ) : (
-                  <AssistantMessage key={message.id} message={message} />
-                )
-              )}
+              <ChatMessage
+                activePath={activePath}
+                messageIds={messageTree?.rootMessageIds ?? []}
+                messages={messageTree?.messages ?? {}}
+                onSelectMessage={handleSelectMessage}
+                onEditMessage={handleEditMessage}
+              />
             </Box>
           </Box>
         )}

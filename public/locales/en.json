@@ -44,5 +44,8 @@
   "how_can_i_help_you_today": "How can I help you today?",
   "reply_to_assistant": "Reply to assistant...",
   "total_chats_found": "{{total}} chats found",
-  "search": "Search"
+  "search": "Search",
+  "copy": "Copy",
+  "like": "Like",
+  "dislike": "Dislike"
 }

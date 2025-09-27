@@ -1,5 +1,5 @@
 import { User } from "../entities/user";
 
-export type GetUserResponse = { user: User };
+export type GetUserResponse = User;
 
-export type UpdateUserResponse = { userId: string };
+export type UpdateUserResponse = string;

@@ -1,4 +1,10 @@
-import { ButtonProps, Button, alpha } from "@mui/material";
+import {
+  alpha,
+  Button,
+  ButtonProps,
+  IconButtonProps,
+  IconButton as MuiIconButton,
+} from "@mui/material";
 
 export function ContainedButton(props: ButtonProps) {
   const { sx, ...rest } = props;
@@ -38,6 +44,25 @@ export function ShadowButton(props: ButtonProps & { primary?: boolean }) {
 
         ...sx,
       }}
+      {...rest}
+    />
+  );
+}
+
+export function IconButton(props: IconButtonProps) {
+  const { sx, size, ...rest } = props;
+
+  return (
+    <MuiIconButton
+      sx={{
+        color: "primary.main",
+        "&:hover": { color: "secondary.main" },
+        "&.Mui-disabled": {
+          color: (theme) => alpha(theme.palette.primary.main, 0.3),
+        },
+        ...sx,
+      }}
+      size={size ?? "small"}
       {...rest}
     />
   );
