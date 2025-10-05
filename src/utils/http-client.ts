@@ -34,6 +34,13 @@ export type DeleteRequestOptions<TQuery = unknown> = Omit<
   "method" | "request"
 >;
 
+export type UploadRequestOptions<TQuery extends Query = Query> = {
+  url: string;
+  query?: TQuery;
+  request: FormData;
+  onProgress?: (event: ProgressEvent) => void;
+};
+
 export type StreamResponse = ReadableStream<Uint8Array<ArrayBuffer>>;
 
 export interface IHttpClient {
@@ -55,6 +62,9 @@ export interface IHttpClient {
   streamPost<TRequest = unknown, TQuery extends Query = Query>(
     args: PostRequestOptions<TQuery, TRequest>
   ): Promise<StreamResponse>;
+  upload<TResponse = unknown, TQuery extends Query = Query>(
+    args: UploadRequestOptions<TQuery>
+  ): Promise<TResponse>;
 }
 
 export class HttpClient implements IHttpClient {
@@ -215,5 +225,42 @@ export class HttpClient implements IHttpClient {
     }
 
     return response.body;
+  }
+
+  async upload<TResponse = unknown, TQuery extends Query = Query>(
+    args: UploadRequestOptions<TQuery>
+  ): Promise<TResponse> {
+    return new Promise((resolve, reject) => {
+      const url = this.getUrl(args.url, args.query);
+
+      const headers = new Headers(this.headers);
+      headers.delete("Content-Type");
+
+      const xhr = new XMLHttpRequest();
+
+      headers.forEach((value, key) => xhr.setRequestHeader(key, value));
+
+      xhr.open("POST", url, true);
+
+      if (args.onProgress != null) {
+        xhr.upload.onprogress = args.onProgress;
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.response) as TResponse;
+
+          resolve(response);
+        } else {
+          reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+      };
+
+      xhr.send(args.request);
+    });
   }
 }

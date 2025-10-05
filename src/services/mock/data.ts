@@ -1,7 +1,9 @@
 import { addDays, addSeconds } from "date-fns";
 import { v4 as uuid } from "uuid";
 import { Chat } from "../../models/entities/chat";
+import { Document } from "../../models/entities/document";
 import { Message } from "../../models/entities/message";
+import { Project } from "../../models/entities/project";
 import { User } from "../../models/entities/user";
 
 const users: User[] = [
@@ -10,21 +12,43 @@ const users: User[] = [
     name: "Lucas Fontana",
     email: "lucas.fontana@aichat.com",
     displayName: "Lucas",
-    customPreferences: null,
+    customPrompt: null,
     createdAt: addDays(new Date(), -25),
   },
 ];
 
+const projects: Project[] = [
+  {
+    id: uuid(),
+    name: "AI Chat",
+    description: " AI Chat web application",
+    createdAt: addDays(new Date(), -22),
+  },
+];
+
+const documents: Document[] = [
+  {
+    id: uuid(),
+    name: "AI Chat Requisites.pdf",
+    mimetype: "application/pdf",
+    size: 234567,
+    projectId: projects[0].id,
+    createdAt: addDays(new Date(), -22),
+  },
+];
+
 const chats: Chat[] = [
-  { id: uuid(), title: "Space Joke", createdAt: new Date() },
+  { id: uuid(), title: "Space Joke", projectId: null, createdAt: new Date() },
   {
     id: uuid(),
     title: "Exploring React.js",
+    projectId: projects[0].id,
     createdAt: addDays(new Date(), -1),
   },
   {
     id: uuid(),
     title: "Breakfast Meal Plan",
+    projectId: null,
     createdAt: addDays(new Date(), -3),
   },
 ];
@@ -81,4 +105,4 @@ const messages: Message[] = [
   },
 ];
 
-export const data = { users, chats, messages };
+export const data = { users, projects, documents, chats, messages };

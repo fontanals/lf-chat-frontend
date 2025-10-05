@@ -7,6 +7,7 @@ export type Message = {
   parentId?: string | null;
   chatId: string;
   createdAt?: Date;
+  updatedAt?: Date;
   childrenIds?: string[];
   isIncomplete?: boolean;
 };

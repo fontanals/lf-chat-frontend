@@ -8,6 +8,7 @@ import {
   PostRequestOptions,
   PutRequestOptions,
   Query,
+  UploadRequestOptions,
 } from "../utils/http-client";
 
 export type StreamPostRequestOptions<
@@ -41,6 +42,9 @@ export interface IBaseService {
   >(
     args: StreamPostRequestOptions<TEvent, TQuery, TRequest>
   ): Promise<void>;
+  upload<TResponse = unknown, TQuery extends Query = Query>(
+    args: UploadRequestOptions<TQuery>
+  ): Promise<TResponse>;
 }
 
 export class BaseService implements IBaseService {
@@ -163,5 +167,20 @@ export class BaseService implements IBaseService {
         args.onEvent(parsedEvent);
       }
     }
+  }
+
+  async upload<TResponse = unknown, TQuery extends Query = Query>(
+    args: UploadRequestOptions<TQuery>
+  ): Promise<TResponse> {
+    const response = await this.httpClient.upload<
+      ApplicationResponse<TResponse>,
+      TQuery
+    >(args);
+
+    if (!response.success) {
+      throw ApplicationError.copy(response.error);
+    }
+
+    return response.data;
   }
 }

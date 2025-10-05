@@ -3,6 +3,7 @@ export type User = {
   name: string;
   email: string;
   displayName: string;
-  customPreferences?: string | null;
+  customPrompt?: string | null;
   createdAt?: Date;
+  updatedAt?: Date;
 };

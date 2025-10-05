@@ -22,7 +22,7 @@ export class MockUserService implements IUserService {
       setTimeout(() => {
         const user = data.users[0];
 
-        data.users[0] = { ...user, ...request };
+        data.users[0] = { ...user, ...request, updatedAt: new Date() };
 
         resolve(user.id);
       }, 300)

@@ -6,7 +6,11 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { MessageCircleMoreIcon, MessageCirclePlusIcon } from "lucide-react";
+import {
+  FolderIcon,
+  MessageCircleMoreIcon,
+  MessageCirclePlusIcon,
+} from "lucide-react";
 import { Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -146,6 +150,20 @@ export function Sidebar() {
           <SidebarMenuItem
             text={t("chat_history")}
             icon={<MessageCircleMoreIcon size="24px" />}
+            hideTooltip={isOpen}
+          />
+        </Link>
+        <Link
+          to="/projects"
+          onClick={() => {
+            if (isMobile) {
+              setIsOpen(false);
+            }
+          }}
+        >
+          <SidebarMenuItem
+            text={t("projects")}
+            icon={<FolderIcon size="24px" />}
             hideTooltip={isOpen}
           />
         </Link>

@@ -15,7 +15,7 @@ export function ChatInput(props: ChatInputProps) {
     <Box
       sx={{
         alignSelf: "center",
-        width: "60%",
+        width: "100%",
         padding: "16px",
         textAlign: "end",
         borderRadius: "16px",

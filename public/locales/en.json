@@ -47,5 +47,12 @@
   "search": "Search",
   "copy": "Copy",
   "like": "Like",
-  "dislike": "Dislike"
+  "dislike": "Dislike",
+  "projects": "Projects",
+  "create_project": "Create Project",
+  "description": "Description",
+  "edit_project": "Edit Project",
+  "delete_project": "Delete Project",
+  "are_you_sure_you_want_to_delete_the_project": "Are you sure you want to delete the project \"{{name}}\"?",
+  "project_name_is_required": "Project name is required"
 }

@@ -3,9 +3,13 @@ import { HttpClient, IHttpClient } from "../utils/http-client";
 import { AuthService, IAuthService } from "./auth";
 import { BaseService, IBaseService } from "./base";
 import { ChatService, IChatService } from "./chat";
+import { DocumentService, IDocumentService } from "./document";
 import { MockAuthService } from "./mock/auth";
 import { MockChatService } from "./mock/chat";
+import { MockDocumentService } from "./mock/document";
+import { MockProjectService } from "./mock/project";
 import { MockUserService } from "./mock/user";
+import { IProjectService, ProjectService } from "./project";
 import { IUserService, UserService } from "./user";
 
 export class Services {
@@ -13,7 +17,9 @@ export class Services {
   readonly base: IBaseService;
   readonly auth: IAuthService;
   readonly user: IUserService;
+  readonly project: IProjectService;
   readonly chat: IChatService;
+  readonly document: IDocumentService;
 
   constructor(serviceType: "mock" | "web" = "web") {
     this.httpClient = new HttpClient();
@@ -29,10 +35,20 @@ export class Services {
         ? new MockUserService()
         : new UserService(this.base);
 
+    this.project =
+      serviceType === "mock"
+        ? new MockProjectService()
+        : new ProjectService(this.base);
+
     this.chat =
       serviceType === "mock"
         ? new MockChatService()
         : new ChatService(this.base);
+
+    this.document =
+      serviceType === "mock"
+        ? new MockDocumentService()
+        : new DocumentService(this.base);
   }
 }
 

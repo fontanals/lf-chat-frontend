@@ -21,7 +21,7 @@ export class AuthService implements IAuthService {
 
   async signup(request: SignupRequest): Promise<SignupResponse> {
     const response = await this.baseService.post<SignupResponse, SignupRequest>(
-      { url: `/api/signup`, request }
+      { url: "/api/signup", request }
     );
 
     return response;
@@ -29,7 +29,7 @@ export class AuthService implements IAuthService {
 
   async signin(request: SigninRequest): Promise<SigninReponse> {
     const response = await this.baseService.post<SigninReponse, SigninRequest>({
-      url: `/api/signin`,
+      url: "/api/signin",
       request,
     });
 
@@ -38,7 +38,7 @@ export class AuthService implements IAuthService {
 
   async signout(): Promise<SignoutResponse> {
     const response = await this.baseService.post<SignoutResponse>({
-      url: `/api/signout`,
+      url: "/api/signout",
     });
 
     return response;

@@ -235,7 +235,9 @@ export class MockChatService implements IChatService {
     const chat: Chat = {
       id: request.id,
       title: mockMessage.title,
+      projectId: request.projectId ?? null,
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const userMessage: Message = {
@@ -244,6 +246,8 @@ export class MockChatService implements IChatService {
       content: request.message,
       parentId: null,
       chatId: chat.id,
+      createdAt: chat.createdAt,
+      updatedAt: chat.createdAt,
     };
 
     const assistantMessage: Message = {
@@ -252,6 +256,8 @@ export class MockChatService implements IChatService {
       content: "",
       parentId: userMessage.id,
       chatId: chat.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     data.chats.push(chat);
@@ -316,6 +322,8 @@ export class MockChatService implements IChatService {
       content: request.content,
       parentId: request.parentId,
       chatId: params.chatId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const assistantMessage: Message = {
@@ -324,6 +332,8 @@ export class MockChatService implements IChatService {
       content: "",
       parentId: userMessage.id,
       chatId: params.chatId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     data.messages.push(userMessage);
@@ -380,7 +390,9 @@ export class MockChatService implements IChatService {
         }
 
         data.chats = data.chats.map((chat) =>
-          chat.id === params.chatId ? { ...chat, ...request } : chat
+          chat.id === params.chatId
+            ? { ...chat, ...request, updatedAt: new Date() }
+            : chat
         );
 
         resolve(params.chatId);
