@@ -53,6 +53,13 @@
   "description": "Description",
   "edit_project": "Edit Project",
   "delete_project": "Delete Project",
-  "are_you_sure_you_want_to_delete_the_project": "Are you sure you want to delete the project \"{{name}}\"?",
-  "project_name_is_required": "Project name is required"
+  "are_you_sure_you_want_to_delete_the_project": "Are you sure you want to delete the project \"{{title}}\"?",
+  "project_name_is_required": "Project name is required",
+  "documents": "Documents",
+  "chats": "Chats",
+  "add_document": "Add Document",
+  "remove_document": "Remove Document",
+  "add_pdf_documents_as_context_to_the_project": "Add pdf documents as context to the project",
+  "title": "Title",
+  "title_is_required": "Title is required"
 }

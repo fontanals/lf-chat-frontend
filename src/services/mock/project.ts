@@ -16,13 +16,13 @@ import {
 } from "../../models/responses/project";
 import { ApplicationError } from "../../utils/errors";
 import { IProjectService } from "../project";
-import { data } from "./data";
+import { mockData } from "./data";
 
 export class MockProjectService implements IProjectService {
   async getProjects(): Promise<GetProjectsResponse> {
     return new Promise((resolve) =>
       setTimeout(() => {
-        const projects = data.projects.map((project) => ({ ...project }));
+        const projects = mockData.projects.map((project) => ({ ...project }));
 
         resolve(projects);
       }, 300)
@@ -35,7 +35,7 @@ export class MockProjectService implements IProjectService {
   ): Promise<GetProjectResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
-        const project = data.projects.find(
+        const project = mockData.projects.find(
           (project) => project.id === params.projectId
         );
 
@@ -46,7 +46,7 @@ export class MockProjectService implements IProjectService {
         resolve({
           ...project,
           documents: query?.expand?.includes("documents")
-            ? data.documents.filter(
+            ? mockData.documents.filter(
                 (document) => document.projectId === project.id
               )
             : undefined,
@@ -62,13 +62,13 @@ export class MockProjectService implements IProjectService {
       setTimeout(() => {
         const project: Project = {
           id: request.id,
-          name: request.name,
+          title: request.title,
           description: request.description,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
 
-        data.projects.push(project);
+        mockData.projects.push(project);
 
         resolve(project.id);
       }, 300)
@@ -81,7 +81,7 @@ export class MockProjectService implements IProjectService {
   ): Promise<UpdateProjectResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
-        const project = data.projects.find(
+        const project = mockData.projects.find(
           (project) => project.id === params.projectId
         );
 
@@ -89,7 +89,7 @@ export class MockProjectService implements IProjectService {
           return reject(ApplicationError.notFound());
         }
 
-        project.name = request.name ?? project.name;
+        project.title = request.title ?? project.title;
         project.description = request.description ?? project.description;
         project.updatedAt = new Date();
 
@@ -103,7 +103,7 @@ export class MockProjectService implements IProjectService {
   ): Promise<DeleteProjectResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
-        const projectExists = data.projects.some(
+        const projectExists = mockData.projects.some(
           (project) => project.id === params.projectId
         );
 
@@ -111,7 +111,17 @@ export class MockProjectService implements IProjectService {
           return reject(ApplicationError.notFound());
         }
 
-        data.projects = data.projects.filter(
+        mockData.chats = mockData.chats.map((chat) => ({
+          ...chat,
+          projectId:
+            chat.projectId === params.projectId ? null : chat.projectId,
+        }));
+
+        mockData.documents = mockData.documents.filter(
+          (document) => document.projectId !== params.projectId
+        );
+
+        mockData.projects = mockData.projects.filter(
           (project) => project.id !== params.projectId
         );
 

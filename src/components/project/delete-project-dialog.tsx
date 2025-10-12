@@ -14,7 +14,7 @@ import { Text } from "../ui/text";
 export type DeleteProjectDialogProps = {
   isOpen: boolean;
   project?: Project | null;
-  onDelete: () => void;
+  onDeleteProject: () => void;
   onCancel: () => void;
 };
 
@@ -43,7 +43,7 @@ export function DeleteProjectDialog(props: DeleteProjectDialogProps) {
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
         <Text>
           {t("are_you_sure_you_want_to_delete_the_project", {
-            name: props.project?.name ?? "",
+            title: props.project?.title ?? "",
           })}
         </Text>
       </DialogContent>
@@ -56,7 +56,7 @@ export function DeleteProjectDialog(props: DeleteProjectDialogProps) {
             color: "error.main",
             backgroundColor: (theme) => alpha(theme.palette.error.main, 0.2),
           }}
-          onClick={props.onDelete}
+          onClick={props.onDeleteProject}
         >
           <Trash2Icon size="16px" />
           {t("delete")}

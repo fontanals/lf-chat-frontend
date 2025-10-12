@@ -12,7 +12,7 @@ import { Text } from "../ui/text";
 
 export type DeleteChatDialogProps = {
   isOpen: boolean;
-  onDelete: () => void;
+  onDeleteChat: () => void;
   onCancel: () => void;
 };
 
@@ -50,7 +50,7 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
             color: "error.main",
             backgroundColor: (theme) => alpha(theme.palette.error.main, 0.2),
           }}
-          onClick={props.onDelete}
+          onClick={props.onDeleteChat}
         >
           <Trash2Icon size="16px" />
           {t("delete")}

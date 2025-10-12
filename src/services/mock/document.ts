@@ -8,31 +8,49 @@ import {
   UploadDocumentResponse,
 } from "../../models/responses/document";
 import { ApplicationError } from "../../utils/errors";
+import { sleep } from "../../utils/functions";
 import { IDocumentService } from "../document";
-import { data } from "./data";
+import { mockData } from "./data";
 
 export class MockDocumentService implements IDocumentService {
   async uploadDocument(
     request: UploadDocumentRequest,
     onProgress?: (event: ProgressEvent) => void
   ): Promise<UploadDocumentResponse> {
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        const document: Document = {
-          id: request.id,
-          name: request.file.name,
-          mimetype: request.file.type,
-          size: request.file.size,
-          projectId: request.projectId ?? null,
-          createdAt: new Date(),
-          udpatedAt: new Date(),
-        };
+    const document: Document = {
+      id: request.id,
+      name: request.file.name,
+      mimetype: request.file.type,
+      sizeInBytes: request.file.size,
+      projectId: request.projectId ?? null,
+      createdAt: new Date(),
+      udpatedAt: new Date(),
+    };
 
-        data.documents.push(document);
+    mockData.documents.push(document);
 
-        resolve(document.id);
-      }, 300)
-    );
+    sleep(100);
+
+    onProgress?.({
+      loaded: request.file.size / 3,
+      total: request.file.size,
+    } as any);
+
+    sleep(100);
+
+    onProgress?.({
+      loaded: (request.file.size / 3) * 2,
+      total: request.file.size,
+    } as any);
+
+    sleep(100);
+
+    onProgress?.({
+      loaded: request.file.size,
+      total: request.file.size,
+    } as any);
+
+    return document.id;
   }
 
   async deleteDocument(
@@ -40,7 +58,7 @@ export class MockDocumentService implements IDocumentService {
   ): Promise<DeleteDocumentResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
-        const documentExists = data.documents.some(
+        const documentExists = mockData.documents.some(
           (document) => document.id === params.documentId
         );
 
@@ -48,7 +66,7 @@ export class MockDocumentService implements IDocumentService {
           return reject(ApplicationError.notFound());
         }
 
-        data.documents = data.documents.filter(
+        mockData.documents = mockData.documents.filter(
           (document) => document.id !== params.documentId
         );
 

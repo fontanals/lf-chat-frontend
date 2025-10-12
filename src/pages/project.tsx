@@ -1,13 +1,9 @@
-import { Box, alpha } from "@mui/material";
-import {
-  EllipsisVerticalIcon,
-  FileIcon,
-  FilePlus2Icon,
-  FilePlusIcon,
-} from "lucide-react";
+import { Box } from "@mui/material";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams, useSearchParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
+import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
 import { ContentPanel } from "../components/layout/content-panel";
 import { DeleteProjectDialog } from "../components/project/delete-project-dialog";
@@ -15,29 +11,33 @@ import {
   EditProjectDialog,
   EditProjectFormSchema,
 } from "../components/project/edit-project-dialog";
-import { ProjectMenu } from "../components/project/project-menu";
+import { ProjectChats } from "../components/project/project-chats";
+import { ProjectDocuments } from "../components/project/project-documents";
 import { IconButton } from "../components/ui/button";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
+import { Tooltip } from "../components/ui/tooltip";
+import {
+  useDeleteDocument,
+  useUploadDocument,
+  useUploadDocuments,
+} from "../hooks/document";
 import {
   useDeleteProject,
   useProject,
   useUpdateProject,
 } from "../hooks/project";
-import { useChats } from "../hooks/chat";
-import { SearchParamsUtils } from "../utils/search-params";
-import { ChatList, ChatListItem } from "../components/chat/chat-list";
-import { Input } from "../components/ui/input";
+import { UserContentPart } from "../models/entities/message";
+import { useChatStore } from "../state/chat";
 
 export function ProjectPage() {
   const { projectId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const paramsSearch = searchParams.get("search") ?? "";
-  const cursor = SearchParamsUtils.getDate(searchParams, "cursor");
+  const setPendingMessage = useChatStore((state) => state.setPendingMessage);
 
-  const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
+  const [message, setMessage] = useState("");
   const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = useState(false);
   const [isDeleteProjectDialogOpen, setIsDeleteProjectDialogOpen] =
     useState(false);
@@ -45,42 +45,107 @@ export function ProjectPage() {
   const { data: project, isLoading } = useProject(projectId!, {
     expand: ["documents"],
   });
-  const { data: paginatedChats } = useChats({
-    search: paramsSearch,
-    projectId: projectId!,
-    cursor: cursor ?? undefined,
-    limit: 20,
-  });
   const { mutate: updateProject } = useUpdateProject();
   const { mutate: deleteProject } = useDeleteProject();
+  const { uploadMap, uploadDocument, deleteDocument } = useUploadDocuments();
+  const { mutate: uploadProjectDocument } = useUploadDocument(projectId!);
+  const { mutate: deleteProjectDocument } = useDeleteDocument(projectId!);
 
   function handleEditProject(values: EditProjectFormSchema) {
+    setIsEditProjectDialogOpen(false);
+
     if (project != null) {
       updateProject({
         params: { projectId: project.id },
         request: values,
       });
     }
-
-    setIsEditProjectDialogOpen(false);
   }
 
   function handleDeleteProject() {
+    setIsDeleteProjectDialogOpen(false);
+
     if (project != null) {
       deleteProject({ params: { projectId: project.id } });
     }
+  }
 
-    setIsDeleteProjectDialogOpen(false);
+  function handleAddDocument(files?: File[]) {
+    files?.forEach((file) =>
+      uploadProjectDocument({
+        request: { id: uuid(), file, projectId: projectId! },
+        // TODO: implement upload progress
+        onProgress: () => {},
+      })
+    );
+  }
+
+  function handleDeleteDocument(documentId: string) {
+    deleteProjectDocument({ params: { documentId } });
+  }
+
+  function handleAddChatDocuments(files: File[]) {
+    files.forEach((file) => uploadDocument({ request: { id: uuid(), file } }));
+  }
+
+  function handleRemoveChatDocument(id: string) {
+    deleteDocument({ params: { documentId: id } });
+  }
+
+  function handleCreateChat() {
+    if (project != null) {
+      const chatId = uuid();
+
+      const contentParts: UserContentPart[] = [];
+
+      Object.values(uploadMap).forEach((item) =>
+        contentParts.push({
+          type: "document",
+          id: item.id,
+          name: item.name,
+          mimetype: item.mimetype,
+        })
+      );
+
+      contentParts.push({ type: "text", text: message });
+
+      setPendingMessage({
+        message: contentParts,
+        chatId,
+        projectId: project.id,
+      });
+
+      navigate(`/chats/${chatId}`);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <ContentPanel>
+        <LoadingBackdrop isLoading />
+      </ContentPanel>
+    );
+  }
+
+  if (project == null) {
+    return <Navigate to="/projects" replace />;
   }
 
   return (
     <ContentPanel>
-      <Box sx={{ display: "flex", justifyContent: "center", padding: "48px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "48px",
+          paddingInline: { sm: "0px", md: "32px" },
+        }}
+      >
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            gap: "8px",
             width: "100%",
             maxWidth: "800px",
           }}
@@ -91,112 +156,60 @@ export function ProjectPage() {
               alignItems: "center",
               justifyContent: "space-between",
               gap: "24px",
-              paddingInline: "12px",
+              paddingInline: "16px",
             }}
           >
             <Box sx={{ display: "grid", gap: "8px" }}>
               <Text sx={{ color: "secondary.main" }} variant="body1">
-                {project?.name ?? ""}
+                {project?.title ?? ""}
               </Text>
               <Text noWrap>{project?.description ?? ""}</Text>
             </Box>
-            <IconButton
-              sx={{ color: "primary.main" }}
-              size="small"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                setAnchorElement(event.currentTarget);
-              }}
-            >
-              <EllipsisVerticalIcon size="16px" />
-            </IconButton>
-            <ProjectMenu
-              anchorElement={anchorElement}
-              onEdit={() => {
-                setAnchorElement(null);
-                setIsEditProjectDialogOpen(true);
-              }}
-              onDelete={() => {
-                setAnchorElement(null);
-                setIsDeleteProjectDialogOpen(true);
-              }}
-              onClose={() => setAnchorElement(null)}
-            />
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-              paddingInline: "12px",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text sx={{ color: "text.secondary" }}>Documents</Text>
-              <IconButton
-                sx={{ color: "primary.main" }}
-                size="small"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setAnchorElement(event.currentTarget);
-                }}
-              >
-                <FilePlus2Icon size="16px" />
-              </IconButton>
+            <Box sx={{ display: "flex" }}>
+              <Tooltip title={t("edit_project")}>
+                <IconButton onClick={() => setIsEditProjectDialogOpen(true)}>
+                  <PencilIcon size="16px" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t("delete_project")} variant="error">
+                <IconButton
+                  sx={{ "&:hover": { color: "error.main" } }}
+                  onClick={() => setIsDeleteProjectDialogOpen(true)}
+                >
+                  <Trash2Icon size="16px" />
+                </IconButton>
+              </Tooltip>
             </Box>
-            {project?.documents?.map((document) => (
-              <Text>{document.name}</Text>
-            ))}
           </Box>
-          <ChatInput
-            placeholder="How can i help you today?"
-            value=""
-            onChange={() => {}}
-            onSubmit={() => {}}
+          <ProjectDocuments
+            project={project}
+            onAddDocument={handleAddDocument}
+            onRemoveDocument={handleDeleteDocument}
           />
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <Text sx={{ paddingInline: "12px", color: "text.secondary" }}>
-              Chats
-            </Text>
-            <Input
-              placeholder={t("search")}
-              fullWidth
-              value={""}
-              onChange={() => {}}
-            />
-            <ChatList>
-              {paginatedChats?.chats.map((chat) => (
-                <ChatListItem
-                  key={chat.id}
-                  sx={{ paddingInline: "12px" }}
-                  chat={chat}
-                />
-              ))}
-            </ChatList>
-          </Box>
+          <ChatInput
+            placeholder={t("how_can_i_help_you_today")}
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            onSubmit={handleCreateChat}
+            uploadMap={uploadMap}
+            onAddDocuments={handleAddChatDocuments}
+            onRemoveDocument={handleRemoveChatDocument}
+          />
+          <ProjectChats project={project} />
         </Box>
       </Box>
       <EditProjectDialog
         isOpen={isEditProjectDialogOpen}
         project={project}
-        onEdit={handleEditProject}
+        onEditProject={handleEditProject}
         onCancel={() => setIsEditProjectDialogOpen(false)}
       />
       <DeleteProjectDialog
         isOpen={isDeleteProjectDialogOpen}
         project={project}
-        onDelete={handleDeleteProject}
+        onDeleteProject={handleDeleteProject}
         onCancel={() => setIsDeleteProjectDialogOpen(false)}
       />
-      <LoadingBackdrop isLoading={isLoading} />
     </ContentPanel>
   );
 }

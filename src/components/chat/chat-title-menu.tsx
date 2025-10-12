@@ -1,24 +1,22 @@
 import { Button } from "@mui/material";
 import { ChevronDownIcon } from "lucide-react";
 import { Fragment, useState } from "react";
-import { StringUtils } from "../../utils/strings";
+import { Chat } from "../../models/entities/chat";
+import { Text } from "../ui/text";
 import { ChatMenu } from "./chat-menu";
 
 export type ChatTitleMenuProps = {
-  title: string;
-  onRename: () => void;
-  onDelete: () => void;
+  chat: Chat;
+  onRenameChat: () => void;
+  onDeleteChat: () => void;
 };
 
 export function ChatTitleMenu(props: ChatTitleMenuProps) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
-  if (StringUtils.isNullOrWhitespace(props.title)) {
-    return null;
-  }
-
   return (
     <Fragment>
+      {props.chat.project != null && <Text>{props.chat.project.title} / </Text>}
       <Button
         sx={{
           height: "36px",
@@ -31,19 +29,19 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
         endIcon={<ChevronDownIcon width="16px" height="16px" />}
         onClick={(event) => setAnchorElement(event?.currentTarget)}
       >
-        {props.title}
+        {props.chat.title}
       </Button>
       <ChatMenu
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
         anchorElement={anchorElement}
-        onRename={() => {
+        onRenameChat={() => {
           setAnchorElement(null);
-          props.onRename();
+          props.onRenameChat();
         }}
-        onDelete={() => {
+        onDeleteChat={() => {
           setAnchorElement(null);
-          props.onDelete();
+          props.onDeleteChat();
         }}
         onClose={() => setAnchorElement(null)}
       />

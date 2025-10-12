@@ -8,6 +8,7 @@ import { ProjectsPage } from "../pages/projects";
 import { SigninPage } from "../pages/signin";
 import { SignupPage } from "../pages/signup";
 import { PrivateRoute } from "./private-route";
+import { NewChatPage } from "../pages/new-chat";
 
 export const router = createBrowserRouter([
   { path: "/signup", element: <SignupPage /> },
@@ -18,8 +19,8 @@ export const router = createBrowserRouter([
       {
         element: <MainLayout />,
         children: [
-          { path: "/", element: <ChatPage /> },
-          { path: "/chat/:chatId?", element: <ChatPage /> },
+          { path: "/", element: <NewChatPage /> },
+          { path: "/chats/:chatId?", element: <ChatPage /> },
           { path: "/history", element: <ChatHistoryPage /> },
           { path: "/projects", element: <ProjectsPage /> },
           { path: "/projects/:projectId", element: <ProjectPage /> },

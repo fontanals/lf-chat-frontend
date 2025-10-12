@@ -1,15 +1,18 @@
 import { Box } from "@mui/material";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
-import { ChatMessage } from "../components/chat/chat-message";
+import {
+  AssistantMessageComponent,
+  ChatMessage,
+} from "../components/chat/chat-message";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
-import { Text } from "../components/ui/text";
+import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import {
   useChat,
   useChatMessages,
@@ -18,15 +21,18 @@ import {
   useSendMessage,
   useUpdateChat,
 } from "../hooks/chat";
-import { useUser } from "../hooks/user";
+import { useUploadDocuments } from "../hooks/document";
+import { UserContentPart } from "../models/entities/message";
+import { useChatStore } from "../state/chat";
+import { ArrayUtils } from "../utils/arrays";
 import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
+  const { chatId } = useParams();
   const { t } = useTranslation();
 
-  const { chatId: paramsChatId } = useParams();
+  const { pendingMessage, streamingAnswer, setPendingMessage } = useChatStore();
 
-  const [chatId, setChatId] = useState(paramsChatId ?? uuid());
   const [activePath, setActivePath] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
@@ -34,18 +40,31 @@ export function ChatPage() {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: user } = useUser();
-
-  const { data: chat } = useChat(chatId);
-  const { data: messageTree } = useChatMessages(chatId);
+  const { data: chat, isLoading } = useChat(chatId!);
+  const { data: messageTree } = useChatMessages(
+    chatId!,
+    pendingMessage == null
+  );
+  const { uploadMap, uploadDocument, deleteDocument } = useUploadDocuments();
   const { mutate: createChat } = useCreateChat(messagesContainerRef);
   const { mutate: sendMessage } = useSendMessage(messagesContainerRef);
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: deleteChat } = useDeleteChat();
 
   useEffect(() => {
-    setChatId(paramsChatId ?? uuid());
-  }, [paramsChatId]);
+    if (pendingMessage != null && pendingMessage.chatId === chatId) {
+      createChat(
+        {
+          request: {
+            id: chatId!,
+            message: pendingMessage.message,
+            projectId: pendingMessage.projectId,
+          },
+        },
+        { onSuccess: () => setPendingMessage(null) }
+      );
+    }
+  }, [chatId, pendingMessage, createChat, setPendingMessage]);
 
   useEffect(() => {
     messagesContainerRef.current?.scrollTo({
@@ -59,13 +78,15 @@ export function ChatPage() {
   }, [messageTree?.latestPath]);
 
   function handleRenameChat(title: string) {
-    updateChat({ params: { chatId }, request: { title } });
     setIsRenameChatDialogOpen(false);
+
+    updateChat({ params: { chatId: chatId! }, request: { title } });
   }
 
   function handleDeleteChat() {
-    deleteChat({ params: { chatId } });
     setIsDeleteChatDialogOpen(false);
+
+    deleteChat({ params: { chatId: chatId! } });
   }
 
   function handleSelectMessage(messageId: string) {
@@ -77,12 +98,15 @@ export function ChatPage() {
 
     const newActivePath = activePath.slice(
       0,
-      message.parentId != null ? activePath.indexOf(message.parentId) + 1 : 0
+      message.parentMessageId != null
+        ? activePath.indexOf(message.parentMessageId) + 1
+        : 0
     );
 
     newActivePath.push(message.id);
 
-    let nextMessageId = message.childrenIds?.[message.childrenIds.length - 1];
+    let nextMessageId =
+      message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
 
     while (nextMessageId != null) {
       let nextMessage = messageTree?.messages[nextMessageId];
@@ -90,34 +114,79 @@ export function ChatPage() {
       newActivePath.push(nextMessageId);
 
       nextMessageId =
-        nextMessage?.childrenIds?.[nextMessage.childrenIds.length - 1];
+        nextMessage?.childrenMessageIds?.[
+          nextMessage.childrenMessageIds.length - 1
+        ];
     }
 
     setActivePath(newActivePath);
   }
 
+  function handleAddDocuments(files: File[]) {
+    files.forEach((file) => uploadDocument({ request: { id: uuid(), file } }));
+  }
+
+  function handleRemoveDocument(id: string) {
+    deleteDocument({ params: { documentId: id } });
+  }
+
   function handleSendMessage() {
-    setMessage("");
+    if (
+      StringUtils.isNullOrWhitespace(message) &&
+      ArrayUtils.isNullOrEmpty(Object.keys(uploadMap))
+    ) {
+      return;
+    }
+
+    const contentParts: UserContentPart[] = [];
+
+    Object.values(uploadMap).forEach((item) =>
+      contentParts.push({
+        type: "document",
+        id: item.id,
+        name: item.name,
+        mimetype: item.mimetype,
+      })
+    );
+
+    contentParts.push({ type: "text", text: message });
 
     if (chat == null) {
-      createChat({ request: { id: chatId, message } });
+      createChat({ request: { id: chatId!, message: contentParts } });
     } else {
       sendMessage({
         params: { chatId: chat.id },
         request: {
           id: uuid(),
-          content: message,
-          parentId: activePath[activePath.length - 1],
+          content: contentParts,
+          parentMessageId: activePath[activePath.length - 1],
         },
       });
     }
+
+    setMessage("");
   }
 
-  function handleEditMessage(content: string, parentId?: string | null) {
+  function handleEditMessage(
+    content: UserContentPart[],
+    parentMessageId?: string | null
+  ) {
     sendMessage({
-      params: { chatId },
-      request: { id: uuid(), content, parentId },
+      params: { chatId: chatId! },
+      request: { id: uuid(), content, parentMessageId },
     });
+  }
+
+  if (isLoading) {
+    return (
+      <ContentPanel>
+        <LoadingBackdrop isLoading />
+      </ContentPanel>
+    );
+  }
+
+  if (chat == null && pendingMessage == null) {
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -131,83 +200,75 @@ export function ChatPage() {
             marginLeft: "48px",
           }}
         >
-          <ChatTitleMenu
-            title={chat?.title ?? ""}
-            onRename={() => setIsRenameChatDialogOpen(true)}
-            onDelete={() => setIsDeleteChatDialogOpen(true)}
-          />
+          {chat != null && (
+            <ChatTitleMenu
+              chat={chat}
+              onRenameChat={() => setIsRenameChatDialogOpen(true)}
+              onDeleteChat={() => setIsDeleteChatDialogOpen(true)}
+            />
+          )}
         </Box>
-        {paramsChatId == null && chat == null ? (
+        <Box
+          ref={messagesContainerRef}
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            margin: "16px",
+            overflowY: "auto",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+            msOverflowStyle: "none",
+          }}
+        >
           <Box
             sx={{
-              flex: 0.5,
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "center",
-              marginBottom: "16px",
-            }}
-          >
-            <Text variant="h5">
-              {t("welcome_user_name_how_are_you_doing_today", {
-                name: user?.displayName,
-              })}
-            </Text>
-          </Box>
-        ) : (
-          <Box
-            ref={messagesContainerRef}
-            sx={{
-              flex: 1,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              margin: "32px",
-              overflowY: "auto",
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": { display: "none" },
-              msOverflowStyle: "none",
+              gap: "16px",
+              width: "100%",
+              maxWidth: "800px",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                width: "100%",
-                maxWidth: "800px",
-              }}
-            >
-              <ChatMessage
-                activePath={activePath}
-                messageIds={messageTree?.rootMessageIds ?? []}
-                messages={messageTree?.messages ?? {}}
-                onSelectMessage={handleSelectMessage}
-                onEditMessage={handleEditMessage}
+            <ChatMessage
+              activePath={activePath}
+              messageIds={messageTree?.rootMessageIds ?? []}
+              messages={messageTree?.messages ?? {}}
+              onSelectMessage={handleSelectMessage}
+              onEditMessage={handleEditMessage}
+            />
+            {streamingAnswer != null && (
+              <AssistantMessageComponent
+                message={streamingAnswer}
+                hideActions
               />
-            </Box>
+            )}
           </Box>
-        )}
-        <ChatInput
-          placeholder={
-            chat == null
-              ? t("how_can_i_help_you_today")
-              : t("reply_to_assistant")
-          }
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-          onSubmit={handleSendMessage}
-          disabled={StringUtils.isNullOrWhitespace(message)}
-        />
+        </Box>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <ChatInput
+            containerSx={{ maxWidth: "600px" }}
+            placeholder={t("reply_to_assistant")}
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            onSubmit={handleSendMessage}
+            uploadMap={uploadMap}
+            onAddDocuments={handleAddDocuments}
+            onRemoveDocument={handleRemoveDocument}
+            disabled={StringUtils.isNullOrWhitespace(message)}
+          />
+        </Box>
       </ContentPanel>
       <RenameChatDialog
         isOpen={isRenameChatDialogOpen}
         title={chat?.title ?? ""}
-        onRename={handleRenameChat}
+        onRenameChat={handleRenameChat}
         onCancel={() => setIsRenameChatDialogOpen(false)}
       />
       <DeleteChatDialog
         isOpen={isDeleteChatDialogOpen}
-        onDelete={handleDeleteChat}
+        onDeleteChat={handleDeleteChat}
         onCancel={() => setIsDeleteChatDialogOpen(false)}
       />
     </Fragment>

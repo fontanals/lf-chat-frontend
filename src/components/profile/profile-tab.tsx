@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl } from "@mui/material";
-import { EditIcon, SaveIcon, UserIcon } from "lucide-react";
+import { PencilIcon, SaveIcon, UserIcon } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,7 @@ import { Text } from "../ui/text";
 const profileFormSchema = z.object({
   name: z.string().min(1, "name_is_required"),
   displayName: z.string().optional(),
-  customPreferences: z.string().optional(),
+  customPrompt: z.string().optional(),
 });
 
 type ProfileFormSchema = z.infer<typeof profileFormSchema>;
@@ -39,7 +39,7 @@ export function ProfileTab(props: ProfileTabProps) {
     defaultValues: {
       name: props.user.name,
       displayName: props.user.displayName,
-      customPreferences: props.user.customPreferences ?? "",
+      customPrompt: props.user.customPrompt ?? "",
     },
     resolver: zodResolver(profileFormSchema),
   });
@@ -60,7 +60,7 @@ export function ProfileTab(props: ProfileTabProps) {
     setIsEditing(false);
     setValue("name", props.user.name);
     setValue("displayName", props.user.displayName);
-    setValue("customPreferences", props.user.customPreferences ?? "");
+    setValue("customPrompt", props.user.customPrompt ?? "");
   }
 
   return (
@@ -120,7 +120,7 @@ export function ProfileTab(props: ProfileTabProps) {
               placeholder={t("preferences")}
               multiline
               rows={3}
-              {...register("customPreferences")}
+              {...register("customPrompt")}
               disabled={!isEditing}
             />
           </FormControl>
@@ -138,7 +138,7 @@ export function ProfileTab(props: ProfileTabProps) {
             </Fragment>
           ) : (
             <ShadowButton type="button" onClick={() => setIsEditing(true)}>
-              <EditIcon size="16px" />
+              <PencilIcon size="16px" />
               {t("edit")}
             </ShadowButton>
           )}

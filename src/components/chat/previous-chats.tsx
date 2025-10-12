@@ -1,28 +1,25 @@
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 import { useChats, useDeleteChat, useUpdateChat } from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
 import { useSidebarStore } from "../../state/sidebar";
 import { ArrayUtils } from "../../utils/arrays";
 import { Text } from "../ui/text";
 import { ChatList, ChatListItem } from "./chat-list";
-import { ChatMenu } from "./chat-menu";
 import { DeleteChatDialog } from "./delete-chat-dialog";
 import { RenameChatDialog } from "./rename-chat-dialog";
 
 export function PreviousChats() {
-  const { t } = useTranslation();
   const theme = useTheme();
+  const { t } = useTranslation();
+
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { isOpen: isSidebarOpen, setIsOpen: setIsSidebarOpen } =
     useSidebarStore();
 
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [chatMenuAnchorElement, setChatMenuAnchorElement] =
-    useState<HTMLElement | null>(null);
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
@@ -74,46 +71,27 @@ export function PreviousChats() {
         )}
         <ChatList sx={{ marginTop: "8px", padding: "0px" }}>
           {paginatedChats?.chats.map((chat) => (
-            <Link
+            <ChatListItem
               key={chat.id}
-              to={`/chat/${chat.id}`}
-              onClick={handleSelectChat}
-            >
-              <ChatListItem
-                sx={{ "&:hover": { backgroundColor: "background.paper" } }}
-                chat={chat}
-                onMenuClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setSelectedChat(chat);
-                  setChatMenuAnchorElement(event.currentTarget);
-                }}
-              />
-            </Link>
+              sx={{ "&:hover": { backgroundColor: "background.paper" } }}
+              chat={chat}
+              onSelectChat={handleSelectChat}
+              onRenameChat={() => {
+                setSelectedChat(chat);
+                setIsRenameChatDialogOpen(true);
+              }}
+              onDeleteChat={() => {
+                setSelectedChat(chat);
+                setIsDeleteChatDialogOpen(true);
+              }}
+            />
           ))}
         </ChatList>
-        <ChatMenu
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "left" }}
-          anchorElement={chatMenuAnchorElement}
-          onRename={() => {
-            setChatMenuAnchorElement(null);
-            setIsRenameChatDialogOpen(true);
-          }}
-          onDelete={() => {
-            setChatMenuAnchorElement(null);
-            setIsDeleteChatDialogOpen(true);
-          }}
-          onClose={() => {
-            setSelectedChat(null);
-            setChatMenuAnchorElement(null);
-          }}
-        />
       </Box>
       <RenameChatDialog
         isOpen={isRenameChatDialogOpen}
         title={selectedChat?.title ?? ""}
-        onRename={handleRenameChat}
+        onRenameChat={handleRenameChat}
         onCancel={() => {
           setIsRenameChatDialogOpen(false);
           setSelectedChat(null);
@@ -121,7 +99,7 @@ export function PreviousChats() {
       />
       <DeleteChatDialog
         isOpen={isDeleteChatDialogOpen}
-        onDelete={handleDeleteChat}
+        onDeleteChat={handleDeleteChat}
         onCancel={() => {
           setIsDeleteChatDialogOpen(false);
           setSelectedChat(null);

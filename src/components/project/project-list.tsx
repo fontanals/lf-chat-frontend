@@ -21,6 +21,7 @@ export type ProjectListItemProps = {
 };
 
 export function ProjectListItem(props: ProjectListItemProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
   return (
@@ -33,19 +34,20 @@ export function ProjectListItem(props: ProjectListItemProps) {
           padding: "16px",
           borderRadius: "8px",
           textTransform: "none",
-          "&:hover": { backgroundColor: "background.default" },
+          backgroundColor: "background.default",
           ...props.sx,
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <Box>
-          <Text sx={{ lineHeight: 1 }} noWrap>
-            {props.project.name}
-          </Text>
+        <Box sx={{ width: "80%" }}>
           <Text
-            sx={{ lineHeight: 1, color: "text.secondary" }}
-            variant="caption"
+            sx={{ color: isHovered ? "secondary.main" : "text.primary" }}
             noWrap
           >
+            {props.project.title}
+          </Text>
+          <Text sx={{ color: "text.secondary" }} noWrap>
             {props.project.description}
           </Text>
         </Box>
@@ -62,13 +64,13 @@ export function ProjectListItem(props: ProjectListItemProps) {
         </IconButton>
         <ProjectMenu
           anchorElement={anchorElement}
-          onEdit={(event) => {
+          onEditProject={(event) => {
             event.preventDefault();
             event.stopPropagation();
             setAnchorElement(null);
             props.onEdit();
           }}
-          onDelete={(event) => {
+          onDeleteProject={(event) => {
             event.preventDefault();
             event.stopPropagation();
             setAnchorElement(null);

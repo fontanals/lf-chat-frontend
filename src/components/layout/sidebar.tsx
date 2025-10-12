@@ -7,7 +7,7 @@ import {
   useTheme,
 } from "@mui/material";
 import {
-  FolderIcon,
+  FolderClosedIcon,
   MessageCircleMoreIcon,
   MessageCirclePlusIcon,
 } from "lucide-react";
@@ -25,12 +25,12 @@ function DesktopDrawer(props: DrawerProps) {
 
   return (
     <Drawer
-      sx={{ width: props.open ? "240px" : "56px" }}
+      sx={{ width: props.open ? "256px" : "72px" }}
       slotProps={{
         paper: {
           sx: {
-            width: props.open ? "240px" : "56px",
-            padding: "16px 0px 16px 16px",
+            width: props.open ? "256px" : "72px",
+            padding: "16px",
             border: "none",
             overflow: "hidden",
             backgroundColor: "background.default",
@@ -59,7 +59,7 @@ function MobileDrawer(props: DrawerProps) {
       slotProps={{
         paper: {
           sx: {
-            width: "240px",
+            width: "256px",
             padding: "16px",
             border: "none",
             backgroundColor: "background.default",
@@ -72,8 +72,9 @@ function MobileDrawer(props: DrawerProps) {
 }
 
 export function Sidebar() {
-  const { t } = useTranslation();
   const theme = useTheme();
+  const { t } = useTranslation();
+
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { isOpen, setIsOpen } = useSidebarStore();
@@ -163,7 +164,7 @@ export function Sidebar() {
         >
           <SidebarMenuItem
             text={t("projects")}
-            icon={<FolderIcon size="24px" />}
+            icon={<FolderClosedIcon size="24px" />}
             hideTooltip={isOpen}
           />
         </Link>

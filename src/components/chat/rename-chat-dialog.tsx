@@ -5,7 +5,7 @@ import {
   DialogTitle,
   alpha,
 } from "@mui/material";
-import { EditIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShadowButton } from "../ui/button";
@@ -14,7 +14,7 @@ import { Input } from "../ui/input";
 export type RenameChatDialogProps = {
   isOpen: boolean;
   title: string;
-  onRename: (title: string) => void;
+  onRenameChat: (title: string) => void;
   onCancel: () => void;
 };
 
@@ -29,7 +29,7 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    props.onRename(title);
+    props.onRenameChat(title);
   }
 
   return (
@@ -64,7 +64,7 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
           {t("cancel")}
         </ShadowButton>
         <ShadowButton type="submit" form="rename-chat-form">
-          <EditIcon size="16px" />
+          <PencilIcon size="16px" />
           {t("rename")}
         </ShadowButton>
       </DialogActions>

@@ -2,7 +2,12 @@ import { Box } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { v4 as uuid } from "uuid";
 import { ContentPanel } from "../components/layout/content-panel";
+import {
+  CreateProjectDialog,
+  CreateProjectFormSchema,
+} from "../components/project/create-project-dialog";
 import { DeleteProjectDialog } from "../components/project/delete-project-dialog";
 import {
   EditProjectDialog,
@@ -16,6 +21,7 @@ import { ShadowButton } from "../components/ui/button";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
 import {
+  useCreateProject,
   useDeleteProject,
   useProjects,
   useUpdateProject,
@@ -26,36 +32,52 @@ export function ProjectsPage() {
   const { t } = useTranslation();
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isCreateProjectDialogOpen, setIsCreateProjectDialogOpen] =
+    useState(false);
   const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = useState(false);
   const [isDeleteProjectDialogOpen, setIsDeleteProjectDialogOpen] =
     useState(false);
 
   const { data: projects = [], isLoading } = useProjects();
+  const { mutate: createProject } = useCreateProject();
   const { mutate: updateProject } = useUpdateProject();
   const { mutate: deleteProject } = useDeleteProject();
 
+  function handleCreateProject(values: CreateProjectFormSchema) {
+    setIsCreateProjectDialogOpen(false);
+
+    createProject({ request: { id: uuid(), ...values } });
+  }
+
   function handleEditProject(values: EditProjectFormSchema) {
+    setIsEditProjectDialogOpen(false);
+
     if (selectedProject != null) {
       updateProject({
         params: { projectId: selectedProject.id },
         request: values,
       });
     }
-
-    setIsEditProjectDialogOpen(false);
   }
 
   function handleDeleteProject() {
+    setIsDeleteProjectDialogOpen(false);
+
     if (selectedProject != null) {
       deleteProject({ params: { projectId: selectedProject.id } });
     }
-
-    setIsDeleteProjectDialogOpen(false);
   }
 
   return (
     <ContentPanel>
-      <Box sx={{ display: "flex", justifyContent: "center", padding: "48px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "48px",
+          paddingInline: { sm: "0px", md: "32px" },
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -74,7 +96,7 @@ export function ProjectsPage() {
             }}
           >
             <Text variant="body1">{t("projects")}</Text>
-            <ShadowButton>
+            <ShadowButton onClick={() => setIsCreateProjectDialogOpen(true)}>
               <PlusIcon size="16px" />
               {t("create_project")}
             </ShadowButton>
@@ -104,16 +126,21 @@ export function ProjectsPage() {
           </ProjectList>
         </Box>
       </Box>
+      <CreateProjectDialog
+        isOpen={isCreateProjectDialogOpen}
+        onCreateProject={handleCreateProject}
+        onCancel={() => setIsCreateProjectDialogOpen(false)}
+      />
       <EditProjectDialog
         isOpen={isEditProjectDialogOpen}
         project={selectedProject}
-        onEdit={handleEditProject}
+        onEditProject={handleEditProject}
         onCancel={() => setIsEditProjectDialogOpen(false)}
       />
       <DeleteProjectDialog
         isOpen={isDeleteProjectDialogOpen}
         project={selectedProject}
-        onDelete={handleDeleteProject}
+        onDeleteProject={handleDeleteProject}
         onCancel={() => setIsDeleteProjectDialogOpen(false)}
       />
       <LoadingBackdrop isLoading={isLoading} />

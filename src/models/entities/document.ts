@@ -2,7 +2,8 @@ export type Document = {
   id: string;
   name: string;
   mimetype: string;
-  size: number;
+  sizeInBytes: number;
+  messageId?: string | null;
   projectId?: string | null;
   createdAt?: Date;
   udpatedAt?: Date;

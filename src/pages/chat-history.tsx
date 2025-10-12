@@ -1,13 +1,14 @@
 import { Box } from "@mui/material";
 import { ChangeEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { ChatList, ChatListItem } from "../components/chat/chat-list";
 import { ChatMenu } from "../components/chat/chat-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
 import { Input } from "../components/ui/input";
+import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
 import { useChats, useDeleteChat, useUpdateChat } from "../hooks/chat";
 import { Chat } from "../models/entities/chat";
@@ -29,7 +30,7 @@ export function ChatHistoryPage() {
 
   const debouncedSearchTimeoutRef = useRef<any>(null);
 
-  const { data: paginatedChats } = useChats({
+  const { data: paginatedChats, isLoading } = useChats({
     search: paramsSearch,
     cursor: cursor ?? undefined,
     limit: 20,
@@ -70,7 +71,9 @@ export function ChatHistoryPage() {
 
   return (
     <ContentPanel>
-      <Box sx={{ display: "flex", justifyContent: "center", padding: "48px" }}>
+      <Box
+        sx={{ display: "flex", justifyContent: "center", marginTop: "48px" }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -103,28 +106,29 @@ export function ChatHistoryPage() {
             }}
           >
             {paginatedChats?.chats.map((chat) => (
-              <Link key={chat.id} to={`/chat/${chat.id}`}>
-                <ChatListItem
-                  chat={chat}
-                  onMenuClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setSelectedChat(chat);
-                    setChatMenuAnchorElement(event.currentTarget);
-                  }}
-                />
-              </Link>
+              <ChatListItem
+                key={chat.id}
+                chat={chat}
+                onRenameChat={() => {
+                  setSelectedChat(chat);
+                  setIsRenameChatDialogOpen(true);
+                }}
+                onDeleteChat={() => {
+                  setSelectedChat(chat);
+                  setIsDeleteChatDialogOpen(true);
+                }}
+              />
             ))}
           </ChatList>
           <ChatMenu
             anchorOrigin={{ vertical: "top", horizontal: "right" }}
             transformOrigin={{ vertical: "top", horizontal: "left" }}
             anchorElement={chatMenuAnchorElement}
-            onRename={() => {
+            onRenameChat={() => {
               setChatMenuAnchorElement(null);
               setIsRenameChatDialogOpen(true);
             }}
-            onDelete={() => {
+            onDeleteChat={() => {
               setChatMenuAnchorElement(null);
               setIsDeleteChatDialogOpen(true);
             }}
@@ -138,7 +142,7 @@ export function ChatHistoryPage() {
       <RenameChatDialog
         isOpen={isRenameChatDialogOpen}
         title={selectedChat?.title ?? ""}
-        onRename={handleRenameChat}
+        onRenameChat={handleRenameChat}
         onCancel={() => {
           setIsRenameChatDialogOpen(false);
           setSelectedChat(null);
@@ -146,12 +150,13 @@ export function ChatHistoryPage() {
       />
       <DeleteChatDialog
         isOpen={isDeleteChatDialogOpen}
-        onDelete={handleDeleteChat}
+        onDeleteChat={handleDeleteChat}
         onCancel={() => {
           setIsDeleteChatDialogOpen(false);
           setSelectedChat(null);
         }}
       />
+      <LoadingBackdrop isLoading={isLoading} />
     </ContentPanel>
   );
 }

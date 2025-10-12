@@ -10,7 +10,7 @@ import {
   UpdateChatRequest,
 } from "../models/requests/chat";
 import {
-  ChatServerSentEvent,
+  SendMessageEvent,
   DeleteChatResponse,
   GetChatMessagesResponse,
   GetChatResponse,
@@ -27,12 +27,12 @@ export interface IChatService {
   ): Promise<GetChatMessagesResponse>;
   createChat(
     request: CreateChatRequest,
-    onEvent: (event: ChatServerSentEvent) => void
+    onEvent: (event: SendMessageEvent) => void
   ): Promise<void>;
   sendMessage(
     params: SendMessageParams,
     request: SendMessageRequest,
-    onEvent: (event: ChatServerSentEvent) => void
+    onEvent: (event: SendMessageEvent) => void
   ): Promise<void>;
   updateChat(
     params: UpdateChatParams,
@@ -77,9 +77,9 @@ export class ChatService implements IChatService {
 
   async createChat(
     request: CreateChatRequest,
-    onEvent: (event: ChatServerSentEvent) => void
+    onEvent: (event: SendMessageEvent) => void
   ): Promise<void> {
-    await this.baseService.streamPost<ChatServerSentEvent, CreateChatRequest>({
+    await this.baseService.streamPost<SendMessageEvent, CreateChatRequest>({
       url: "/api/chats",
       request,
       onEvent,
@@ -89,9 +89,9 @@ export class ChatService implements IChatService {
   async sendMessage(
     params: SendMessageParams,
     request: SendMessageRequest,
-    onEvent: (event: ChatServerSentEvent) => void
+    onEvent: (event: SendMessageEvent) => void
   ): Promise<void> {
-    await this.baseService.streamPost<ChatServerSentEvent, SendMessageRequest>({
+    await this.baseService.streamPost<SendMessageEvent, SendMessageRequest>({
       url: `/api/chats/${params.chatId}/messages`,
       request,
       onEvent,

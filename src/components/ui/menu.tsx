@@ -6,21 +6,6 @@ import {
   alpha,
 } from "@mui/material";
 
-export function Menu(props: MenuProps) {
-  const { slotProps, ...rest } = props;
-
-  return (
-    <MuiMenu
-      slotProps={{
-        paper: { sx: { borderRadius: "8px" } },
-        list: { sx: { minWidth: "120px", padding: "4px" } },
-        ...slotProps,
-      }}
-      {...rest}
-    />
-  );
-}
-
 export function MenuItem(props: MenuItemProps) {
   const { sx, ...rest } = props;
 
@@ -39,6 +24,21 @@ export function MenuItem(props: MenuItemProps) {
           backgroundColor: (theme) => alpha(theme.palette.secondary.main, 0.2),
         },
         ...sx,
+      }}
+      {...rest}
+    />
+  );
+}
+
+export function Menu(props: MenuProps) {
+  const { slotProps, ...rest } = props;
+
+  return (
+    <MuiMenu
+      slotProps={{
+        paper: { sx: { borderRadius: "8px" } },
+        list: { sx: { minWidth: "120px", padding: "4px" } },
+        ...slotProps,
       }}
       {...rest}
     />

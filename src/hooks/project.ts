@@ -18,7 +18,7 @@ export function useProjects() {
 
 export function useProject(projectId: string, query?: GetProjectQuery) {
   return useQuery({
-    queryKey: ["projects", projectId, query],
+    queryKey: ["projects", projectId],
     queryFn: () => services.project.getProject({ projectId }, query),
   });
 }

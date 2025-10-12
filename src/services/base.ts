@@ -10,9 +10,10 @@ import {
   Query,
   UploadRequestOptions,
 } from "../utils/http-client";
+import { ServerSentEvent } from "../utils/types";
 
 export type StreamPostRequestOptions<
-  TEvent = unknown,
+  TEvent = ServerSentEvent,
   TQuery extends Query = Query,
   TRequest = unknown
 > = PostRequestOptions<TQuery, TRequest> & {

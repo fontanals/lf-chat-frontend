@@ -13,5 +13,5 @@ export function PrivateRoute() {
     return <LoadingBackdrop isLoading />;
   }
 
-  return user != null ? <Outlet /> : <Navigate to="signin" replace />;
+  return user != null ? <Outlet /> : <Navigate to="/signin" replace />;
 }

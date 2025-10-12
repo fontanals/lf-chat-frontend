@@ -5,11 +5,16 @@ import {
   TooltipProps,
 } from "@mui/material";
 
-export const Tooltip = styled(({ className, ...props }: TooltipProps) => (
-  <MuiTooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
+export const Tooltip = styled(
+  ({ className, color, ...props }: TooltipProps & { variant?: "error" }) => (
+    <MuiTooltip {...props} classes={{ popper: className }} />
+  )
+)(({ theme, variant }) => ({
   [`& .${tooltipClasses.tooltip}`]: {
     color: theme.palette.background.paper,
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor:
+      variant === "error"
+        ? theme.palette.error.main
+        : theme.palette.secondary.main,
   },
 }));

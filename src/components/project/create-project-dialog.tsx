@@ -8,64 +8,48 @@ import {
   FormControl,
   alpha,
 } from "@mui/material";
-import { PencilIcon } from "lucide-react";
-import { useEffect } from "react";
+import { PlusIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import z from "zod";
-import { Project } from "../../models/entities/project";
 import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Text } from "../ui/text";
 
-const editProjectFormSchema = z.object({
+const createProjectFormSchema = z.object({
   title: z.string().min(1, "title_is_required"),
   description: z.string(),
 });
 
-export type EditProjectFormSchema = z.infer<typeof editProjectFormSchema>;
+export type CreateProjectFormSchema = z.infer<typeof createProjectFormSchema>;
 
-export type EditProjectDialogProps = {
+export type CreateProjectDialogProps = {
   isOpen: boolean;
-  project?: Project | null;
-  onEditProject: (values: EditProjectFormSchema) => void;
+  onCreateProject: (values: CreateProjectFormSchema) => void;
   onCancel: () => void;
 };
 
-export function EditProjectDialog(props: EditProjectDialogProps) {
+export function CreateProjectDialog(props: CreateProjectDialogProps) {
   const { t } = useTranslation();
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
-  } = useForm<EditProjectFormSchema>({
-    resolver: zodResolver(editProjectFormSchema),
-    defaultValues: {
-      title: props.project?.title ?? "",
-      description: props.project?.description ?? "",
-    },
+  } = useForm<CreateProjectFormSchema>({
+    resolver: zodResolver(createProjectFormSchema),
   });
 
-  useEffect(() => {
-    setValue("title", props.project?.title ?? "");
-    setValue("description", props.project?.description ?? "");
-  }, [props.project]);
-
-  function onSubmit(formValues: EditProjectFormSchema) {
-    props.onEditProject(formValues);
+  function onSubmit(formValues: CreateProjectFormSchema) {
+    props.onCreateProject(formValues);
   }
 
   return (
     <Dialog
       slotProps={{
         paper: {
-          sx: {
-            minWidth: { xs: undefined, sm: "500px" },
-            borderRadius: "16px",
-          },
+          sx: { minWidth: "500px", borderRadius: "16px" },
         },
         backdrop: {
           sx: {
@@ -109,8 +93,8 @@ export function EditProjectDialog(props: EditProjectDialogProps) {
           {t("cancel")}
         </ShadowButton>
         <ShadowButton type="submit" form="edit-project-form">
-          <PencilIcon size="16px" />
-          {t("edit")}
+          <PlusIcon size="16px" />
+          {t("create_project")}
         </ShadowButton>
       </DialogActions>
     </Dialog>

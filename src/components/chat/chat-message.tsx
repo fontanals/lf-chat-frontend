@@ -3,50 +3,82 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
-  EditIcon,
+  PencilIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from "lucide-react";
 import { Fragment, memo, ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Message } from "../../models/entities/message";
+import {
+  AssistantMessage,
+  Message,
+  UserContentPart,
+  UserMessage as UserMessageComponentº,
+} from "../../models/entities/message";
 import { ArrayUtils } from "../../utils/arrays";
 import { StringUtils } from "../../utils/strings";
+import { DocumentIndicator } from "../document/document-indicator";
 import { IconButton, ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
 import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
 
-function UserMessage(props: {
-  message: Message;
-  onEditMessage: (content: string, parentId?: string | null) => void;
+function UserMessageComponent(props: {
+  message: UserMessageComponentº;
+  onEditMessage: (
+    content: UserContentPart[],
+    parentMessageId?: string | null
+  ) => void;
   additionalActions?: ReactNode;
 }) {
   const { t } = useTranslation();
 
-  const [content, setContent] = useState(props.message.content);
+  const [textContent, setTextContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    setContent(props.message.content);
+    const textPart = props.message.content.find(
+      (contentPart) => contentPart.type === "text"
+    );
+
+    setTextContent(textPart?.text ?? "");
   }, [props.message.content]);
 
   function handleEdit(event: React.FormEvent) {
     event.preventDefault();
     setIsEditing(false);
 
-    if (!StringUtils.isNullOrWhitespace(content)) {
-      props.onEditMessage(content, props.message.parentId);
+    if (!StringUtils.isNullOrWhitespace(textContent)) {
+      const messageContent: UserContentPart[] = props.message.content.filter(
+        (contentPart) => contentPart.type !== "text"
+      );
+
+      messageContent.push({ type: "text", text: textContent });
+
+      props.onEditMessage(messageContent, props.message.parentMessageId);
     } else {
-      setContent(props.message.content);
+      const textPart = props.message.content.find(
+        (contentPart) => contentPart.type === "text"
+      );
+
+      setTextContent(textPart?.text ?? "");
     }
   }
 
   function handleCancelEdit() {
     setIsEditing(false);
-    setContent(props.message.content);
+
+    const textPart = props.message.content.find(
+      (contentPart) => contentPart.type === "text"
+    );
+
+    setTextContent(textPart?.text ?? "");
   }
+
+  const hasDocuments = props.message.content.some(
+    (contentPart) => contentPart.type === "document"
+  );
 
   if (isEditing) {
     return (
@@ -63,8 +95,8 @@ function UserMessage(props: {
             sx={{ height: "44px" }}
             multiline
             maxRows={3}
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
+            value={textContent}
+            onChange={(event) => setTextContent(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
@@ -74,11 +106,11 @@ function UserMessage(props: {
           />
           <Box sx={{ display: "flex", gap: "8px" }}>
             <ShadowButton type="button" primary onClick={handleCancelEdit}>
-              <EditIcon size="16px" />
+              <PencilIcon size="16px" />
               Cancel
             </ShadowButton>
             <ShadowButton type="submit">
-              <EditIcon size="16px" />
+              <PencilIcon size="16px" />
               Edit
             </ShadowButton>
           </Box>
@@ -96,6 +128,19 @@ function UserMessage(props: {
         gap: "8px",
       }}
     >
+      {hasDocuments && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {props.message.content
+            .filter((contentPart) => contentPart.type === "document")
+            .map((contentPart) => (
+              <DocumentIndicator
+                key={contentPart.id}
+                document={contentPart}
+                removeDisabled
+              />
+            ))}
+        </Box>
+      )}
       <Box
         sx={{
           width: "fit-content",
@@ -104,17 +149,19 @@ function UserMessage(props: {
           borderRadius: "16px 0px 16px 16px",
         }}
       >
-        <Text>{content}</Text>
+        <Text>{textContent}</Text>
       </Box>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Tooltip title={t("copy")}>
-          <IconButton onClick={() => navigator.clipboard.writeText(content)}>
+          <IconButton
+            onClick={() => navigator.clipboard.writeText(textContent)}
+          >
             <CopyIcon size="16px" />
           </IconButton>
         </Tooltip>
         <Tooltip title={t("edit")}>
           <IconButton onClick={() => setIsEditing(true)}>
-            <EditIcon size="16px" />
+            <PencilIcon size="16px" />
           </IconButton>
         </Tooltip>
         {props.additionalActions}
@@ -123,7 +170,10 @@ function UserMessage(props: {
   );
 }
 
-export function AssistantMessage(props: { message: Message }) {
+export function AssistantMessageComponent(props: {
+  message: AssistantMessage;
+  hideActions?: boolean;
+}) {
   const { t } = useTranslation();
 
   return (
@@ -131,9 +181,11 @@ export function AssistantMessage(props: { message: Message }) {
       sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}
     >
       <Box sx={{ width: "100%", paddingInline: "12px", fontSize: "14px" }}>
-        <MarkdownRenderer content={props.message.content} />
+        {props.message.content.map((contentPart, index) => (
+          <MarkdownRenderer key={index} content={contentPart.text} />
+        ))}
       </Box>
-      {!props.message.isIncomplete && (
+      {!props.hideActions && (
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Tooltip title={t("copy")}>
             <IconButton onClick={() => {}}>
@@ -161,7 +213,10 @@ export type ChatMessageProps = {
   messageIds: string[];
   messages: Record<string, Message>;
   onSelectMessage: (messageId: string) => void;
-  onEditMessage: (content: string, parentId?: string | null) => void;
+  onEditMessage: (
+    content: UserContentPart[],
+    parentMessageId?: string | null
+  ) => void;
 };
 
 export const ChatMessage = memo((props: ChatMessageProps) => {
@@ -180,7 +235,7 @@ export const ChatMessage = memo((props: ChatMessageProps) => {
   return (
     <Fragment>
       {selectedMessage.role === "user" ? (
-        <UserMessage
+        <UserMessageComponent
           message={selectedMessage}
           onEditMessage={props.onEditMessage}
           additionalActions={
@@ -214,12 +269,12 @@ export const ChatMessage = memo((props: ChatMessageProps) => {
           }
         />
       ) : (
-        <AssistantMessage message={selectedMessage} />
+        <AssistantMessageComponent message={selectedMessage} />
       )}
-      {!ArrayUtils.isNullOrEmpty(selectedMessage.childrenIds) && (
+      {!ArrayUtils.isNullOrEmpty(selectedMessage.childrenMessageIds) && (
         <ChatMessage
           activePath={props.activePath}
-          messageIds={selectedMessage.childrenIds!}
+          messageIds={selectedMessage.childrenMessageIds!}
           messages={props.messages}
           onSelectMessage={props.onSelectMessage}
           onEditMessage={props.onEditMessage}
