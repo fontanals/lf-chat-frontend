@@ -45,4 +45,6 @@ export type GetChatMessagesResponse = {
 
 export type UpdateChatResponse = string;
 
+export type UdpateMessageResponse = string;
+
 export type DeleteChatResponse = string;

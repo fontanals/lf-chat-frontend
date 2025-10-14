@@ -17,11 +17,14 @@ import { AssistantMessage, UserMessage } from "../models/entities/message";
 import {
   CreateChatRequest,
   DeleteChatParams,
+  GetChatQuery,
   GetChatsQuery,
   SendMessageParams,
   SendMessageRequest,
   UpdateChatParams,
   UpdateChatRequest,
+  UpdateMessageParams,
+  UpdateMessageRequest,
 } from "../models/requests/chat";
 import {
   GetChatMessagesResponse,
@@ -40,10 +43,10 @@ export function useChats(query?: GetChatsQuery) {
   });
 }
 
-export function useChat(chatId: string) {
+export function useChat(chatId: string, query?: GetChatQuery) {
   return useQuery({
-    queryKey: ["chats", chatId],
-    queryFn: () => services.chat.getChat({ chatId }),
+    queryKey: query != null ? ["chats", chatId, query] : ["chats", chatId],
+    queryFn: () => services.chat.getChat({ chatId }, query),
   });
 }
 
@@ -427,6 +430,60 @@ export function useUpdateChat() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
+}
+
+export function useUpdateMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (args: {
+      params: UpdateMessageParams;
+      request: UpdateMessageRequest;
+    }) => services.chat.updateMessage(args.params, args.request),
+    onMutate: async (args) => {
+      await queryClient.cancelQueries({
+        queryKey: ["messages", args.params.chatId],
+      });
+
+      const previousMessages =
+        queryClient.getQueryData<GetChatMessagesResponse>([
+          "messages",
+          args.params.chatId,
+        ]);
+
+      queryClient.setQueryData<GetChatMessagesResponse>(
+        ["messages", args.params.chatId],
+        (response) => {
+          if (response == null) {
+            return response;
+          }
+
+          const messages = {
+            ...response.messages,
+            [args.params.messageId]: {
+              ...response.messages[args.params.messageId],
+              feedback: args.request.feedback,
+            },
+          };
+
+          return { ...response, messages };
+        }
+      );
+
+      return { previousMessages };
+    },
+    onError: (_, args, context) => {
+      queryClient.setQueryData<GetChatMessagesResponse>(
+        ["messages", args.params.chatId],
+        context?.previousMessages
+      );
+    },
+    onSettled: (_, __, args) => {
+      queryClient.invalidateQueries({
+        queryKey: ["messages", args.params.chatId],
+      });
     },
   });
 }

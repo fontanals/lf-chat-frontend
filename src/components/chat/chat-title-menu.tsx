@@ -2,7 +2,7 @@ import { Button } from "@mui/material";
 import { ChevronDownIcon } from "lucide-react";
 import { Fragment, useState } from "react";
 import { Chat } from "../../models/entities/chat";
-import { Text } from "../ui/text";
+import { Span, Text } from "../ui/text";
 import { ChatMenu } from "./chat-menu";
 
 export type ChatTitleMenuProps = {
@@ -16,7 +16,11 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
 
   return (
     <Fragment>
-      {props.chat.project != null && <Text>{props.chat.project.title} / </Text>}
+      {props.chat.project != null && (
+        <Text>
+          <Span sx={{ padding: "6px 8px" }}>{props.chat.project.title}</Span>/
+        </Text>
+      )}
       <Button
         sx={{
           height: "36px",

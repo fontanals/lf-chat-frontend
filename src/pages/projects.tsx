@@ -75,7 +75,7 @@ export function ProjectsPage() {
           display: "flex",
           justifyContent: "center",
           marginTop: "48px",
-          paddingInline: { sm: "0px", md: "32px" },
+          paddingInline: { xs: "0px", sm: "32px" },
         }}
       >
         <Box

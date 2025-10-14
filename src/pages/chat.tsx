@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
 import {
@@ -12,7 +12,6 @@ import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
-import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import {
   useChat,
   useChatMessages,
@@ -20,9 +19,10 @@ import {
   useDeleteChat,
   useSendMessage,
   useUpdateChat,
+  useUpdateMessage,
 } from "../hooks/chat";
 import { useUploadDocuments } from "../hooks/document";
-import { UserContentPart } from "../models/entities/message";
+import { MessageFeedback, UserContentPart } from "../models/entities/message";
 import { useChatStore } from "../state/chat";
 import { ArrayUtils } from "../utils/arrays";
 import { StringUtils } from "../utils/strings";
@@ -40,7 +40,7 @@ export function ChatPage() {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: chat, isLoading } = useChat(chatId!);
+  const { data: chat } = useChat(chatId!, { expand: ["project"] });
   const { data: messageTree } = useChatMessages(
     chatId!,
     pendingMessage == null
@@ -49,6 +49,7 @@ export function ChatPage() {
   const { mutate: createChat } = useCreateChat(messagesContainerRef);
   const { mutate: sendMessage } = useSendMessage(messagesContainerRef);
   const { mutate: updateChat } = useUpdateChat();
+  const { mutate: updateMessage } = useUpdateMessage();
   const { mutate: deleteChat } = useDeleteChat();
 
   useEffect(() => {
@@ -89,38 +90,41 @@ export function ChatPage() {
     deleteChat({ params: { chatId: chatId! } });
   }
 
-  function handleSelectMessage(messageId: string) {
-    const message = messageTree?.messages[messageId];
+  const handleSelectMessage = useCallback(
+    (messageId: string) => {
+      const message = messageTree?.messages[messageId];
 
-    if (message == null) {
-      return;
-    }
+      if (message == null) {
+        return;
+      }
 
-    const newActivePath = activePath.slice(
-      0,
-      message.parentMessageId != null
-        ? activePath.indexOf(message.parentMessageId) + 1
-        : 0
-    );
+      const newActivePath = activePath.slice(
+        0,
+        message.parentMessageId != null
+          ? activePath.indexOf(message.parentMessageId) + 1
+          : 0
+      );
 
-    newActivePath.push(message.id);
+      newActivePath.push(message.id);
 
-    let nextMessageId =
-      message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
+      let nextMessageId =
+        message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
 
-    while (nextMessageId != null) {
-      let nextMessage = messageTree?.messages[nextMessageId];
+      while (nextMessageId != null) {
+        let nextMessage = messageTree?.messages[nextMessageId];
 
-      newActivePath.push(nextMessageId);
+        newActivePath.push(nextMessageId);
 
-      nextMessageId =
-        nextMessage?.childrenMessageIds?.[
-          nextMessage.childrenMessageIds.length - 1
-        ];
-    }
+        nextMessageId =
+          nextMessage?.childrenMessageIds?.[
+            nextMessage.childrenMessageIds.length - 1
+          ];
+      }
 
-    setActivePath(newActivePath);
-  }
+      setActivePath(newActivePath);
+    },
+    [messageTree, activePath, setActivePath]
+  );
 
   function handleAddDocuments(files: File[]) {
     files.forEach((file) => uploadDocument({ request: { id: uuid(), file } }));
@@ -167,27 +171,25 @@ export function ChatPage() {
     setMessage("");
   }
 
-  function handleEditMessage(
-    content: UserContentPart[],
-    parentMessageId?: string | null
-  ) {
-    sendMessage({
-      params: { chatId: chatId! },
-      request: { id: uuid(), content, parentMessageId },
-    });
-  }
+  const handleEditMessage = useCallback(
+    (content: UserContentPart[], parentMessageId?: string | null) => {
+      sendMessage({
+        params: { chatId: chatId! },
+        request: { id: uuid(), content, parentMessageId },
+      });
+    },
+    [sendMessage, chatId]
+  );
 
-  if (isLoading) {
-    return (
-      <ContentPanel>
-        <LoadingBackdrop isLoading />
-      </ContentPanel>
-    );
-  }
-
-  if (chat == null && pendingMessage == null) {
-    return <Navigate to="/" replace />;
-  }
+  const handleGiveMessageFeedback = useCallback(
+    (messageId: string, feedback: MessageFeedback | null) => {
+      updateMessage({
+        params: { chatId: chatId!, messageId },
+        request: { feedback },
+      });
+    },
+    [updateMessage, chatId]
+  );
 
   return (
     <Fragment>
@@ -237,6 +239,7 @@ export function ChatPage() {
               messages={messageTree?.messages ?? {}}
               onSelectMessage={handleSelectMessage}
               onEditMessage={handleEditMessage}
+              onGiveMessageFeedback={handleGiveMessageFeedback}
             />
             {streamingAnswer != null && (
               <AssistantMessageComponent

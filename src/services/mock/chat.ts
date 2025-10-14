@@ -6,18 +6,22 @@ import {
   DeleteChatParams,
   GetChatMessagesParams,
   GetChatParams,
+  GetChatQuery,
   GetChatsQuery,
   SendMessageParams,
   SendMessageRequest,
   UpdateChatParams,
   UpdateChatRequest,
+  UpdateMessageParams,
+  UpdateMessageRequest,
 } from "../../models/requests/chat";
 import {
-  SendMessageEvent,
   DeleteChatResponse,
   GetChatMessagesResponse,
   GetChatResponse,
   GetChatsResponse,
+  SendMessageEvent,
+  UdpateMessageResponse,
   UpdateChatResponse,
 } from "../../models/responses/chat";
 import { ApplicationError } from "../../utils/errors";
@@ -163,7 +167,10 @@ export class MockChatService implements IChatService {
     );
   }
 
-  async getChat(params: GetChatParams): Promise<GetChatResponse> {
+  async getChat(
+    params: GetChatParams,
+    query?: GetChatQuery
+  ): Promise<GetChatResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
         const chat = mockData.chats.find((chat) => chat.id === params.chatId);
@@ -172,7 +179,12 @@ export class MockChatService implements IChatService {
           return reject(ApplicationError.notFound());
         }
 
-        resolve({ ...chat });
+        resolve({
+          ...chat,
+          project: query?.expand?.includes("project")
+            ? mockData.projects.find((project) => project.id === chat.projectId)
+            : undefined,
+        });
       }, 300)
     );
   }
@@ -437,6 +449,29 @@ export class MockChatService implements IChatService {
         );
 
         resolve(params.chatId);
+      }, 300)
+    );
+  }
+
+  async updateMessage(
+    params: UpdateMessageParams,
+    request: UpdateMessageRequest
+  ): Promise<UdpateMessageResponse> {
+    return new Promise((resolve, reject) =>
+      setTimeout(() => {
+        const messageExists = mockData.messages.some(
+          (message) => message.id === params.messageId
+        );
+
+        if (!messageExists) {
+          return reject(ApplicationError.notFound());
+        }
+
+        mockData.messages = mockData.messages.map((message) =>
+          message.id === params.messageId ? { ...message, ...request } : message
+        );
+
+        resolve(params.messageId);
       }, 300)
     );
   }

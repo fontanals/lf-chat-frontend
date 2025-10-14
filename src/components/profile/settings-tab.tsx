@@ -1,4 +1,4 @@
-import { Box, IconButton, List, ListItemButton } from "@mui/material";
+import { Box, List, ListItemButton } from "@mui/material";
 import {
   MonitorCheckIcon,
   MoonIcon,
@@ -7,8 +7,9 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../state/theme";
+import { IconButton } from "../ui/button";
 import { Text } from "../ui/text";
-import { Tooltip } from "../ui/Tooltip";
+import { Tooltip } from "../ui/tooltip";
 
 export function SettingsTab() {
   const { t, i18n } = useTranslation();

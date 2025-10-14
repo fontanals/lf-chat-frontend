@@ -1,7 +1,8 @@
-import { Box, IconButton, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import { PropsWithChildren } from "react";
 import { useSidebarStore } from "../../state/sidebar";
+import { IconButton } from "../ui/button";
 
 export function ContentPanel(props: PropsWithChildren) {
   const theme = useTheme();
@@ -35,8 +36,8 @@ export function ContentPanel(props: PropsWithChildren) {
           position: "absolute",
           top: "16px",
           left: "16px",
-          color: "primary.main",
-          "&:hover": { color: "secondary.main" },
+          width: "36px",
+          height: "36px",
         }}
         onClick={() => setIsOpen(!isOpen)}
       >

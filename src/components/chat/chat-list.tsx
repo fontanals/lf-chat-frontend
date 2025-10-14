@@ -1,8 +1,9 @@
-import { IconButton, List, ListItem, ListProps, SxProps } from "@mui/material";
+import { List, ListItem, ListProps, SxProps } from "@mui/material";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { Chat } from "../../models/entities/chat";
+import { IconButton } from "../ui/button";
 import { Text } from "../ui/text";
 import { ChatMenu } from "./chat-menu";
 
@@ -33,8 +34,7 @@ export function ChatListItem(props: ChatListItemProps) {
       >
         <Text noWrap>{props.chat.title}</Text>
         <IconButton
-          sx={{ color: "primary.main" }}
-          size="small"
+          sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();

@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import {
   AssistantMessage,
   Message,
+  MessageFeedback,
   UserContentPart,
   UserMessage as UserMessageComponentº,
 } from "../../models/entities/message";
@@ -172,9 +173,15 @@ function UserMessageComponent(props: {
 
 export function AssistantMessageComponent(props: {
   message: AssistantMessage;
+  onGiveMessageFeedback?: (
+    messageId: string,
+    feedback: MessageFeedback | null
+  ) => void;
   hideActions?: boolean;
 }) {
   const { t } = useTranslation();
+
+  function handleCopy() {}
 
   return (
     <Box
@@ -188,17 +195,43 @@ export function AssistantMessageComponent(props: {
       {!props.hideActions && (
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Tooltip title={t("copy")}>
-            <IconButton onClick={() => {}}>
+            <IconButton onClick={handleCopy}>
               <CopyIcon size="16px" />
             </IconButton>
           </Tooltip>
           <Tooltip title={t("dislike")}>
-            <IconButton onClick={() => {}}>
+            <IconButton
+              sx={{
+                color:
+                  props.message.feedback === "dislike"
+                    ? "secondary.main"
+                    : "primary.main",
+              }}
+              onClick={() =>
+                props.onGiveMessageFeedback?.(
+                  props.message.id,
+                  props.message.feedback !== "dislike" ? "dislike" : null
+                )
+              }
+            >
               <ThumbsDownIcon size="16px" />
             </IconButton>
           </Tooltip>
           <Tooltip title={t("like")}>
-            <IconButton onClick={() => {}}>
+            <IconButton
+              sx={{
+                color:
+                  props.message.feedback === "like"
+                    ? "secondary.main"
+                    : "primary.main",
+              }}
+              onClick={() =>
+                props.onGiveMessageFeedback?.(
+                  props.message.id,
+                  props.message.feedback !== "like" ? "like" : null
+                )
+              }
+            >
               <ThumbsUpIcon size="16px" />
             </IconButton>
           </Tooltip>
@@ -216,6 +249,10 @@ export type ChatMessageProps = {
   onEditMessage: (
     content: UserContentPart[],
     parentMessageId?: string | null
+  ) => void;
+  onGiveMessageFeedback: (
+    messageId: string,
+    feedback: MessageFeedback | null
   ) => void;
 };
 
@@ -269,7 +306,10 @@ export const ChatMessage = memo((props: ChatMessageProps) => {
           }
         />
       ) : (
-        <AssistantMessageComponent message={selectedMessage} />
+        <AssistantMessageComponent
+          message={selectedMessage}
+          onGiveMessageFeedback={props.onGiveMessageFeedback}
+        />
       )}
       {!ArrayUtils.isNullOrEmpty(selectedMessage.childrenMessageIds) && (
         <ChatMessage
@@ -278,6 +318,7 @@ export const ChatMessage = memo((props: ChatMessageProps) => {
           messages={props.messages}
           onSelectMessage={props.onSelectMessage}
           onEditMessage={props.onEditMessage}
+          onGiveMessageFeedback={props.onGiveMessageFeedback}
         />
       )}
     </Fragment>

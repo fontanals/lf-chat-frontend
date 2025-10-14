@@ -15,7 +15,14 @@ export function ProfilePage() {
 
   return (
     <ContentPanel>
-      <Box sx={{ display: "flex", justifyContent: "center", padding: "48px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "48px",
+          paddingInline: { xs: "0px", sm: "32px" },
+        }}
+      >
         <Box sx={{ width: "100%", maxWidth: "800px" }}>
           <Tabs
             tabs={[

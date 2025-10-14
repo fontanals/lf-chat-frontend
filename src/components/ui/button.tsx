@@ -49,25 +49,6 @@ export function ShadowButton(props: ButtonProps & { primary?: boolean }) {
   );
 }
 
-export function TextButton(props: ButtonProps) {
-  const { sx, ...rest } = props;
-
-  return (
-    <Button
-      sx={{
-        gap: "8px",
-        fontSize: "14px",
-        textTransform: "none",
-        borderRadius: "8px",
-        color: "text.primary",
-        backgroundColor: "inherit",
-        ...sx,
-      }}
-      {...rest}
-    />
-  );
-}
-
 export function IconButton(props: IconButtonProps) {
   const { sx, size, ...rest } = props;
 

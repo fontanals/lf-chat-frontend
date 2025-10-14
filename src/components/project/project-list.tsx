@@ -1,15 +1,9 @@
-import {
-  Box,
-  IconButton,
-  List,
-  ListItem,
-  ListProps,
-  SxProps,
-} from "@mui/material";
+import { Box, List, ListItem, ListProps, SxProps } from "@mui/material";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { Project } from "../../models/entities/project";
+import { IconButton } from "../ui/button";
 import { Text } from "../ui/text";
 import { ProjectMenu } from "./project-menu";
 
@@ -52,8 +46,7 @@ export function ProjectListItem(props: ProjectListItemProps) {
           </Text>
         </Box>
         <IconButton
-          sx={{ color: "primary.main" }}
-          size="small"
+          sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -90,5 +83,17 @@ export function ProjectListItem(props: ProjectListItemProps) {
 export function ProjectList(props: ListProps) {
   const { sx, ...rest } = props;
 
-  return <List sx={{ margin: "0px", padding: "0px", ...sx }} {...rest} />;
+  return (
+    <List
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        margin: "0px",
+        padding: "0px",
+        ...sx,
+      }}
+      {...rest}
+    />
+  );
 }

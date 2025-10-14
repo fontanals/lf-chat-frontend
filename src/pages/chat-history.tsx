@@ -72,7 +72,12 @@ export function ChatHistoryPage() {
   return (
     <ContentPanel>
       <Box
-        sx={{ display: "flex", justifyContent: "center", marginTop: "48px" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "48px",
+          paddingInline: { xs: "0px", sm: "32px" },
+        }}
       >
         <Box
           sx={{

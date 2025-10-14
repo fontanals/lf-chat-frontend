@@ -3,25 +3,32 @@ import {
   DeleteChatParams,
   GetChatMessagesParams,
   GetChatParams,
+  GetChatQuery,
   GetChatsQuery,
   SendMessageParams,
   SendMessageRequest,
   UpdateChatParams,
   UpdateChatRequest,
+  UpdateMessageParams,
+  UpdateMessageRequest,
 } from "../models/requests/chat";
 import {
-  SendMessageEvent,
   DeleteChatResponse,
   GetChatMessagesResponse,
   GetChatResponse,
   GetChatsResponse,
+  SendMessageEvent,
+  UdpateMessageResponse,
   UpdateChatResponse,
 } from "../models/responses/chat";
 import { IBaseService } from "./base";
 
 export interface IChatService {
   getChats(query?: GetChatsQuery): Promise<GetChatsResponse>;
-  getChat(params: GetChatParams): Promise<GetChatResponse>;
+  getChat(
+    params: GetChatParams,
+    query?: GetChatQuery
+  ): Promise<GetChatResponse>;
   getChatMessages(
     params: GetChatMessagesParams
   ): Promise<GetChatMessagesResponse>;
@@ -38,6 +45,10 @@ export interface IChatService {
     params: UpdateChatParams,
     request: UpdateChatRequest
   ): Promise<UpdateChatResponse>;
+  updateMessage(
+    params: UpdateMessageParams,
+    request: UpdateMessageRequest
+  ): Promise<UdpateMessageResponse>;
   deleteChat(params: DeleteChatParams): Promise<DeleteChatResponse>;
 }
 
@@ -57,9 +68,13 @@ export class ChatService implements IChatService {
     return response;
   }
 
-  async getChat(params: GetChatParams): Promise<GetChatResponse> {
-    const response = await this.baseService.get<GetChatResponse>({
+  async getChat(
+    params: GetChatParams,
+    query?: GetChatQuery
+  ): Promise<GetChatResponse> {
+    const response = await this.baseService.get<GetChatResponse, GetChatQuery>({
       url: `/api/chats/${params.chatId}`,
+      query,
     });
 
     return response;
@@ -106,6 +121,21 @@ export class ChatService implements IChatService {
       UpdateChatResponse,
       UpdateChatRequest
     >({ url: `/api/chats/${params.chatId}`, request });
+
+    return response;
+  }
+
+  async updateMessage(
+    params: UpdateMessageParams,
+    request: UpdateMessageRequest
+  ): Promise<UdpateMessageResponse> {
+    const response = await this.baseService.patch<
+      UdpateMessageResponse,
+      UpdateMessageRequest
+    >({
+      url: `/api/chat/${params.chatId}/messages/${params.messageId}`,
+      request,
+    });
 
     return response;
   }

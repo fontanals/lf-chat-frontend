@@ -1,4 +1,4 @@
-import { UserContentPart } from "../entities/message";
+import { MessageFeedback, UserContentPart } from "../entities/message";
 
 export type GetChatsQuery = {
   search?: string;
@@ -30,6 +30,10 @@ export type SendMessageRequest = {
 };
 
 export type UpdateChatParams = { chatId: string };
+
+export type UpdateMessageParams = { chatId: string; messageId: string };
+
+export type UpdateMessageRequest = { feedback?: MessageFeedback | null };
 
 export type UpdateChatRequest = { title: string };
 
