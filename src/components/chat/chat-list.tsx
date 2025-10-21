@@ -71,5 +71,17 @@ export function ChatListItem(props: ChatListItemProps) {
 export function ChatList(props: ListProps) {
   const { sx, ...rest } = props;
 
-  return <List sx={{ margin: "0px", padding: "0px", ...sx }} {...rest} />;
+  return (
+    <List
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "4px",
+        margin: "0px",
+        padding: "0px",
+        ...sx,
+      }}
+      {...rest}
+    />
+  );
 }

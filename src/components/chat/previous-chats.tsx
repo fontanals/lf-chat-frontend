@@ -1,6 +1,7 @@
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useParams } from "react-router";
 import { useChats, useDeleteChat, useUpdateChat } from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
 import { useSidebarStore } from "../../state/sidebar";
@@ -11,6 +12,7 @@ import { DeleteChatDialog } from "./delete-chat-dialog";
 import { RenameChatDialog } from "./rename-chat-dialog";
 
 export function PreviousChats() {
+  const { chatId } = useParams();
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -73,7 +75,13 @@ export function PreviousChats() {
           {paginatedChats?.chats.map((chat) => (
             <ChatListItem
               key={chat.id}
-              sx={{ "&:hover": { backgroundColor: "background.paper" } }}
+              sx={{
+                backgroundColor:
+                  chat.id === chatId
+                    ? "background.paper"
+                    : "background.default",
+                "&:hover": { backgroundColor: "background.paper" },
+              }}
               chat={chat}
               onSelectChat={handleSelectChat}
               onRenameChat={() => {

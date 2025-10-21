@@ -7,7 +7,7 @@ import {
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from "lucide-react";
-import { Fragment, memo, ReactNode, useEffect, useState } from "react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AssistantMessage,
@@ -16,7 +16,6 @@ import {
   UserContentPart,
   UserMessage as UserMessageComponentº,
 } from "../../models/entities/message";
-import { ArrayUtils } from "../../utils/arrays";
 import { StringUtils } from "../../utils/strings";
 import { DocumentIndicator } from "../document/document-indicator";
 import { IconButton, ShadowButton } from "../ui/button";
@@ -93,7 +92,8 @@ function UserMessageComponent(props: {
           }}
         >
           <Input
-            sx={{ height: "44px" }}
+            sx={{ width: "100%", height: "44px" }}
+            autoFocus
             multiline
             maxRows={3}
             value={textContent}
@@ -150,7 +150,7 @@ function UserMessageComponent(props: {
           borderRadius: "16px 0px 16px 16px",
         }}
       >
-        <Text>{textContent}</Text>
+        <Text sx={{ whiteSpace: "pre" }}>{textContent}</Text>
       </Box>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Tooltip title={t("copy")}>
@@ -173,7 +173,7 @@ function UserMessageComponent(props: {
 
 export function AssistantMessageComponent(props: {
   message: AssistantMessage;
-  onGiveMessageFeedback?: (
+  onChangeMessageFeedback?: (
     messageId: string,
     feedback: MessageFeedback | null
   ) => void;
@@ -181,11 +181,22 @@ export function AssistantMessageComponent(props: {
 }) {
   const { t } = useTranslation();
 
-  function handleCopy() {}
+  function handleCopy() {
+    const textContent = props.message.content
+      .filter((contentPart) => contentPart.type === "text")
+      .map((contentPart) => contentPart.text)
+      .join("\n");
+
+    navigator.clipboard.writeText(textContent);
+  }
 
   return (
     <Box
-      sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+      }}
     >
       <Box sx={{ width: "100%", paddingInline: "12px", fontSize: "14px" }}>
         {props.message.content.map((contentPart, index) => (
@@ -208,7 +219,7 @@ export function AssistantMessageComponent(props: {
                     : "primary.main",
               }}
               onClick={() =>
-                props.onGiveMessageFeedback?.(
+                props.onChangeMessageFeedback?.(
                   props.message.id,
                   props.message.feedback !== "dislike" ? "dislike" : null
                 )
@@ -226,7 +237,7 @@ export function AssistantMessageComponent(props: {
                     : "primary.main",
               }}
               onClick={() =>
-                props.onGiveMessageFeedback?.(
+                props.onChangeMessageFeedback?.(
                   props.message.id,
                   props.message.feedback !== "like" ? "like" : null
                 )
@@ -242,85 +253,64 @@ export function AssistantMessageComponent(props: {
 }
 
 export type ChatMessageProps = {
-  activePath: string[];
   messageIds: string[];
-  messages: Record<string, Message>;
+  message: Message;
   onSelectMessage: (messageId: string) => void;
   onEditMessage: (
     content: UserContentPart[],
     parentMessageId?: string | null
   ) => void;
-  onGiveMessageFeedback: (
+  onChangeMessageFeedback: (
     messageId: string,
     feedback: MessageFeedback | null
   ) => void;
+  hideActions?: boolean;
 };
 
-export const ChatMessage = memo((props: ChatMessageProps) => {
-  const selectedMessageIndex = props.messageIds.findIndex((messageId) =>
-    props.activePath.includes(messageId)
+export const ChatMessage = (props: ChatMessageProps) => {
+  const messageIndex = props.messageIds.findIndex(
+    (messageId) => messageId === props.message.id
   );
-  const selectedMessageId = props.messageIds[selectedMessageIndex];
-  const selectedMessage = props.messages[selectedMessageId] as
-    | Message
-    | undefined;
 
-  if (selectedMessage == null) {
-    return null;
+  if (props.message.role === "user") {
+    return (
+      <UserMessageComponent
+        message={props.message}
+        onEditMessage={props.onEditMessage}
+        additionalActions={
+          props.messageIds.length > 1 && (
+            <Fragment>
+              <IconButton
+                onClick={() =>
+                  props.onSelectMessage(props.messageIds[messageIndex - 1])
+                }
+                disabled={messageIndex <= 0}
+              >
+                <ChevronLeftIcon size="16px" />
+              </IconButton>
+              <Text>
+                {messageIndex + 1}/{props.messageIds.length}
+              </Text>
+              <IconButton
+                onClick={() =>
+                  props.onSelectMessage(props.messageIds[messageIndex + 1])
+                }
+                disabled={messageIndex >= props.messageIds.length - 1}
+              >
+                <ChevronRightIcon size="16px" />
+              </IconButton>
+            </Fragment>
+          )
+        }
+      />
+    );
   }
 
   return (
-    <Fragment>
-      {selectedMessage.role === "user" ? (
-        <UserMessageComponent
-          message={selectedMessage}
-          onEditMessage={props.onEditMessage}
-          additionalActions={
-            props.messageIds.length > 1 && (
-              <Fragment>
-                <IconButton
-                  onClick={() =>
-                    props.onSelectMessage(
-                      props.messageIds[selectedMessageIndex - 1]
-                    )
-                  }
-                  disabled={selectedMessageIndex <= 0}
-                >
-                  <ChevronLeftIcon size="16px" />
-                </IconButton>
-                <Text>
-                  {selectedMessageIndex + 1}/{props.messageIds.length}
-                </Text>
-                <IconButton
-                  onClick={() =>
-                    props.onSelectMessage(
-                      props.messageIds[selectedMessageIndex + 1]
-                    )
-                  }
-                  disabled={selectedMessageIndex >= props.messageIds.length - 1}
-                >
-                  <ChevronRightIcon size="16px" />
-                </IconButton>
-              </Fragment>
-            )
-          }
-        />
-      ) : (
-        <AssistantMessageComponent
-          message={selectedMessage}
-          onGiveMessageFeedback={props.onGiveMessageFeedback}
-        />
-      )}
-      {!ArrayUtils.isNullOrEmpty(selectedMessage.childrenMessageIds) && (
-        <ChatMessage
-          activePath={props.activePath}
-          messageIds={selectedMessage.childrenMessageIds!}
-          messages={props.messages}
-          onSelectMessage={props.onSelectMessage}
-          onEditMessage={props.onEditMessage}
-          onGiveMessageFeedback={props.onGiveMessageFeedback}
-        />
-      )}
-    </Fragment>
+    <AssistantMessageComponent
+      message={props.message}
+      onChangeMessageFeedback={props.onChangeMessageFeedback}
+      hideActions={props.hideActions}
+    />
   );
-});
+};

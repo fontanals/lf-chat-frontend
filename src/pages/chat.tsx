@@ -2,12 +2,10 @@ import { Box } from "@mui/material";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
-import {
-  AssistantMessageComponent,
-  ChatMessage,
-} from "../components/chat/chat-message";
+import { ChatMessage } from "../components/chat/chat-message";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
@@ -21,58 +19,58 @@ import {
   useUpdateChat,
   useUpdateMessage,
 } from "../hooks/chat";
-import { useUploadDocuments } from "../hooks/document";
+import { useDeleteDocument, useUploadDocuments } from "../hooks/document";
 import { MessageFeedback, UserContentPart } from "../models/entities/message";
 import { useChatStore } from "../state/chat";
-import { ArrayUtils } from "../utils/arrays";
 import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
   const { chatId } = useParams();
   const { t } = useTranslation();
 
-  const { pendingMessage, streamingAnswer, setPendingMessage } = useChatStore();
+  const { pendingMessages, streamingMessages, removePendingMessage } =
+    useChatStore();
+  const pendingMessage = pendingMessages[chatId!];
+  const streamingMessage = streamingMessages[chatId!];
 
   const [activePath, setActivePath] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   const { data: chat } = useChat(chatId!, { expand: ["project"] });
   const { data: messageTree } = useChatMessages(
     chatId!,
     pendingMessage == null
   );
-  const { uploadMap, uploadDocument, deleteDocument } = useUploadDocuments();
-  const { mutate: createChat } = useCreateChat(messagesContainerRef);
-  const { mutate: sendMessage } = useSendMessage(messagesContainerRef);
+  const { mutate: createChat } = useCreateChat();
+  const { mutate: sendMessage } = useSendMessage();
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: updateMessage } = useUpdateMessage();
   const { mutate: deleteChat } = useDeleteChat();
+  const { uploadMap, uploadDocument } = useUploadDocuments();
+  const { mutate: deleteDocument } = useDeleteDocument();
 
   useEffect(() => {
-    if (pendingMessage != null && pendingMessage.chatId === chatId) {
+    if (pendingMessage != null) {
       createChat(
         {
           request: {
-            id: chatId!,
-            message: pendingMessage.message,
+            id: pendingMessage.chatId,
+            message: pendingMessage.content,
             projectId: pendingMessage.projectId,
           },
         },
-        { onSuccess: () => setPendingMessage(null) }
+        { onSuccess: () => removePendingMessage(chatId!) }
       );
     }
-  }, [chatId, pendingMessage, createChat, setPendingMessage]);
+  }, [pendingMessage, createChat, removePendingMessage]);
 
   useEffect(() => {
-    messagesContainerRef.current?.scrollTo({
-      top: messagesContainerRef.current.scrollHeight,
-      behavior: "instant",
-    });
-  }, [messageTree]);
+    virtuosoRef.current?.scrollToIndex({ index: "LAST" });
+  }, [activePath]);
 
   useEffect(() => {
     setActivePath(messageTree?.latestPath ?? []);
@@ -135,38 +133,19 @@ export function ChatPage() {
   }
 
   function handleSendMessage() {
-    if (
-      StringUtils.isNullOrWhitespace(message) &&
-      ArrayUtils.isNullOrEmpty(Object.keys(uploadMap))
-    ) {
+    if (StringUtils.isNullOrWhitespace(message)) {
       return;
     }
 
-    const contentParts: UserContentPart[] = [];
-
-    Object.values(uploadMap).forEach((item) =>
-      contentParts.push({
-        type: "document",
-        id: item.id,
-        name: item.name,
-        mimetype: item.mimetype,
-      })
-    );
-
-    contentParts.push({ type: "text", text: message });
-
-    if (chat == null) {
-      createChat({ request: { id: chatId!, message: contentParts } });
-    } else {
-      sendMessage({
-        params: { chatId: chat.id },
-        request: {
-          id: uuid(),
-          content: contentParts,
-          parentMessageId: activePath[activePath.length - 1],
-        },
-      });
-    }
+    sendMessage({
+      params: { chatId: chatId! },
+      request: {
+        id: uuid(),
+        content: [{ type: "text", text: message }],
+        parentMessageId:
+          messageTree?.latestPath[messageTree.latestPath.length - 1],
+      },
+    });
 
     setMessage("");
   }
@@ -181,7 +160,7 @@ export function ChatPage() {
     [sendMessage, chatId]
   );
 
-  const handleGiveMessageFeedback = useCallback(
+  const handleChangeMessageFeedback = useCallback(
     (messageId: string, feedback: MessageFeedback | null) => {
       updateMessage({
         params: { chatId: chatId!, messageId },
@@ -211,43 +190,59 @@ export function ChatPage() {
           )}
         </Box>
         <Box
-          ref={messagesContainerRef}
           sx={{
             flex: 1,
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            justifyContent: "center",
             margin: "16px",
-            overflowY: "auto",
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": { display: "none" },
-            msOverflowStyle: "none",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
+          <Virtuoso
+            key={chatId}
+            ref={virtuosoRef}
+            followOutput="smooth"
+            style={{
               width: "100%",
               maxWidth: "800px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
-          >
-            <ChatMessage
-              activePath={activePath}
-              messageIds={messageTree?.rootMessageIds ?? []}
-              messages={messageTree?.messages ?? {}}
-              onSelectMessage={handleSelectMessage}
-              onEditMessage={handleEditMessage}
-              onGiveMessageFeedback={handleGiveMessageFeedback}
-            />
-            {streamingAnswer != null && (
-              <AssistantMessageComponent
-                message={streamingAnswer}
-                hideActions
-              />
-            )}
-          </Box>
+            data={
+              streamingMessage != null
+                ? activePath.concat(["streaming"])
+                : activePath
+            }
+            itemContent={(index, messageId) => {
+              const message =
+                messageId === "streaming"
+                  ? streamingMessage
+                  : messageTree?.messages[messageId];
+
+              if (message == null) {
+                return null;
+              }
+
+              const parentMessage =
+                message?.parentMessageId != null
+                  ? messageTree?.messages[message.parentMessageId]
+                  : null;
+
+              return (
+                <Box key={message.id} sx={{ paddingBlock: "8px" }}>
+                  <ChatMessage
+                    messageIds={
+                      parentMessage?.childrenMessageIds ?? [message.id]
+                    }
+                    message={message}
+                    onSelectMessage={handleSelectMessage}
+                    onEditMessage={handleEditMessage}
+                    onChangeMessageFeedback={handleChangeMessageFeedback}
+                    hideActions={index === activePath.length}
+                  />
+                </Box>
+              );
+            }}
+          />
         </Box>
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <ChatInput

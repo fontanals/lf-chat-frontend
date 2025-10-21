@@ -4,7 +4,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { RefObject } from "react";
 import {
   useLocation,
   useNavigate,
@@ -13,7 +12,11 @@ import {
 } from "react-router";
 import { v4 as uuid } from "uuid";
 import { Chat } from "../models/entities/chat";
-import { AssistantMessage, UserMessage } from "../models/entities/message";
+import {
+  AssistantContentPart,
+  AssistantMessage,
+  UserMessage,
+} from "../models/entities/message";
 import {
   CreateChatRequest,
   DeleteChatParams,
@@ -58,12 +61,15 @@ export function useChatMessages(chatId: string, enabled = true) {
   });
 }
 
-export function useCreateChat(
-  messagesContainerRef?: RefObject<HTMLDivElement | null>
-) {
+export function useCreateChat() {
   const queryClient = useQueryClient();
 
-  const setStreamingAnswer = useChatStore((state) => state.setStreamingAnswer);
+  const setStreamingMessage = useChatStore(
+    (state) => state.setStreamingMessage
+  );
+  const removeStreamingMessage = useChatStore(
+    (state) => state.removeStreamingMessage
+  );
 
   return useMutation({
     mutationFn: (args: { request: CreateChatRequest }) => {
@@ -88,6 +94,8 @@ export function useCreateChat(
         childrenMessageIds: [],
       };
 
+      let currentContentPart: AssistantContentPart | null = null;
+
       return services.chat.createChat(args.request, (event) => {
         switch (event.event) {
           case "start": {
@@ -111,31 +119,30 @@ export function useCreateChat(
 
             userMessage.childrenMessageIds = [assistantMessage.id];
 
-            setStreamingAnswer(assistantMessage);
+            setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "text-start": {
-            assistantMessage.content.push({ type: "text", text: "" });
+            currentContentPart = { type: "text", text: "" };
 
-            setStreamingAnswer(assistantMessage);
+            assistantMessage.content.push(currentContentPart);
+
+            setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "text-delta": {
-            const latestPart =
-              assistantMessage.content[assistantMessage.content.length - 1];
-
-            if (latestPart?.type === "text") {
-              latestPart.text += event.data.delta;
+            if (currentContentPart?.type === "text") {
+              currentContentPart.text += event.data.delta;
             }
 
-            setStreamingAnswer(assistantMessage);
+            setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "end": {
-            setStreamingAnswer(null);
+            removeStreamingMessage(assistantMessage.chatId);
 
             const messageTree: GetChatMessagesResponse = {
               latestPath: [userMessage.id, assistantMessage.id],
@@ -150,13 +157,10 @@ export function useCreateChat(
               ["messages", args.request.id],
               messageTree
             );
+
+            break;
           }
         }
-
-        messagesContainerRef?.current?.scrollTo({
-          top: messagesContainerRef.current.scrollHeight,
-          behavior: "smooth",
-        });
       });
     },
     onSuccess: (_, args) => {
@@ -168,26 +172,27 @@ export function useCreateChat(
   });
 }
 
-export function useSendMessage(
-  messagesContainerRef: RefObject<HTMLDivElement | null>
-) {
+export function useSendMessage() {
   const queryClient = useQueryClient();
 
-  const setStreamingAnswer = useChatStore((state) => state.setStreamingAnswer);
+  const setStreamingMessage = useChatStore(
+    (state) => state.setStreamingMessage
+  );
+  const removeStreamingMessage = useChatStore(
+    (state) => state.removeStreamingMessage
+  );
 
   return useMutation({
     mutationFn: (args: {
       params: SendMessageParams;
       request: SendMessageRequest;
     }) => {
-      const chatId = args.params.chatId;
-
       const userMessage: UserMessage = {
         id: args.request.id,
         role: "user",
         content: args.request.content,
         parentMessageId: args.request.parentMessageId,
-        chatId,
+        chatId: args.params.chatId,
         childrenMessageIds: [],
       };
 
@@ -195,54 +200,47 @@ export function useSendMessage(
         id: "",
         role: "assistant",
         content: [],
-        feedback: null,
         parentMessageId: userMessage.id,
-        chatId,
+        chatId: userMessage.chatId,
         childrenMessageIds: [],
       };
+
+      let currentContentPart: AssistantContentPart | null = null;
 
       return services.chat.sendMessage(args.params, args.request, (event) => {
         switch (event.event) {
           case "start": {
             queryClient.setQueryData<GetChatMessagesResponse>(
-              ["messages", args.params.chatId],
+              ["messages", userMessage.chatId],
               (response) => {
                 if (response == null) {
                   return response;
                 }
 
-                const latestPath = response.latestPath
-                  .slice(
-                    0,
-                    userMessage.parentMessageId != null
-                      ? response.latestPath.indexOf(
-                          userMessage.parentMessageId
-                        ) + 1
-                      : 0
-                  )
-                  .concat(userMessage.id);
-
-                const rootMessageIds =
-                  userMessage.parentMessageId == null
-                    ? response.rootMessageIds.concat(userMessage.id)
-                    : response.rootMessageIds;
-
-                const messages = {
-                  ...response.messages,
-                  ...(userMessage.parentMessageId != null
-                    ? {
-                        [userMessage.parentMessageId]: {
-                          ...response.messages[userMessage.parentMessageId],
-                          childrenMessageIds: response.messages[
-                            userMessage.parentMessageId
-                          ].childrenMessageIds?.concat(userMessage.id),
-                        },
-                      }
-                    : undefined),
-                  [userMessage.id]: userMessage,
+                return {
+                  latestPath:
+                    userMessage.parentMessageId == null
+                      ? [userMessage.id]
+                      : response.latestPath.concat(userMessage.id),
+                  rootMessageIds:
+                    userMessage.parentMessageId == null
+                      ? response.rootMessageIds.concat(userMessage.id)
+                      : response.rootMessageIds,
+                  messages: {
+                    ...response.messages,
+                    ...(userMessage.parentMessageId != null
+                      ? {
+                          [userMessage.parentMessageId]: {
+                            ...response.messages[userMessage.parentMessageId],
+                            childrenMessageIds: response.messages[
+                              userMessage.parentMessageId
+                            ].childrenMessageIds?.concat(userMessage.id),
+                          },
+                        }
+                      : {}),
+                    [userMessage.id]: userMessage,
+                  },
                 };
-
-                return { latestPath, rootMessageIds, messages };
               }
             );
 
@@ -251,61 +249,55 @@ export function useSendMessage(
           case "message-start": {
             assistantMessage.id = event.data.messageId;
 
-            userMessage.childrenMessageIds = [assistantMessage.id];
-
-            setStreamingAnswer(assistantMessage);
+            setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "text-start": {
-            assistantMessage.content.push({ type: "text", text: "" });
+            currentContentPart = { type: "text", text: "" };
 
-            setStreamingAnswer(assistantMessage);
+            assistantMessage.content.push(currentContentPart);
+
+            setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "text-delta": {
-            const latestPart =
-              assistantMessage.content[assistantMessage.content.length - 1];
-
-            if (latestPart?.type === "text") {
-              latestPart.text += event.data.delta;
+            if (currentContentPart?.type === "text") {
+              currentContentPart.text += event.data.delta;
             }
 
-            setStreamingAnswer(assistantMessage);
+            setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
-          case "end": {
-            setStreamingAnswer(null);
+          case "message-end": {
+            userMessage.childrenMessageIds = [assistantMessage.id];
+
+            removeStreamingMessage(assistantMessage.chatId);
 
             queryClient.setQueryData<GetChatMessagesResponse>(
-              ["messages", chatId],
+              ["messages", userMessage.chatId],
               (response) => {
                 if (response == null) {
                   return response;
                 }
 
-                const latestPath = response.latestPath.concat(
-                  assistantMessage.id
-                );
-
-                const messages = {
-                  ...response.messages,
-                  [userMessage.id]: userMessage,
-                  [assistantMessage.id]: assistantMessage,
+                return {
+                  latestPath: response.latestPath.concat(assistantMessage.id),
+                  rootMessageIds: response.rootMessageIds,
+                  messages: {
+                    ...response.messages,
+                    [userMessage.id]: userMessage,
+                    [assistantMessage.id]: assistantMessage,
+                  },
                 };
-
-                return { ...response, latestPath, messages };
               }
             );
+
+            break;
           }
         }
-
-        messagesContainerRef.current?.scrollTo({
-          top: messagesContainerRef.current.scrollHeight,
-          behavior: "smooth",
-        });
       });
     },
     onSuccess: (_, args) => {

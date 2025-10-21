@@ -2,13 +2,13 @@ import { createBrowserRouter } from "react-router";
 import { MainLayout } from "../components/layout/main-layout";
 import { ChatPage } from "../pages/chat";
 import { ChatHistoryPage } from "../pages/chat-history";
+import { NewChatPage } from "../pages/new-chat";
 import { ProfilePage } from "../pages/profile";
 import { ProjectPage } from "../pages/project";
 import { ProjectsPage } from "../pages/projects";
 import { SigninPage } from "../pages/signin";
 import { SignupPage } from "../pages/signup";
 import { PrivateRoute } from "./private-route";
-import { NewChatPage } from "../pages/new-chat";
 
 export const router = createBrowserRouter([
   { path: "/signup", element: <SignupPage /> },

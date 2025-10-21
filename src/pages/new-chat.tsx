@@ -47,7 +47,7 @@ export function NewChatPage() {
 
     contentParts.push({ type: "text", text: message });
 
-    setPendingMessage({ message: contentParts, chatId });
+    setPendingMessage(chatId, { content: contentParts, chatId });
 
     navigate(`/chats/${chatId}`);
   }

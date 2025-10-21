@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useSidebarStore } from "../../state/sidebar";
 import { PreviousChats } from "../chat/previous-chats";
 import { Text } from "../ui/text";
@@ -72,6 +72,7 @@ function MobileDrawer(props: DrawerProps) {
 }
 
 export function Sidebar() {
+  const location = useLocation();
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -149,6 +150,7 @@ export function Sidebar() {
           }}
         >
           <SidebarMenuItem
+            active={location.pathname === "/history"}
             text={t("chat_history")}
             icon={<MessageCircleMoreIcon size="24px" />}
             hideTooltip={isOpen}
@@ -163,6 +165,7 @@ export function Sidebar() {
           }}
         >
           <SidebarMenuItem
+            active={location.pathname === "/projects"}
             text={t("projects")}
             icon={<FolderClosedIcon size="24px" />}
             hideTooltip={isOpen}

@@ -1,6 +1,11 @@
 import { v4 as uuid } from "uuid";
 import { Chat } from "../../models/entities/chat";
-import { Message, TextPart } from "../../models/entities/message";
+import {
+  AssistantContentPart,
+  AssistantMessage,
+  Message,
+  UserMessage,
+} from "../../models/entities/message";
 import {
   CreateChatRequest,
   DeleteChatParams,
@@ -252,25 +257,26 @@ export class MockChatService implements IChatService {
     const chat: Chat = {
       id: request.id,
       title: mockMessage.title,
-      projectId: request.projectId ?? null,
+      projectId: request.projectId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    const userMessage: Message = {
+    const userMessage: UserMessage = {
       id: uuid(),
       role: "user",
       content: request.message,
       parentMessageId: null,
       chatId: chat.id,
-      createdAt: chat.createdAt,
-      updatedAt: chat.createdAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    const assistantMessage: Message = {
+    const assistantMessage: AssistantMessage = {
       id: uuid(),
       role: "assistant",
-      content: [{ type: "text", text: mockMessage.message }],
+      content: [],
+      feedback: null,
       parentMessageId: userMessage.id,
       chatId: chat.id,
       createdAt: new Date(),
@@ -280,51 +286,54 @@ export class MockChatService implements IChatService {
     mockData.chats.push(chat);
     mockData.messages.push(userMessage);
 
-    const messageChunks = mockMessage.message.split(" ");
-
     onEvent({ event: "start" });
+
+    sleep(50);
 
     onEvent({
       event: "message-start",
       data: { type: "message-start", messageId: assistantMessage.id },
     });
 
+    sleep(50);
+
+    const contentPart: AssistantContentPart = {
+      type: "text",
+      text: mockMessage.message,
+    };
+
     onEvent({
       event: "text-start",
       data: { type: "text-start", messageId: assistantMessage.id },
     });
 
-    const messageContentPart: TextPart = { type: "text", text: "" };
+    sleep(50);
 
-    let messageChunkIndex = 0;
+    const words = contentPart.text.split(" ");
 
-    for (const messageChunk of messageChunks) {
-      messageContentPart.text +=
-        messageChunkIndex < messageChunks.length - 1
-          ? messageChunk + " "
-          : messageChunk;
+    for (let index = 0; index < words.length; index++) {
+      const word = words[index];
 
       onEvent({
         event: "text-delta",
         data: {
           type: "text-delta",
           messageId: assistantMessage.id,
-          delta:
-            messageChunkIndex < messageChunks.length - 1
-              ? messageChunk + " "
-              : messageChunk,
+          delta: index < words.length - 1 ? word + " " : word,
         },
       });
 
       await sleep(50);
-
-      messageChunkIndex++;
     }
+
+    assistantMessage.content.push(contentPart);
 
     onEvent({
       event: "text-end",
       data: { type: "text-end", messageId: assistantMessage.id },
     });
+
+    sleep(50);
 
     onEvent({
       event: "message-end",
@@ -332,6 +341,8 @@ export class MockChatService implements IChatService {
     });
 
     mockData.messages.push(assistantMessage);
+
+    sleep(50);
 
     onEvent({ event: "end" });
   }
@@ -350,20 +361,21 @@ export class MockChatService implements IChatService {
     const mockMessage =
       mockMessages[Math.floor(Math.random() * mockMessages.length)];
 
-    const userMessage: Message = {
+    const userMessage: UserMessage = {
       id: request.id,
       role: "user",
       content: request.content,
-      parentMessageId: request.parentMessageId,
+      parentMessageId: request.parentMessageId ?? null,
       chatId: params.chatId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    const assistantMessage: Message = {
+    const assistantMessage: AssistantMessage = {
       id: uuid(),
       role: "assistant",
-      content: [{ type: "text", text: mockMessage.message }],
+      content: [],
+      feedback: null,
       parentMessageId: userMessage.id,
       chatId: params.chatId,
       createdAt: new Date(),
@@ -372,51 +384,54 @@ export class MockChatService implements IChatService {
 
     mockData.messages.push(userMessage);
 
-    const messageChunks = mockMessage.message.split(" ");
-
     onEvent({ event: "start" });
+
+    sleep(50);
 
     onEvent({
       event: "message-start",
       data: { type: "message-start", messageId: assistantMessage.id },
     });
 
+    sleep(50);
+
+    const contentPart: AssistantContentPart = {
+      type: "text",
+      text: mockMessage.message,
+    };
+
     onEvent({
       event: "text-start",
       data: { type: "text-start", messageId: assistantMessage.id },
     });
 
-    const messageContentPart: TextPart = { type: "text", text: "" };
+    sleep(50);
 
-    let messageChunkIndex = 0;
+    const words = contentPart.text.split(" ");
 
-    for (const messageChunk of messageChunks) {
-      messageContentPart.text +=
-        messageChunkIndex < messageChunks.length - 1
-          ? messageChunk + " "
-          : messageChunk;
+    for (let index = 0; index < words.length; index++) {
+      const word = words[index];
 
       onEvent({
         event: "text-delta",
         data: {
           type: "text-delta",
           messageId: assistantMessage.id,
-          delta:
-            messageChunkIndex < messageChunks.length - 1
-              ? messageChunk + " "
-              : messageChunk,
+          delta: index < words.length - 1 ? word + " " : word,
         },
       });
 
       await sleep(50);
-
-      messageChunkIndex++;
     }
+
+    assistantMessage.content.push(contentPart);
 
     onEvent({
       event: "text-end",
       data: { type: "text-end", messageId: assistantMessage.id },
     });
+
+    sleep(50);
 
     onEvent({
       event: "message-end",
@@ -424,6 +439,8 @@ export class MockChatService implements IChatService {
     });
 
     mockData.messages.push(assistantMessage);
+
+    sleep(50);
 
     onEvent({ event: "end" });
   }

@@ -4,6 +4,7 @@ import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
 
 export type SidebarMenuItemProps = {
+  active?: boolean;
   text: string;
   icon: ReactNode;
   hideTooltip?: boolean;
@@ -26,6 +27,10 @@ export function SidebarMenuItem(props: SidebarMenuItemProps) {
           whiteSpace: "nowrap",
           overflow: "hidden",
           borderRadius: "8px",
+          color: props.active ? "secondary.main" : "text.primary",
+          backgroundColor: props.active
+            ? (theme) => alpha(theme.palette.secondary.main, 0.2)
+            : "inherit",
           "&:hover": {
             color: "secondary.main",
             backgroundColor: (theme) =>
@@ -53,5 +58,17 @@ export function SidebarMenuItem(props: SidebarMenuItemProps) {
 export function SidebarMenu(props: ListProps) {
   const { sx, ...rest } = props;
 
-  return <List sx={{ margin: "0px", padding: "0px", ...sx }} {...rest} />;
+  return (
+    <List
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "4px",
+        margin: "0px",
+        padding: "0px",
+        ...sx,
+      }}
+      {...rest}
+    />
+  );
 }

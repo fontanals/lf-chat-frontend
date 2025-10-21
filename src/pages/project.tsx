@@ -109,8 +109,8 @@ export function ProjectPage() {
 
       contentParts.push({ type: "text", text: message });
 
-      setPendingMessage({
-        message: contentParts,
+      setPendingMessage(chatId, {
+        content: contentParts,
         chatId,
         projectId: project.id,
       });
