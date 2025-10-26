@@ -127,50 +127,41 @@ export function Sidebar() {
         </Box>
       </Link>
       <SidebarMenu sx={{ marginTop: "16px" }}>
-        <Link
-          to="/"
+        <SidebarMenuItem
+          href="/"
+          text={t("new_chat")}
+          icon={<MessageCirclePlusIcon size="24px" />}
+          hideTooltip={isOpen}
           onClick={() => {
             if (isMobile) {
               setIsOpen(false);
             }
           }}
-        >
-          <SidebarMenuItem
-            text={t("new_chat")}
-            icon={<MessageCirclePlusIcon size="24px" />}
-            hideTooltip={isOpen}
-          />
-        </Link>
-        <Link
-          to="/history"
+        />
+        <SidebarMenuItem
+          active={location.pathname === "/history"}
+          href="/history"
+          text={t("chat_history")}
+          icon={<MessageCircleMoreIcon size="24px" />}
+          hideTooltip={isOpen}
           onClick={() => {
             if (isMobile) {
               setIsOpen(false);
             }
           }}
-        >
-          <SidebarMenuItem
-            active={location.pathname === "/history"}
-            text={t("chat_history")}
-            icon={<MessageCircleMoreIcon size="24px" />}
-            hideTooltip={isOpen}
-          />
-        </Link>
-        <Link
-          to="/projects"
+        />
+        <SidebarMenuItem
+          active={location.pathname === "/projects"}
+          href="/projects"
+          text={t("projects")}
+          icon={<FolderClosedIcon size="24px" />}
+          hideTooltip={isOpen}
           onClick={() => {
             if (isMobile) {
               setIsOpen(false);
             }
           }}
-        >
-          <SidebarMenuItem
-            active={location.pathname === "/projects"}
-            text={t("projects")}
-            icon={<FolderClosedIcon size="24px" />}
-            hideTooltip={isOpen}
-          />
-        </Link>
+        />
       </SidebarMenu>
       <PreviousChats />
       <SidebarUser />

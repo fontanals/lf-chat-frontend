@@ -73,59 +73,46 @@ export function ProjectsPage() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "center",
-          marginTop: "48px",
-          paddingInline: { xs: "0px", sm: "32px" },
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          width: "100%",
+          maxWidth: "800px",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            width: "100%",
-            maxWidth: "800px",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingLeft: "16px",
-            }}
-          >
-            <Text variant="body1">{t("projects")}</Text>
-            <ShadowButton onClick={() => setIsCreateProjectDialogOpen(true)}>
-              <PlusIcon size="16px" />
-              {t("create_project")}
-            </ShadowButton>
-          </Box>
-          <ProjectList
-            sx={{
-              overflow: "auto",
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": { display: "none" },
-              msOverflowStyle: "none",
-            }}
-          >
-            {projects.map((project) => (
-              <ProjectListItem
-                key={project.id}
-                project={project}
-                onEdit={() => {
-                  setSelectedProject(project);
-                  setIsEditProjectDialogOpen(true);
-                }}
-                onDelete={() => {
-                  setSelectedProject(project);
-                  setIsDeleteProjectDialogOpen(true);
-                }}
-              />
-            ))}
-          </ProjectList>
-        </Box>
+        <Text sx={{ paddingInline: "16px" }} variant="body1">
+          {t("projects")}
+        </Text>
+        <ShadowButton onClick={() => setIsCreateProjectDialogOpen(true)}>
+          <PlusIcon size="16px" />
+          {t("create_project")}
+        </ShadowButton>
       </Box>
+      <ProjectList
+        sx={{
+          width: "100%",
+          maxWidth: "800px",
+          marginTop: "16px",
+          overflow: "auto",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        {projects.map((project) => (
+          <ProjectListItem
+            key={project.id}
+            project={project}
+            onEdit={() => {
+              setSelectedProject(project);
+              setIsEditProjectDialogOpen(true);
+            }}
+            onDelete={() => {
+              setSelectedProject(project);
+              setIsDeleteProjectDialogOpen(true);
+            }}
+          />
+        ))}
+      </ProjectList>
       <CreateProjectDialog
         isOpen={isCreateProjectDialogOpen}
         onCreateProject={handleCreateProject}

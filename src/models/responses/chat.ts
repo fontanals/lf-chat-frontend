@@ -1,39 +1,63 @@
-import { ServerSentEvent } from "../../utils/types";
+import { CursorPagination, ServerSentEvent } from "../../utils/types";
 import { Chat } from "../entities/chat";
-import { Message } from "../entities/message";
+import {
+  Message,
+  MessageEndPart,
+  MessageStartPart,
+  TextDeltaPart,
+  TextEndPart,
+  TextStartPart,
+  ToolCallDeltaPart,
+  ToolCallEndPart,
+  ToolCallResultPart,
+  ToolCallStartPart,
+} from "../entities/message";
 
-export type TextPartStart = { type: "text-start"; messageId: string };
+export type TextStartEvent = ServerSentEvent<"text-start", TextStartPart>;
 
-export type TextPartDelta = {
-  type: "text-delta";
-  messageId: string;
-  delta: string;
-};
+export type TextDeltaEvent = ServerSentEvent<"text-delta", TextDeltaPart>;
 
-export type TextPartEnd = { type: "text-end"; messageId: string };
+export type TextEndEvent = ServerSentEvent<"text-end", TextEndPart>;
 
-export type MessageStart = { type: "message-start"; messageId: string };
+export type ToolCallStartEvent = ServerSentEvent<
+  "tool-call-start",
+  ToolCallStartPart
+>;
 
-export type MessageEnd = { type: "message-end"; messageId: string };
+export type ToolCallDeltaEvent = ServerSentEvent<
+  "tool-call-delta",
+  ToolCallDeltaPart
+>;
 
-export type TextPartStartEvent = ServerSentEvent<"text-start", TextPartStart>;
+export type ToolCallResultEvent = ServerSentEvent<
+  "tool-call-result",
+  ToolCallResultPart
+>;
 
-export type TextPartDeltaEvent = ServerSentEvent<"text-delta", TextPartDelta>;
+export type ToolCallEndEvent = ServerSentEvent<
+  "tool-call-end",
+  ToolCallEndPart
+>;
 
-export type TextPartEndEvent = ServerSentEvent<"text-end", TextPartEnd>;
+export type MessageStartEvent = ServerSentEvent<
+  "message-start",
+  MessageStartPart
+>;
 
-export type MessageStartEvent = ServerSentEvent<"message-start", MessageStart>;
-
-export type MessageEndEvent = ServerSentEvent<"message-end", MessageEnd>;
+export type MessageEndEvent = ServerSentEvent<"message-end", MessageEndPart>;
 
 export type SendMessageEvent =
-  | TextPartStartEvent
-  | TextPartDeltaEvent
-  | TextPartEndEvent
+  | TextStartEvent
+  | TextDeltaEvent
+  | TextEndEvent
+  | ToolCallStartEvent
+  | ToolCallDeltaEvent
+  | ToolCallResultEvent
+  | ToolCallEndEvent
   | MessageStartEvent
   | MessageEndEvent;
 
-export type GetChatsResponse = { chats: Chat[]; totalChats: number };
+export type GetChatsResponse = CursorPagination<Chat, string>;
 
 export type GetChatResponse = Chat;
 
@@ -45,6 +69,6 @@ export type GetChatMessagesResponse = {
 
 export type UpdateChatResponse = string;
 
-export type UdpateMessageResponse = string;
+export type UpdateMessageResponse = string;
 
 export type DeleteChatResponse = string;

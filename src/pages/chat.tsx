@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
@@ -20,7 +20,7 @@ import {
   useUpdateMessage,
 } from "../hooks/chat";
 import { useDeleteDocument, useUploadDocuments } from "../hooks/document";
-import { MessageFeedback, UserContentPart } from "../models/entities/message";
+import { MessageFeedback, UserContentBlock } from "../models/entities/message";
 import { useChatStore } from "../state/chat";
 import { StringUtils } from "../utils/strings";
 
@@ -151,7 +151,7 @@ export function ChatPage() {
   }
 
   const handleEditMessage = useCallback(
-    (content: UserContentPart[], parentMessageId?: string | null) => {
+    (content: UserContentBlock[], parentMessageId?: string | null) => {
       sendMessage({
         params: { chatId: chatId! },
         request: { id: uuid(), content, parentMessageId },
@@ -171,93 +171,72 @@ export function ChatPage() {
   );
 
   return (
-    <Fragment>
-      <ContentPanel>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            minHeight: "36px",
-            marginLeft: "48px",
-          }}
-        >
-          {chat != null && (
-            <ChatTitleMenu
-              chat={chat}
-              onRenameChat={() => setIsRenameChatDialogOpen(true)}
-              onDeleteChat={() => setIsDeleteChatDialogOpen(true)}
-            />
-          )}
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            justifyContent: "center",
-            margin: "16px",
-          }}
-        >
-          <Virtuoso
-            key={chatId}
-            ref={virtuosoRef}
-            followOutput="smooth"
-            style={{
-              width: "100%",
-              maxWidth: "800px",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
-            data={
-              streamingMessage != null
-                ? activePath.concat(["streaming"])
-                : activePath
-            }
-            itemContent={(index, messageId) => {
-              const message =
-                messageId === "streaming"
-                  ? streamingMessage
-                  : messageTree?.messages[messageId];
+    <ContentPanel>
+      {chat != null && (
+        <ChatTitleMenu
+          chat={chat}
+          onRenameChat={() => setIsRenameChatDialogOpen(true)}
+          onDeleteChat={() => setIsDeleteChatDialogOpen(true)}
+        />
+      )}
+      <Virtuoso
+        key={chatId}
+        ref={virtuosoRef}
+        followOutput="smooth"
+        style={{
+          width: "100%",
+          maxWidth: "800px",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+        data={
+          streamingMessage != null
+            ? activePath.concat(["streaming"])
+            : activePath
+        }
+        itemContent={(index, messageId) => {
+          const message =
+            messageId === "streaming"
+              ? streamingMessage
+              : messageTree?.messages[messageId];
 
-              if (message == null) {
-                return null;
-              }
+          if (message == null) {
+            return null;
+          }
 
-              const parentMessage =
-                message?.parentMessageId != null
-                  ? messageTree?.messages[message.parentMessageId]
-                  : null;
+          const parentMessage =
+            message?.parentMessageId != null
+              ? messageTree?.messages[message.parentMessageId]
+              : null;
 
-              return (
-                <Box key={message.id} sx={{ paddingBlock: "8px" }}>
-                  <ChatMessage
-                    messageIds={
-                      parentMessage?.childrenMessageIds ?? [message.id]
-                    }
-                    message={message}
-                    onSelectMessage={handleSelectMessage}
-                    onEditMessage={handleEditMessage}
-                    onChangeMessageFeedback={handleChangeMessageFeedback}
-                    hideActions={index === activePath.length}
-                  />
-                </Box>
-              );
-            }}
-          />
-        </Box>
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <ChatInput
-            containerSx={{ maxWidth: "600px" }}
-            placeholder={t("reply_to_assistant")}
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            onSubmit={handleSendMessage}
-            uploadMap={uploadMap}
-            onAddDocuments={handleAddDocuments}
-            onRemoveDocument={handleRemoveDocument}
-            disabled={StringUtils.isNullOrWhitespace(message)}
-          />
-        </Box>
-      </ContentPanel>
+          return (
+            <Box key={message.id} sx={{ paddingBlock: "8px" }}>
+              <ChatMessage
+                messageIds={
+                  parentMessage?.childrenMessageIds ??
+                  messageTree?.rootMessageIds ?? [message.id]
+                }
+                message={message}
+                onSelectMessage={handleSelectMessage}
+                onEditMessage={handleEditMessage}
+                onChangeMessageFeedback={handleChangeMessageFeedback}
+                hideActions={index === activePath.length}
+              />
+            </Box>
+          );
+        }}
+      />
+      <ChatInput
+        containerSx={{ marginTop: "32px", maxWidth: "600px" }}
+        placeholder={t("reply_to_assistant")}
+        value={message}
+        onChange={(event) => setMessage(event.target.value)}
+        onSubmit={handleSendMessage}
+        uploadMap={uploadMap}
+        onAddDocuments={handleAddDocuments}
+        onRemoveDocument={handleRemoveDocument}
+        disabled={StringUtils.isNullOrWhitespace(message)}
+      />
       <RenameChatDialog
         isOpen={isRenameChatDialogOpen}
         title={chat?.title ?? ""}
@@ -269,6 +248,6 @@ export function ChatPage() {
         onDeleteChat={handleDeleteChat}
         onCancel={() => setIsDeleteChatDialogOpen(false)}
       />
-    </Fragment>
+    </ContentPanel>
   );
 }

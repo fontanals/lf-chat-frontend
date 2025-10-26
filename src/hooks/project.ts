@@ -16,8 +16,13 @@ export function useProjects() {
   });
 }
 
-export function useProject(projectId: string, query?: GetProjectQuery) {
+export function useProject(
+  projectId: string,
+  query?: GetProjectQuery,
+  enabled = true
+) {
   return useQuery({
+    enabled,
     queryKey: ["projects", projectId],
     queryFn: () => services.project.getProject({ projectId }, query),
   });

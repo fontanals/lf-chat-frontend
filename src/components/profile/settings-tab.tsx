@@ -17,7 +17,15 @@ export function SettingsTab() {
   const { theme, setTheme } = useThemeStore();
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+        width: "100%",
+        maxWidth: "800px",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -29,7 +37,7 @@ export function SettingsTab() {
         <SettingsIcon size="20px" />
         <Text variant="body1">{t("settings")}</Text>
       </Box>
-      <Box>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <Text>{t("theme")}</Text>
         <Box sx={{ display: "flex", gap: "8px" }}>
           <Tooltip title={t("light")} placement="top">
@@ -64,7 +72,7 @@ export function SettingsTab() {
           </Tooltip>
         </Box>
       </Box>
-      <Box>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <Text>{t("language")}</Text>
         <List
           sx={{ display: "flex", gap: "16px", margin: "0px", padding: "0px" }}

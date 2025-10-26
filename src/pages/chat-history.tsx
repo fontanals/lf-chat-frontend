@@ -3,16 +3,17 @@ import { ChangeEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { ChatList, ChatListItem } from "../components/chat/chat-list";
-import { ChatMenu } from "../components/chat/chat-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
 import { Input } from "../components/ui/input";
+import { LinkButton } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
 import { useChats, useDeleteChat, useUpdateChat } from "../hooks/chat";
 import { Chat } from "../models/entities/chat";
 import { SearchParamsUtils } from "../utils/search-params";
+import { PlusIcon } from "lucide-react";
 
 export function ChatHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,8 +24,6 @@ export function ChatHistoryPage() {
 
   const [search, setSearch] = useState(paramsSearch);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [chatMenuAnchorElement, setChatMenuAnchorElement] =
-    useState<HTMLElement | null>(null);
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
@@ -74,76 +73,72 @@ export function ChatHistoryPage() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "center",
-          marginTop: "48px",
-          paddingInline: { xs: "0px", sm: "32px" },
+          flexDirection: "column",
+          gap: "16px",
+          width: "100%",
+          maxWidth: "800px",
         }}
       >
         <Box
           sx={{
             display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            maxWidth: "800px",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "8px",
           }}
         >
-          <Text sx={{ padding: "8px" }} variant="body1">
+          <Text sx={{ paddingInline: "16px" }} variant="body1">
             {t("chat_history")}
           </Text>
+          <LinkButton to="/">
+            <PlusIcon size="16px" />
+            {t("new_chat")}
+          </LinkButton>
+        </Box>
+        <Box>
           <Input
+            sx={{ width: "100%", maxWidth: "800px" }}
             placeholder={t("search")}
             fullWidth
             value={search}
             onChange={handleSearchChange}
           />
           <Text
-            sx={{ padding: "8px", color: "secondary.main" }}
+            sx={{ paddingInline: "16px", color: "secondary.main" }}
             variant="caption"
           >
-            {t("total_chats_found", { total: paginatedChats?.totalChats ?? 0 })}
+            {t("total_chats_found", {
+              total: paginatedChats?.totalItems ?? 0,
+            })}
           </Text>
-          <ChatList
-            sx={{
-              overflow: "auto",
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": { display: "none" },
-              msOverflowStyle: "none",
-            }}
-          >
-            {paginatedChats?.chats.map((chat) => (
-              <ChatListItem
-                key={chat.id}
-                chat={chat}
-                onRenameChat={() => {
-                  setSelectedChat(chat);
-                  setIsRenameChatDialogOpen(true);
-                }}
-                onDeleteChat={() => {
-                  setSelectedChat(chat);
-                  setIsDeleteChatDialogOpen(true);
-                }}
-              />
-            ))}
-          </ChatList>
-          <ChatMenu
-            anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            anchorElement={chatMenuAnchorElement}
+        </Box>
+      </Box>
+      <ChatList
+        sx={{
+          width: "100%",
+          maxWidth: "800px",
+          marginTop: "16px",
+          overflow: "auto",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        {paginatedChats?.items.map((chat) => (
+          <ChatListItem
+            key={chat.id}
+            sx={{ paddingInline: "16px" }}
+            chat={chat}
             onRenameChat={() => {
-              setChatMenuAnchorElement(null);
+              setSelectedChat(chat);
               setIsRenameChatDialogOpen(true);
             }}
             onDeleteChat={() => {
-              setChatMenuAnchorElement(null);
+              setSelectedChat(chat);
               setIsDeleteChatDialogOpen(true);
             }}
-            onClose={() => {
-              setSelectedChat(null);
-              setChatMenuAnchorElement(null);
-            }}
           />
-        </Box>
-      </Box>
+        ))}
+      </ChatList>
       <RenameChatDialog
         isOpen={isRenameChatDialogOpen}
         title={selectedChat?.title ?? ""}

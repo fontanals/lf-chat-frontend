@@ -13,7 +13,7 @@ import {
 import { v4 as uuid } from "uuid";
 import { Chat } from "../models/entities/chat";
 import {
-  AssistantContentPart,
+  AssistantContentBlock,
   AssistantMessage,
   UserMessage,
 } from "../models/entities/message";
@@ -89,12 +89,13 @@ export function useCreateChat() {
         role: "assistant",
         content: [],
         feedback: null,
+        finishReason: "stop",
         parentMessageId: userMessage.id,
         chatId: chat.id,
         childrenMessageIds: [],
       };
 
-      let currentContentPart: AssistantContentPart | null = null;
+      let currentContentBlock: AssistantContentBlock | null = null;
 
       return services.chat.createChat(args.request, (event) => {
         switch (event.event) {
@@ -124,17 +125,17 @@ export function useCreateChat() {
             break;
           }
           case "text-start": {
-            currentContentPart = { type: "text", text: "" };
+            currentContentBlock = { type: "text", text: "" };
 
-            assistantMessage.content.push(currentContentPart);
+            assistantMessage.content.push(currentContentBlock);
 
             setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "text-delta": {
-            if (currentContentPart?.type === "text") {
-              currentContentPart.text += event.data.delta;
+            if (currentContentBlock?.type === "text") {
+              currentContentBlock.text += event.data.delta;
             }
 
             setStreamingMessage(assistantMessage.chatId, assistantMessage);
@@ -165,6 +166,7 @@ export function useCreateChat() {
     },
     onSuccess: (_, args) => {
       queryClient.invalidateQueries({ queryKey: ["chats"] });
+
       queryClient.invalidateQueries({
         queryKey: ["messages", args.request.id],
       });
@@ -200,12 +202,14 @@ export function useSendMessage() {
         id: "",
         role: "assistant",
         content: [],
+        feedback: null,
+        finishReason: "stop",
         parentMessageId: userMessage.id,
         chatId: userMessage.chatId,
         childrenMessageIds: [],
       };
 
-      let currentContentPart: AssistantContentPart | null = null;
+      let currentContentBlock: AssistantContentBlock | null = null;
 
       return services.chat.sendMessage(args.params, args.request, (event) => {
         switch (event.event) {
@@ -254,17 +258,17 @@ export function useSendMessage() {
             break;
           }
           case "text-start": {
-            currentContentPart = { type: "text", text: "" };
+            currentContentBlock = { type: "text", text: "" };
 
-            assistantMessage.content.push(currentContentPart);
+            assistantMessage.content.push(currentContentBlock);
 
             setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
             break;
           }
           case "text-delta": {
-            if (currentContentPart?.type === "text") {
-              currentContentPart.text += event.data.delta;
+            if (currentContentBlock?.type === "text") {
+              currentContentBlock.text += event.data.delta;
             }
 
             setStreamingMessage(assistantMessage.chatId, assistantMessage);
@@ -340,13 +344,13 @@ export function useUpdateChat() {
           return response;
         }
 
-        const chats = response.chats?.map((chat) =>
+        const items = response.items.map((chat) =>
           chat.id === args.params.chatId
             ? { ...chat, title: args.request.title }
             : chat
         );
 
-        return { ...response, chats };
+        return { ...response, items };
       });
 
       if (location.pathname === "/history") {
@@ -363,13 +367,13 @@ export function useUpdateChat() {
               return response;
             }
 
-            const chats = response.chats?.map((chat) =>
+            const items = response.items.map((chat) =>
               chat.id === args.params.chatId
                 ? { ...chat, title: args.request.title }
                 : chat
             );
 
-            return { ...response, chats };
+            return { ...response, items };
           }
         );
       }
@@ -511,11 +515,13 @@ export function useDeleteChat() {
           return response;
         }
 
-        const chats = response.chats?.filter(
+        const items = response.items.filter(
           (chat) => chat.id !== args.params.chatId
         );
 
-        return { ...response, chats };
+        const totalItems = response.totalItems - 1;
+
+        return { ...response, items, totalItems };
       });
 
       if (location.pathname === "/history") {
@@ -532,11 +538,13 @@ export function useDeleteChat() {
               return response;
             }
 
-            const chats = response.chats?.filter(
+            const items = response.items.filter(
               (chat) => chat.id !== args.params.chatId
             );
 
-            return { ...response, chats };
+            const totalItems = response.totalItems - 1;
+
+            return { ...response, items, totalItems };
           }
         );
       }

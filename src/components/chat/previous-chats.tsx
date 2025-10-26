@@ -66,13 +66,13 @@ export function PreviousChats() {
           overflowY: "auto",
         }}
       >
-        {!ArrayUtils.isNullOrEmpty(paginatedChats?.chats) && (
+        {!ArrayUtils.isNullOrEmpty(paginatedChats?.items) && (
           <Text sx={{ padding: "0px 8px", color: "text.secondary" }}>
             {t("previous_chats")}
           </Text>
         )}
         <ChatList sx={{ marginTop: "8px", padding: "0px" }}>
-          {paginatedChats?.chats.map((chat) => (
+          {paginatedChats?.items.map((chat) => (
             <ChatListItem
               key={chat.id}
               sx={{

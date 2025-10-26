@@ -1,8 +1,9 @@
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { ChevronDownIcon } from "lucide-react";
 import { Fragment, useState } from "react";
+import { Link } from "react-router";
 import { Chat } from "../../models/entities/chat";
-import { Span, Text } from "../ui/text";
+import { Text } from "../ui/text";
 import { ChatMenu } from "./chat-menu";
 
 export type ChatTitleMenuProps = {
@@ -15,21 +16,39 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
   return (
-    <Fragment>
+    <Box
+      sx={{
+        position: "absolute",
+        top: "16px",
+        left: "64px",
+        display: "flex",
+        alignItems: "center",
+        height: "36px",
+      }}
+    >
       {props.chat.project != null && (
-        <Text>
-          <Span sx={{ padding: "6px 8px" }}>{props.chat.project.title}</Span>/
-        </Text>
+        <Fragment>
+          <Link to={`/projects/${props.chat.project.id}`}>
+            <Text
+              sx={{
+                maxWidth: { xs: "50px", sm: "100px", md: "200px" },
+                "&:hover": { color: "secondary.main" },
+              }}
+              noWrap
+            >
+              {props.chat.project.title}
+            </Text>
+          </Link>
+          <Text sx={{ marginInline: "8px" }}>/</Text>
+        </Fragment>
       )}
       <Button
         sx={{
-          height: "36px",
+          maxWidth: { sm: "100px", md: "200px" },
+          padding: "0px",
           textTransform: "none",
-          borderRadius: "8px",
-          backgroundColor: "#0F172B",
-          "&:hover": { color: "secondary.main", backgroundColor: "#0F172B" },
+          "&:hover": { color: "secondary.main", backgroundColor: "inherit" },
         }}
-        disableRipple
         endIcon={<ChevronDownIcon width="16px" height="16px" />}
         onClick={(event) => setAnchorElement(event?.currentTarget)}
       >
@@ -49,6 +68,6 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
         }}
         onClose={() => setAnchorElement(null)}
       />
-    </Fragment>
+    </Box>
   );
 }

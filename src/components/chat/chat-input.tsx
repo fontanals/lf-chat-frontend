@@ -45,7 +45,6 @@ export function ChatInput(props: ChatInputProps) {
         ...props.containerSx,
       }}
     >
-      <input {...getInputProps()} />
       <InputBase
         sx={{ fontSize: "14px" }}
         placeholder={props.placeholder}
@@ -109,6 +108,7 @@ export function ChatInput(props: ChatInputProps) {
           <ArrowUpRightIcon size="24px" />
         </IconButton>
       </Box>
+      <input {...getInputProps()} />
     </Box>
   );
 }

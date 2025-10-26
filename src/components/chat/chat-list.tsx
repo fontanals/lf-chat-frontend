@@ -19,52 +19,44 @@ export function ChatListItem(props: ChatListItemProps) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
   return (
-    <Link to={`/chats/${props.chat.id}`} onClick={props.onSelectChat}>
-      <ListItem
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "8px",
-          borderRadius: "8px",
-          textTransform: "none",
-          "&:hover": { backgroundColor: "background.default" },
-          ...props.sx,
-        }}
+    <ListItem
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "8px",
+        borderRadius: "8px",
+        textTransform: "none",
+        "&:hover": { backgroundColor: "background.default" },
+        ...props.sx,
+      }}
+    >
+      <Link
+        style={{ flex: 1 }}
+        to={`/chats/${props.chat.id}`}
+        onClick={props.onSelectChat}
       >
         <Text noWrap>{props.chat.title}</Text>
-        <IconButton
-          sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(event.currentTarget);
-          }}
-        >
-          <EllipsisVerticalIcon size="16px" />
-        </IconButton>
-        <ChatMenu
-          anchorElement={anchorElement}
-          onRenameChat={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(null);
-            props.onRenameChat();
-          }}
-          onDeleteChat={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(null);
-            props.onRenameChat();
-          }}
-          onClose={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(null);
-          }}
-        />
-      </ListItem>
-    </Link>
+      </Link>
+      <IconButton
+        sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
+        onClick={(event) => setAnchorElement(event.currentTarget)}
+      >
+        <EllipsisVerticalIcon size="16px" />
+      </IconButton>
+      <ChatMenu
+        anchorElement={anchorElement}
+        onRenameChat={() => {
+          setAnchorElement(null);
+          props.onRenameChat();
+        }}
+        onDeleteChat={() => {
+          setAnchorElement(null);
+          props.onRenameChat();
+        }}
+        onClose={() => setAnchorElement(null)}
+      />
+    </ListItem>
   );
 }
 

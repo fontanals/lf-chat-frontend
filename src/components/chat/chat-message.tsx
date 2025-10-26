@@ -13,7 +13,7 @@ import {
   AssistantMessage,
   Message,
   MessageFeedback,
-  UserContentPart,
+  UserContentBlock,
   UserMessage as UserMessageComponentº,
 } from "../../models/entities/message";
 import { StringUtils } from "../../utils/strings";
@@ -27,7 +27,7 @@ import { Tooltip } from "../ui/tooltip";
 function UserMessageComponent(props: {
   message: UserMessageComponentº;
   onEditMessage: (
-    content: UserContentPart[],
+    content: UserContentBlock[],
     parentMessageId?: string | null
   ) => void;
   additionalActions?: ReactNode;
@@ -50,7 +50,7 @@ function UserMessageComponent(props: {
     setIsEditing(false);
 
     if (!StringUtils.isNullOrWhitespace(textContent)) {
-      const messageContent: UserContentPart[] = props.message.content.filter(
+      const messageContent: UserContentBlock[] = props.message.content.filter(
         (contentPart) => contentPart.type !== "text"
       );
 
@@ -199,9 +199,16 @@ export function AssistantMessageComponent(props: {
       }}
     >
       <Box sx={{ width: "100%", paddingInline: "12px", fontSize: "14px" }}>
-        {props.message.content.map((contentPart, index) => (
-          <MarkdownRenderer key={index} content={contentPart.text} />
-        ))}
+        {props.message.content.map((contentPart, index) => {
+          switch (contentPart.type) {
+            case "text":
+              return (
+                <MarkdownRenderer key={index} content={contentPart.text} />
+              );
+            default:
+              return null;
+          }
+        })}
       </Box>
       {!props.hideActions && (
         <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -221,7 +228,7 @@ export function AssistantMessageComponent(props: {
               onClick={() =>
                 props.onChangeMessageFeedback?.(
                   props.message.id,
-                  props.message.feedback !== "dislike" ? "dislike" : null
+                  props.message.feedback === "dislike" ? "neutral" : "like"
                 )
               }
             >
@@ -239,7 +246,7 @@ export function AssistantMessageComponent(props: {
               onClick={() =>
                 props.onChangeMessageFeedback?.(
                   props.message.id,
-                  props.message.feedback !== "like" ? "like" : null
+                  props.message.feedback === "like" ? "neutral" : "like"
                 )
               }
             >
@@ -257,7 +264,7 @@ export type ChatMessageProps = {
   message: Message;
   onSelectMessage: (messageId: string) => void;
   onEditMessage: (
-    content: UserContentPart[],
+    content: UserContentBlock[],
     parentMessageId?: string | null
   ) => void;
   onChangeMessageFeedback: (

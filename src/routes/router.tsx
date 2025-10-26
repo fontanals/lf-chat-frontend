@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { MainLayout } from "../components/layout/main-layout";
 import { ChatPage } from "../pages/chat";
 import { ChatHistoryPage } from "../pages/chat-history";
@@ -19,7 +19,8 @@ export const router = createBrowserRouter([
       {
         element: <MainLayout />,
         children: [
-          { path: "/", element: <NewChatPage /> },
+          { path: "/", element: <Navigate to="/new" replace /> },
+          { path: "/new", element: <NewChatPage /> },
           { path: "/chats/:chatId?", element: <ChatPage /> },
           { path: "/history", element: <ChatHistoryPage /> },
           { path: "/projects", element: <ProjectsPage /> },

@@ -30,8 +30,9 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
         display: "flex",
         flexDirection: "column",
         gap: "16px",
+        width: "100%",
+        maxWidth: "800px",
         paddingBlock: "8px",
-        paddingInline: "16px",
         ...(isDragActive
           ? {
               borderRadius: "16px",
@@ -65,14 +66,23 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
           justifyContent: "space-between",
         }}
       >
-        <Text sx={{ color: "text.secondary" }}>{t("documents")}</Text>
+        <Text sx={{ paddingInline: "16px", color: "text.secondary" }}>
+          {t("documents")}
+        </Text>
         <Tooltip title={t("add_document")}>
           <IconButton onClick={open}>
             <FilePlus2Icon size="16px" />
           </IconButton>
         </Tooltip>
       </Box>
-      <Box sx={{ display: "flex", alginItems: "center", gap: "8px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alginItems: "center",
+          gap: "8px",
+          padding: "8px 16px",
+        }}
+      >
         {ArrayUtils.isNullOrEmpty(props.project.documents) ? (
           <Text variant="caption">
             {t("add_pdf_documents_as_context_to_the_project")}

@@ -18,7 +18,7 @@ import {
   GetChatResponse,
   GetChatsResponse,
   SendMessageEvent,
-  UdpateMessageResponse,
+  UpdateMessageResponse,
   UpdateChatResponse,
 } from "../models/responses/chat";
 import { IBaseService } from "./base";
@@ -48,7 +48,7 @@ export interface IChatService {
   updateMessage(
     params: UpdateMessageParams,
     request: UpdateMessageRequest
-  ): Promise<UdpateMessageResponse>;
+  ): Promise<UpdateMessageResponse>;
   deleteChat(params: DeleteChatParams): Promise<DeleteChatResponse>;
 }
 
@@ -128,12 +128,12 @@ export class ChatService implements IChatService {
   async updateMessage(
     params: UpdateMessageParams,
     request: UpdateMessageRequest
-  ): Promise<UdpateMessageResponse> {
+  ): Promise<UpdateMessageResponse> {
     const response = await this.baseService.patch<
-      UdpateMessageResponse,
+      UpdateMessageResponse,
       UpdateMessageRequest
     >({
-      url: `/api/chat/${params.chatId}/messages/${params.messageId}`,
+      url: `/api/chats/${params.chatId}/messages/${params.messageId}`,
       request,
     });
 

@@ -89,18 +89,26 @@ export function SidebarUser() {
         open={Boolean(anchorElement)}
         onClose={() => setAnchorElement(null)}
       >
-        <Link to="/profile" onClick={() => setAnchorElement(null)}>
-          <MenuItem>
+        <MenuItem>
+          <Link
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            to="/profile"
+            onClick={() => setAnchorElement(null)}
+          >
             <UserIcon size="16px" />
             {t("profile")}
-          </MenuItem>
-        </Link>
-        <Link to="/profile/settings" onClick={() => setAnchorElement(null)}>
-          <MenuItem>
+          </Link>
+        </MenuItem>
+        <MenuItem>
+          <Link
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            to="/profile/settings"
+            onClick={() => setAnchorElement(null)}
+          >
             <SettingsIcon size="16px" />
             {t("settings")}
-          </MenuItem>
-        </Link>
+          </Link>
+        </MenuItem>
         <MenuItem onClick={handleSignout}>
           <LogOutIcon size="16px" />
           {t("sign_out")}

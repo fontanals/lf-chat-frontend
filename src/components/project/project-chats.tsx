@@ -10,6 +10,7 @@ import { ChatList, ChatListItem } from "../chat/chat-list";
 import { DeleteChatDialog } from "../chat/delete-chat-dialog";
 import { RenameChatDialog } from "../chat/rename-chat-dialog";
 import { Input } from "../ui/input";
+import { LinkButton } from "../ui/link";
 import { Text } from "../ui/text";
 
 export type ProjectChatsProps = {
@@ -70,26 +71,50 @@ export function ProjectChats(props: ProjectChatsProps) {
         display: "flex",
         flexDirection: "column",
         gap: "16px",
+        width: "100%",
+        maxWidth: "800px",
+        height: "100%",
+        overflow: "hidden",
         marginTop: "8px",
       }}
     >
-      <Text sx={{ paddingInline: "16px", color: "text.secondary" }}>
-        {t("chats")}
-      </Text>
-      <Input
-        placeholder={t("search")}
-        fullWidth
-        value={search}
-        onChange={handleSearchChange}
-      />
-      <Text
-        sx={{ paddingInline: "16px", color: "secondary.main" }}
-        variant="caption"
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+        }}
       >
-        {t("total_chats_found", { total: paginatedChats?.totalChats ?? 0 })}
-      </Text>
-      <ChatList>
-        {paginatedChats?.chats.map((chat) => (
+        <Text sx={{ paddingInline: "16px", color: "text.secondary" }}>
+          {t("chats")}
+        </Text>
+        <LinkButton to={`/new?projectId=${props.project.id}`}>
+          {t("new_chat")}
+        </LinkButton>
+      </Box>
+      <Box>
+        <Input
+          placeholder={t("search")}
+          fullWidth
+          value={search}
+          onChange={handleSearchChange}
+        />
+        <Text
+          sx={{ paddingInline: "16px", color: "secondary.main" }}
+          variant="caption"
+        >
+          {t("total_chats_found", { total: paginatedChats?.totalItems ?? 0 })}
+        </Text>
+      </Box>
+      <ChatList
+        sx={{
+          overflow: "auto",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        {paginatedChats?.items.map((chat) => (
           <ChatListItem
             key={chat.id}
             sx={{ paddingInline: "16px" }}

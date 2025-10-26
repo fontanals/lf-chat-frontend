@@ -1,9 +1,9 @@
 import { v4 as uuid } from "uuid";
 import { Chat } from "../../models/entities/chat";
 import {
-  AssistantContentPart,
   AssistantMessage,
   Message,
+  TextContentBlock,
   UserMessage,
 } from "../../models/entities/message";
 import {
@@ -26,8 +26,8 @@ import {
   GetChatResponse,
   GetChatsResponse,
   SendMessageEvent,
-  UdpateMessageResponse,
   UpdateChatResponse,
+  UpdateMessageResponse,
 } from "../../models/responses/chat";
 import { ApplicationError } from "../../utils/errors";
 import { sleep } from "../../utils/functions";
@@ -167,7 +167,14 @@ export class MockChatService implements IChatService {
           .slice(0, limit)
           .map((chat) => ({ ...chat }));
 
-        resolve({ chats: paginatedChats, totalChats: chats.length });
+        resolve({
+          items: paginatedChats,
+          totalItems: chats.length,
+          nextCursor:
+            chats.length > limit
+              ? chats[limit].createdAt?.toISOString()
+              : undefined,
+        });
       }, 300)
     );
   }
@@ -277,6 +284,7 @@ export class MockChatService implements IChatService {
       role: "assistant",
       content: [],
       feedback: null,
+      finishReason: "stop",
       parentMessageId: userMessage.id,
       chatId: chat.id,
       createdAt: new Date(),
@@ -297,7 +305,7 @@ export class MockChatService implements IChatService {
 
     sleep(50);
 
-    const contentPart: AssistantContentPart = {
+    const contentBlock: TextContentBlock = {
       type: "text",
       text: mockMessage.message,
     };
@@ -309,7 +317,7 @@ export class MockChatService implements IChatService {
 
     sleep(50);
 
-    const words = contentPart.text.split(" ");
+    const words = contentBlock.text.split(" ");
 
     for (let index = 0; index < words.length; index++) {
       const word = words[index];
@@ -326,7 +334,7 @@ export class MockChatService implements IChatService {
       await sleep(50);
     }
 
-    assistantMessage.content.push(contentPart);
+    assistantMessage.content.push(contentBlock);
 
     onEvent({
       event: "text-end",
@@ -337,7 +345,11 @@ export class MockChatService implements IChatService {
 
     onEvent({
       event: "message-end",
-      data: { type: "message-end", messageId: assistantMessage.id },
+      data: {
+        type: "message-end",
+        messageId: assistantMessage.id,
+        finishReason: "stop",
+      },
     });
 
     mockData.messages.push(assistantMessage);
@@ -376,6 +388,7 @@ export class MockChatService implements IChatService {
       role: "assistant",
       content: [],
       feedback: null,
+      finishReason: "stop",
       parentMessageId: userMessage.id,
       chatId: params.chatId,
       createdAt: new Date(),
@@ -395,7 +408,7 @@ export class MockChatService implements IChatService {
 
     sleep(50);
 
-    const contentPart: AssistantContentPart = {
+    const contentBlock: TextContentBlock = {
       type: "text",
       text: mockMessage.message,
     };
@@ -407,7 +420,7 @@ export class MockChatService implements IChatService {
 
     sleep(50);
 
-    const words = contentPart.text.split(" ");
+    const words = contentBlock.text.split(" ");
 
     for (let index = 0; index < words.length; index++) {
       const word = words[index];
@@ -424,7 +437,7 @@ export class MockChatService implements IChatService {
       await sleep(50);
     }
 
-    assistantMessage.content.push(contentPart);
+    assistantMessage.content.push(contentBlock);
 
     onEvent({
       event: "text-end",
@@ -435,7 +448,11 @@ export class MockChatService implements IChatService {
 
     onEvent({
       event: "message-end",
-      data: { type: "message-end", messageId: assistantMessage.id },
+      data: {
+        type: "message-end",
+        messageId: assistantMessage.id,
+        finishReason: "stop",
+      },
     });
 
     mockData.messages.push(assistantMessage);
@@ -473,7 +490,7 @@ export class MockChatService implements IChatService {
   async updateMessage(
     params: UpdateMessageParams,
     request: UpdateMessageRequest
-  ): Promise<UdpateMessageResponse> {
+  ): Promise<UpdateMessageResponse> {
     return new Promise((resolve, reject) =>
       setTimeout(() => {
         const messageExists = mockData.messages.some(

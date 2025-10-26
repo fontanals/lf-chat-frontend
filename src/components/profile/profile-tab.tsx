@@ -64,7 +64,7 @@ export function ProfileTab(props: ProfileTabProps) {
   }
 
   return (
-    <Box>
+    <Box sx={{ width: "100%", maxWidth: "800px" }}>
       <Box
         sx={{
           display: "flex",

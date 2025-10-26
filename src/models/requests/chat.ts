@@ -1,4 +1,4 @@
-import { MessageFeedback, UserContentPart } from "../entities/message";
+import { MessageFeedback, UserContentBlock } from "../entities/message";
 
 export type GetChatsQuery = {
   search?: string;
@@ -17,7 +17,7 @@ export type GetChatMessagesQuery = { expand?: string[] };
 
 export type CreateChatRequest = {
   id: string;
-  message: UserContentPart[];
+  message: UserContentBlock[];
   projectId?: string | null;
 };
 
@@ -25,7 +25,7 @@ export type SendMessageParams = { chatId: string };
 
 export type SendMessageRequest = {
   id: string;
-  content: UserContentPart[];
+  content: UserContentBlock[];
   parentMessageId?: string | null;
 };
 

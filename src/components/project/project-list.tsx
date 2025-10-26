@@ -1,4 +1,4 @@
-import { Box, List, ListItem, ListProps, SxProps } from "@mui/material";
+import { List, ListItem, ListProps, SxProps } from "@mui/material";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -19,64 +19,50 @@ export function ProjectListItem(props: ProjectListItemProps) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
   return (
-    <Link to={`/projects/${props.project.id}`}>
-      <ListItem
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "16px",
-          borderRadius: "8px",
-          textTransform: "none",
-          backgroundColor: "background.default",
-          ...props.sx,
-        }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <Box sx={{ width: "80%" }}>
-          <Text
-            sx={{ color: isHovered ? "secondary.main" : "text.primary" }}
-            noWrap
-          >
-            {props.project.title}
-          </Text>
-          <Text sx={{ color: "text.secondary" }} noWrap>
-            {props.project.description}
-          </Text>
-        </Box>
-        <IconButton
-          sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(event.currentTarget);
-          }}
+    <ListItem
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "16px",
+        borderRadius: "8px",
+        textTransform: "none",
+        backgroundColor: "background.default",
+        ...props.sx,
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Link style={{ width: "100%" }} to={`/projects/${props.project.id}`}>
+        <Text
+          sx={{ color: isHovered ? "secondary.main" : "text.primary" }}
+          noWrap
         >
-          <EllipsisVerticalIcon size="16px" />
-        </IconButton>
-        <ProjectMenu
-          anchorElement={anchorElement}
-          onEditProject={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(null);
-            props.onEdit();
-          }}
-          onDeleteProject={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(null);
-            props.onDelete();
-          }}
-          onClose={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setAnchorElement(null);
-          }}
-        />
-      </ListItem>
-    </Link>
+          {props.project.title}
+        </Text>
+        <Text sx={{ color: "text.secondary" }} noWrap>
+          {props.project.description}
+        </Text>
+      </Link>
+      <IconButton
+        sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
+        onClick={(event) => setAnchorElement(event.currentTarget)}
+      >
+        <EllipsisVerticalIcon size="16px" />
+      </IconButton>
+      <ProjectMenu
+        anchorElement={anchorElement}
+        onEditProject={() => {
+          setAnchorElement(null);
+          props.onEdit();
+        }}
+        onDeleteProject={() => {
+          setAnchorElement(null);
+          props.onDelete();
+        }}
+        onClose={() => setAnchorElement(null)}
+      />
+    </ListItem>
   );
 }
 

@@ -2,12 +2,16 @@ import { ApplicationError } from "./errors";
 
 export type NullableString = string | null | undefined;
 
-export type NullableArray<TItem = unknown> = TItem[] | null | undefined;
+export type NullableArray<T = unknown> = T[] | null | undefined;
 
-export type ErrorServerSentEvent = { event: "error"; error: ApplicationError };
+export type CursorPagination<TItem, TCursor> = {
+  items: TItem[];
+  totalItems: number;
+  nextCursor?: TCursor;
+};
 
 export type ServerSentEvent<TEvent extends String = String, TData = unknown> =
   | { event: "start" }
   | { event: TEvent; data: TData }
-  | { event: "end" }
-  | ErrorServerSentEvent;
+  | { event: "error"; error: ApplicationError }
+  | { event: "end" };
