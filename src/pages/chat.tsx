@@ -1,11 +1,11 @@
-import { Box } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
-import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import { useNavigate, useParams } from "react-router";
+import { Virtuoso } from "react-virtuoso";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
-import { ChatMessage } from "../components/chat/chat-message";
+import { ChatMessage, ContinueMessage } from "../components/chat/chat-message";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
@@ -21,12 +21,18 @@ import {
 } from "../hooks/chat";
 import { useDeleteDocument, useUploadDocuments } from "../hooks/document";
 import { MessageFeedback, UserContentBlock } from "../models/entities/message";
+import { useAlertStore } from "../state/alert";
 import { useChatStore } from "../state/chat";
+import { ObjectUtils } from "../utils/objects";
 import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
   const { chatId } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
+
+  const displayAlert = useAlertStore((state) => state.displayAlert);
 
   const { pendingMessages, streamingMessages, removePendingMessage } =
     useChatStore();
@@ -35,18 +41,25 @@ export function ChatPage() {
 
   const [activePath, setActivePath] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+  const [showContinueMessage, setShowContinueMessage] = useState(false);
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
-  const virtuosoRef = useRef<VirtuosoHandle>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const { data: chat } = useChat(chatId!, { expand: ["project"] });
+  const { data: chat, isLoading: isLoadingChat } = useChat(chatId!, {
+    expand: ["project"],
+  });
   const { data: messageTree } = useChatMessages(
     chatId!,
     pendingMessage == null
   );
-  const { mutate: createChat } = useCreateChat();
-  const { mutate: sendMessage } = useSendMessage();
+  const { mutate: createChat, isPending: isPendingCreateChat } = useCreateChat(
+    abortControllerRef,
+    setShowContinueMessage
+  );
+  const { mutate: sendMessage, isPending: isPendingSendMessage } =
+    useSendMessage(abortControllerRef, setShowContinueMessage);
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: updateMessage } = useUpdateMessage();
   const { mutate: deleteChat } = useDeleteChat();
@@ -55,26 +68,48 @@ export function ChatPage() {
 
   useEffect(() => {
     if (pendingMessage != null) {
-      createChat(
-        {
-          request: {
-            id: pendingMessage.chatId,
-            message: pendingMessage.content,
-            projectId: pendingMessage.projectId,
-          },
+      removePendingMessage(pendingMessage.chatId);
+
+      createChat({
+        request: {
+          id: pendingMessage.chatId,
+          message: pendingMessage.content,
+          projectId: pendingMessage.projectId,
         },
-        { onSuccess: () => removePendingMessage(chatId!) }
-      );
+      });
     }
   }, [pendingMessage, createChat, removePendingMessage]);
 
   useEffect(() => {
-    virtuosoRef.current?.scrollToIndex({ index: "LAST" });
-  }, [activePath]);
+    const lastMessageId =
+      messageTree?.latestPath[messageTree.latestPath.length - 1];
+    const lastMessage = lastMessageId
+      ? messageTree?.messages[lastMessageId]
+      : null;
+
+    if (
+      lastMessage?.role === "assistant" &&
+      (lastMessage.finishReason === "length" ||
+        lastMessage.finishReason === "tool-calls")
+    ) {
+      setShowContinueMessage(true);
+    }
+
+    setActivePath(messageTree?.latestPath ?? []);
+  }, [messageTree]);
 
   useEffect(() => {
-    setActivePath(messageTree?.latestPath ?? []);
-  }, [messageTree?.latestPath]);
+    if (
+      chat == null &&
+      pendingMessage == null &&
+      !isLoadingChat &&
+      !isPendingCreateChat
+    ) {
+      displayAlert({ severity: "error", message: t("chat_not_found_alert") });
+
+      navigate("/new");
+    }
+  }, [chat, pendingMessage, isLoadingChat, isPendingCreateChat]);
 
   function handleRenameChat(title: string) {
     setIsRenameChatDialogOpen(false);
@@ -88,41 +123,38 @@ export function ChatPage() {
     deleteChat({ params: { chatId: chatId! } });
   }
 
-  const handleSelectMessage = useCallback(
-    (messageId: string) => {
-      const message = messageTree?.messages[messageId];
+  function handleSelectMessage(messageId: string) {
+    const message = messageTree?.messages[messageId];
 
-      if (message == null) {
-        return;
-      }
+    if (message == null) {
+      return;
+    }
 
-      const newActivePath = activePath.slice(
-        0,
-        message.parentMessageId != null
-          ? activePath.indexOf(message.parentMessageId) + 1
-          : 0
-      );
+    const newActivePath = activePath.slice(
+      0,
+      message.parentMessageId != null
+        ? activePath.indexOf(message.parentMessageId) + 1
+        : 0
+    );
 
-      newActivePath.push(message.id);
+    newActivePath.push(message.id);
 
-      let nextMessageId =
-        message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
+    let nextMessageId =
+      message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
 
-      while (nextMessageId != null) {
-        let nextMessage = messageTree?.messages[nextMessageId];
+    while (nextMessageId != null) {
+      let nextMessage = messageTree?.messages[nextMessageId];
 
-        newActivePath.push(nextMessageId);
+      newActivePath.push(nextMessageId);
 
-        nextMessageId =
-          nextMessage?.childrenMessageIds?.[
-            nextMessage.childrenMessageIds.length - 1
-          ];
-      }
+      nextMessageId =
+        nextMessage?.childrenMessageIds?.[
+          nextMessage.childrenMessageIds.length - 1
+        ];
+    }
 
-      setActivePath(newActivePath);
-    },
-    [messageTree, activePath, setActivePath]
-  );
+    setActivePath(newActivePath);
+  }
 
   function handleAddDocuments(files: File[]) {
     files.forEach((file) => uploadDocument({ request: { id: uuid(), file } }));
@@ -137,6 +169,8 @@ export function ChatPage() {
       return;
     }
 
+    setMessage("");
+
     sendMessage({
       params: { chatId: chatId! },
       request: {
@@ -146,29 +180,46 @@ export function ChatPage() {
           messageTree?.latestPath[messageTree.latestPath.length - 1],
       },
     });
-
-    setMessage("");
   }
 
-  const handleEditMessage = useCallback(
-    (content: UserContentBlock[], parentMessageId?: string | null) => {
-      sendMessage({
-        params: { chatId: chatId! },
-        request: { id: uuid(), content, parentMessageId },
-      });
-    },
-    [sendMessage, chatId]
-  );
+  function handleStopStreaming() {
+    abortControllerRef.current?.abort();
 
-  const handleChangeMessageFeedback = useCallback(
-    (messageId: string, feedback: MessageFeedback | null) => {
-      updateMessage({
-        params: { chatId: chatId!, messageId },
-        request: { feedback },
-      });
-    },
-    [updateMessage, chatId]
-  );
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    queryClient.invalidateQueries({ queryKey: ["messages", chatId] });
+  }
+
+  function handleEditMessage(
+    content: UserContentBlock[],
+    parentMessageId?: string | null
+  ) {
+    sendMessage({
+      params: { chatId: chatId! },
+      request: { id: uuid(), content, parentMessageId },
+    });
+  }
+
+  function handleChangeMessageFeedback(
+    messageId: string,
+    feedback: MessageFeedback | null
+  ) {
+    updateMessage({
+      params: { chatId: chatId!, messageId },
+      request: { feedback },
+    });
+  }
+
+  function handleContinueMessage() {
+    sendMessage({
+      params: { chatId: chatId! },
+      request: {
+        id: uuid(),
+        content: [{ type: "text", text: t("continue") }],
+        parentMessageId:
+          messageTree?.latestPath[messageTree.latestPath.length - 1],
+      },
+    });
+  }
 
   return (
     <ContentPanel>
@@ -180,21 +231,28 @@ export function ChatPage() {
         />
       )}
       <Virtuoso
-        key={chatId}
-        ref={virtuosoRef}
-        followOutput="smooth"
         style={{
           width: "100%",
           maxWidth: "800px",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
-        data={
-          streamingMessage != null
-            ? activePath.concat(["streaming"])
-            : activePath
-        }
+        followOutput="smooth"
+        data={[
+          ...activePath,
+          streamingMessage != null ? "streaming" : null,
+          showContinueMessage ? "continue" : null,
+        ].filter((messageId) => messageId != null)}
         itemContent={(index, messageId) => {
+          if (messageId === "continue") {
+            return (
+              <ContinueMessage
+                onDismiss={() => setShowContinueMessage(false)}
+                onAccept={handleContinueMessage}
+              />
+            );
+          }
+
           const message =
             messageId === "streaming"
               ? streamingMessage
@@ -210,32 +268,38 @@ export function ChatPage() {
               : null;
 
           return (
-            <Box key={message.id} sx={{ paddingBlock: "8px" }}>
-              <ChatMessage
-                messageIds={
-                  parentMessage?.childrenMessageIds ??
-                  messageTree?.rootMessageIds ?? [message.id]
-                }
-                message={message}
-                onSelectMessage={handleSelectMessage}
-                onEditMessage={handleEditMessage}
-                onChangeMessageFeedback={handleChangeMessageFeedback}
-                hideActions={index === activePath.length}
-              />
-            </Box>
+            <ChatMessage
+              key={message.id}
+              messageIds={
+                parentMessage?.childrenMessageIds ??
+                messageTree?.rootMessageIds ?? [message.id]
+              }
+              message={message}
+              onSelectMessage={handleSelectMessage}
+              onEditMessage={handleEditMessage}
+              onChangeMessageFeedback={handleChangeMessageFeedback}
+              hideActions={index === activePath.length}
+            />
           );
         }}
       />
       <ChatInput
         containerSx={{ marginTop: "32px", maxWidth: "600px" }}
         placeholder={t("reply_to_assistant")}
+        isStreaming={isPendingCreateChat || isPendingSendMessage}
         value={message}
         onChange={(event) => setMessage(event.target.value)}
         onSubmit={handleSendMessage}
+        onStop={handleStopStreaming}
         uploadMap={uploadMap}
         onAddDocuments={handleAddDocuments}
         onRemoveDocument={handleRemoveDocument}
-        disabled={StringUtils.isNullOrWhitespace(message)}
+        disabled={
+          !isPendingCreateChat &&
+          !isPendingSendMessage &&
+          StringUtils.isNullOrWhitespace(message) &&
+          ObjectUtils.isEmpty(uploadMap)
+        }
       />
       <RenameChatDialog
         isOpen={isRenameChatDialogOpen}

@@ -28,7 +28,6 @@ export function DocumentIndicator(props: DocumentIndicatorProps) {
         display: "grid",
         alignItems: "center",
         gap: "4px",
-        maxWidth: "100px",
         cursor: "pointer",
       }}
       onMouseEnter={() => setIsHovered(true)}

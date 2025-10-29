@@ -144,28 +144,40 @@ export class BaseService implements IBaseService {
     TRequest = unknown,
     TQuery extends Query = Query
   >(args: StreamPostRequestOptions<TEvent, TQuery, TRequest>): Promise<void> {
-    const stream = await this.httpClient.streamPost<TRequest, TQuery>(args);
+    try {
+      const stream = await this.httpClient.streamPost<TRequest, TQuery>(args);
 
-    const reader = stream.getReader();
-    const decoder = new TextDecoder("utf-8");
+      const reader = stream.getReader();
+      const decoder = new TextDecoder("utf-8");
 
-    while (true) {
-      const { done, value } = await reader.read();
+      let buffer = "";
 
-      if (done) {
-        break;
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+
+        buffer += chunk;
+
+        const lines = buffer.split("\n");
+
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const event = JSON.parse(line.substring(6)) as TEvent;
+
+            args.onEvent(event);
+          }
+        }
       }
-
-      const chunk = decoder.decode(value, { stream: true });
-
-      const events = chunk
-        .split("data: ")
-        .filter((event) => event.trim() !== "");
-
-      for (const event of events) {
-        const parsedEvent = JSON.parse(event) as TEvent;
-
-        args.onEvent(parsedEvent);
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        throw error;
       }
     }
   }

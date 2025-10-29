@@ -57,7 +57,11 @@ export class ApplicationError extends Error {
     );
   }
 
-  static copy(error: ApplicationError): ApplicationError {
-    return new ApplicationError(error.code, error.message);
+  static copy(error: Error): ApplicationError {
+    return new ApplicationError(
+      (error as ApplicationError).code ??
+        ApplicationErrorCode.InternalServerError,
+      error.message
+    );
   }
 }

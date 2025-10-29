@@ -48,9 +48,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
   return (
     <Dialog
       slotProps={{
-        paper: {
-          sx: { minWidth: "500px", borderRadius: "16px" },
-        },
+        paper: { sx: { width: "100%", borderRadius: "16px" } },
         backdrop: {
           sx: {
             backgroundColor: (theme) =>

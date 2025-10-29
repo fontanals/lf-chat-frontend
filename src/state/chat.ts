@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { AssistantMessage, UserContentPart } from "../models/entities/message";
+import { AssistantMessage, UserContentBlock } from "../models/entities/message";
 
 export type PendingMessage = {
-  content: UserContentPart[];
+  content: UserContentBlock[];
   chatId: string;
   projectId?: string | null;
 };

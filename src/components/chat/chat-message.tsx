@@ -1,5 +1,6 @@
 import { alpha, Box } from "@mui/material";
 import {
+  AlertCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
@@ -7,7 +8,13 @@ import {
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from "lucide-react";
-import { Fragment, ReactNode, useEffect, useState } from "react";
+import {
+  Fragment,
+  MouseEventHandler,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   AssistantMessage,
@@ -24,7 +31,47 @@ import { MarkdownRenderer } from "../ui/markdown-renderer";
 import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
 
-function UserMessageComponent(props: {
+export type ContinueMessageProps = {
+  onAccept: MouseEventHandler<HTMLButtonElement>;
+  onDismiss: MouseEventHandler<HTMLButtonElement>;
+};
+
+export function ContinueMessage(props: ContinueMessageProps) {
+  const { t } = useTranslation();
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: "8px",
+        paddingBlock: "8px",
+      }}
+    >
+      <Box
+        sx={{
+          width: "fit-content",
+          padding: "12px",
+          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+          borderRadius: "16px 0px 16px 16px",
+        }}
+      >
+        <Text sx={{ whiteSpace: "pre" }}>{t("continue")}</Text>
+      </Box>
+      <Box sx={{ display: "flex", gap: "8px" }}>
+        <ShadowButton size="small" primary onClick={props.onDismiss}>
+          {t("dismiss")}
+        </ShadowButton>
+        <ShadowButton size="small" onClick={props.onAccept}>
+          {t("accept")}
+        </ShadowButton>
+      </Box>
+    </Box>
+  );
+}
+
+export function UserMessageComponent(props: {
   message: UserMessageComponentº;
   onEditMessage: (
     content: UserContentBlock[],
@@ -89,6 +136,7 @@ function UserMessageComponent(props: {
             flexDirection: "column",
             alignItems: "flex-end",
             gap: "8px",
+            paddingBlock: "8px",
           }}
         >
           <Input
@@ -127,6 +175,7 @@ function UserMessageComponent(props: {
         flexDirection: "column",
         alignItems: "flex-end",
         gap: "8px",
+        paddingBlock: "8px",
       }}
     >
       {hasDocuments && (
@@ -190,12 +239,41 @@ export function AssistantMessageComponent(props: {
     navigator.clipboard.writeText(textContent);
   }
 
+  if (
+    ["error", "content-filter", "other", "unknown"].includes(
+      props.message.finishReason
+    )
+  ) {
+    return (
+      <Box sx={{ paddingBlock: "8px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "12px",
+            backgroundColor: "error.main",
+            borderRadius: "8px",
+          }}
+        >
+          <AlertCircleIcon size="16px" />
+          <Text>
+            {props.message.finishReason === "content-filter"
+              ? t("assistant_content_filter_message")
+              : t("assistant_error_message")}
+          </Text>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-end",
+        paddingBlock: "8px",
       }}
     >
       <Box sx={{ width: "100%", paddingInline: "12px", fontSize: "14px" }}>
@@ -210,6 +288,17 @@ export function AssistantMessageComponent(props: {
           }
         })}
       </Box>
+      {props.message.finishReason === "interrupted" && (
+        <Text sx={{ color: "text.secondary" }} variant="caption">
+          {t("message_interrupted_by_user")}
+        </Text>
+      )}
+      {(props.message.finishReason === "length" ||
+        props.message.finishReason === "tool-calls") && (
+        <Text sx={{ color: "text.secondary" }} variant="caption">
+          {t("message_interrupted_due_to_size_constraints")}
+        </Text>
+      )}
       {!props.hideActions && (
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Tooltip title={t("copy")}>

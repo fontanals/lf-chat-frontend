@@ -102,7 +102,7 @@ export function ProjectPage() {
           </Text>
           <Text noWrap>{project?.description ?? ""}</Text>
         </Box>
-        <Box sx={{ display: "flex" }}>
+        <Box sx={{ display: "flex", gap: "8px" }}>
           <Tooltip title={t("edit_project")}>
             <IconButton onClick={() => setIsEditProjectDialogOpen(true)}>
               <PencilIcon size="16px" />

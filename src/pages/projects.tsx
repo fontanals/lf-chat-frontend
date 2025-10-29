@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { PlusIcon } from "lucide-react";
+import { FolderClosedIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuid } from "uuid";
@@ -17,7 +17,7 @@ import {
   ProjectList,
   ProjectListItem,
 } from "../components/project/project-list";
-import { ShadowButton } from "../components/ui/button";
+import { ShadowButton, TextButton } from "../components/ui/button";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
 import {
@@ -27,6 +27,7 @@ import {
   useUpdateProject,
 } from "../hooks/project";
 import { Project } from "../models/entities/project";
+import { ArrayUtils } from "../utils/arrays";
 
 export function ProjectsPage() {
   const { t } = useTranslation();
@@ -88,6 +89,24 @@ export function ProjectsPage() {
           {t("create_project")}
         </ShadowButton>
       </Box>
+      {!isLoading && ArrayUtils.isNullOrEmpty(projects) && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "32px",
+          }}
+        >
+          <Box>
+            <FolderClosedIcon size="20px" />
+          </Box>
+          <Text>{t("no_projects_yet")}</Text>
+          <TextButton onClick={() => setIsCreateProjectDialogOpen(true)}>
+            {t("create_your_first_project")}
+          </TextButton>
+        </Box>
+      )}
       <ProjectList
         sx={{
           width: "100%",

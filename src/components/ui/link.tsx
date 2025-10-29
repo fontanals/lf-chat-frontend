@@ -8,13 +8,17 @@ export function Link(props: LinkProps) {
 
   return (
     <RRLink
-      style={{ color: theme.palette.secondary.main, ...style }}
+      style={{
+        fontSize: "14px",
+        color: theme.palette.secondary.main,
+        ...style,
+      }}
       {...rest}
     />
   );
 }
 
-export function LinkButton(props: LinkProps) {
+export function LinkButton(props: LinkProps & { primary?: boolean }) {
   const theme = useTheme();
 
   return (
@@ -25,9 +29,14 @@ export function LinkButton(props: LinkProps) {
         gap: "8px",
         fontSize: "14px",
         padding: "6px 8px",
-        color: theme.palette.secondary.main,
-        backgroundColor: alpha(theme.palette.secondary.main, 0.2),
+        color: props.primary
+          ? theme.palette.primary.main
+          : theme.palette.secondary.main,
+        backgroundColor: props.primary
+          ? alpha(theme.palette.primary.main, 0.2)
+          : alpha(theme.palette.secondary.main, 0.2),
         borderRadius: "8px",
+        ...props.style,
       }}
       to={props.to}
     >

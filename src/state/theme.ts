@@ -10,7 +10,7 @@ export type ThemeStore = {
 
 export const useThemeStore = create<ThemeStore>((set) => ({
   theme: LocalStorageUtils.getItem<Theme>("theme", "system"),
-  setTheme: (theme: Theme) => {
+  setTheme: (theme) => {
     LocalStorageUtils.setItem("theme", theme);
     set({ theme });
   },

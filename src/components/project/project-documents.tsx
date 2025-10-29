@@ -1,11 +1,11 @@
 import { alpha, Box } from "@mui/material";
-import { FilePlus2Icon } from "lucide-react";
+import { FileIcon, FilePlus2Icon } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import { Project } from "../../models/entities/project";
 import { ArrayUtils } from "../../utils/arrays";
 import { DocumentIndicator } from "../document/document-indicator";
-import { IconButton } from "../ui/button";
+import { IconButton, TextButton } from "../ui/button";
 import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
 
@@ -32,6 +32,7 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
         gap: "16px",
         width: "100%",
         maxWidth: "800px",
+        marginTop: "8px",
         paddingBlock: "8px",
         ...(isDragActive
           ? {
@@ -56,7 +57,7 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
             color: "secondary.main",
           }}
         >
-          {t("drag_and_drop_to_upload")}
+          {t("drop_to_upload")}
         </Text>
       )}
       <Box
@@ -84,9 +85,22 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
         }}
       >
         {ArrayUtils.isNullOrEmpty(props.project.documents) ? (
-          <Text variant="caption">
-            {t("add_pdf_documents_as_context_to_the_project")}
-          </Text>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <Box>
+              <FileIcon size="16px" />
+            </Box>
+            <Text>{t("no_documents_yet")}</Text>
+            <TextButton>
+              {t("add_a_document_as_context_to_the_project")}
+            </TextButton>
+          </Box>
         ) : (
           props.project.documents?.map((document) => (
             <DocumentIndicator

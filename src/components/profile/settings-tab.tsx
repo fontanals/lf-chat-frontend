@@ -40,7 +40,7 @@ export function SettingsTab() {
       <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <Text>{t("theme")}</Text>
         <Box sx={{ display: "flex", gap: "8px" }}>
-          <Tooltip title={t("light")} placement="top">
+          <Tooltip title={t("light")}>
             <IconButton
               sx={{
                 color: theme === "light" ? "secondary.main" : "text.primary",
@@ -50,7 +50,7 @@ export function SettingsTab() {
               <SunIcon size="20px" />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("dark")} placement="top">
+          <Tooltip title={t("dark")}>
             <IconButton
               sx={{
                 color: theme === "dark" ? "secondary.main" : "text.primary",
@@ -60,7 +60,7 @@ export function SettingsTab() {
               <MoonIcon size="20px" />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("match_system")} placement="top">
+          <Tooltip title={t("match_system")}>
             <IconButton
               sx={{
                 color: theme === "system" ? "secondary.main" : "text.primary",

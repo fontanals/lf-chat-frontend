@@ -1,4 +1,6 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { useErrorStore } from "./state/error";
+import { ApplicationError, ApplicationErrorCode } from "./utils/errors";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -9,6 +11,19 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       retry: false,
+      onError: (error) =>
+        useErrorStore.setState({ error: ApplicationError.copy(error) }),
     },
   },
+  queryCache: new QueryCache({
+    onError: (error) => {
+      const applicationError = ApplicationError.copy(error);
+
+      if (applicationError.code === ApplicationErrorCode.NotFound) {
+        return;
+      }
+
+      useErrorStore.setState({ error: ApplicationError.copy(error) });
+    },
+  }),
 });

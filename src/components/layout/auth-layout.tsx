@@ -3,12 +3,10 @@ import { Fragment } from "react";
 import { Outlet } from "react-router";
 import { AlertSnackbar } from "../common/alert-snackbar";
 import { ErrorDialog } from "../common/error-dialog";
-import { Sidebar } from "./sidebar";
 
-export function MainLayout() {
+export function AuthLayout() {
   return (
     <Fragment>
-      <Sidebar />
       <Box component="main">
         <Outlet />
       </Box>

@@ -1,16 +1,22 @@
 import { Box } from "@mui/material";
+import { MessageCircleIcon } from "lucide-react";
 import { ChangeEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
-import { useChats, useDeleteChat, useUpdateChat } from "../../hooks/chat";
+import {
+  useDeleteChat,
+  useProjectChats,
+  useUpdateChat,
+} from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
 import { Project } from "../../models/entities/project";
+import { ArrayUtils } from "../../utils/arrays";
 import { SearchParamsUtils } from "../../utils/search-params";
 import { ChatList, ChatListItem } from "../chat/chat-list";
 import { DeleteChatDialog } from "../chat/delete-chat-dialog";
 import { RenameChatDialog } from "../chat/rename-chat-dialog";
 import { Input } from "../ui/input";
-import { LinkButton } from "../ui/link";
+import { Link, LinkButton } from "../ui/link";
 import { Text } from "../ui/text";
 
 export type ProjectChatsProps = {
@@ -31,14 +37,16 @@ export function ProjectChats(props: ProjectChatsProps) {
 
   const debouncedSearchTimeoutRef = useRef<any>(null);
 
-  const { data: paginatedChats } = useChats({
+  const { data, isLoading } = useProjectChats(props.project.id, {
     search: paramsSearch,
-    projectId: props.project.id,
     cursor: cursor ?? undefined,
-    limit: 20,
+    limit: 25,
   });
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: deleteChat } = useDeleteChat();
+
+  const chats = data?.pages.flatMap((page) => page.items) ?? [];
+  const totalChats = data?.pages[0]?.totalItems ?? 0;
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value);
@@ -73,8 +81,6 @@ export function ProjectChats(props: ProjectChatsProps) {
         gap: "16px",
         width: "100%",
         maxWidth: "800px",
-        height: "100%",
-        overflow: "hidden",
         marginTop: "8px",
       }}
     >
@@ -104,9 +110,27 @@ export function ProjectChats(props: ProjectChatsProps) {
           sx={{ paddingInline: "16px", color: "secondary.main" }}
           variant="caption"
         >
-          {t("total_chats_found", { total: paginatedChats?.totalItems ?? 0 })}
+          {t("total_chats_found", { total: totalChats })}
         </Text>
       </Box>
+      {!isLoading && ArrayUtils.isNullOrEmpty(chats) && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "8px",
+          }}
+        >
+          <Box>
+            <MessageCircleIcon size="20px" />
+          </Box>
+          <Text>{t("no_chats_yet")}</Text>
+          <Link to={`/new?projectId=${props.project.id}`}>
+            {t("start_a_new_chat")}
+          </Link>
+        </Box>
+      )}
       <ChatList
         sx={{
           overflow: "auto",
@@ -114,7 +138,7 @@ export function ProjectChats(props: ProjectChatsProps) {
           msOverflowStyle: "none",
         }}
       >
-        {paginatedChats?.items.map((chat) => (
+        {chats.map((chat) => (
           <ChatListItem
             key={chat.id}
             sx={{ paddingInline: "16px" }}

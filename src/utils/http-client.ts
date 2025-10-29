@@ -7,6 +7,7 @@ export type RequestOptions<TQuery = unknown, TRequest = unknown> = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   query?: TQuery;
   request?: TRequest;
+  abortSignal?: AbortSignal;
 };
 
 export type GetRequestOptions<TQuery = unknown> = Omit<
@@ -81,6 +82,7 @@ export class HttpClient implements IHttpClient {
       method: "GET",
       url: args.url,
       query: args.query,
+      abortSignal: args.abortSignal,
     });
 
     return response;
@@ -96,6 +98,7 @@ export class HttpClient implements IHttpClient {
       url: args.url,
       query: args.query,
       request: args.request,
+      abortSignal: args.abortSignal,
     });
 
     return response;
@@ -111,6 +114,7 @@ export class HttpClient implements IHttpClient {
       url: args.url,
       query: args.query,
       request: args.request,
+      abortSignal: args.abortSignal,
     });
 
     return response;
@@ -126,6 +130,7 @@ export class HttpClient implements IHttpClient {
       url: args.url,
       query: args.query,
       request: args.request,
+      abortSignal: args.abortSignal,
     });
 
     return response;
@@ -138,19 +143,21 @@ export class HttpClient implements IHttpClient {
       method: "DELETE",
       url: args.url,
       query: args.query,
+      abortSignal: args.abortSignal,
     });
 
     return response;
   }
 
   async streamPost<TRequest = unknown, TQuery extends Query = Query>(
-    agrs: PostRequestOptions<TQuery, TRequest>
+    args: PostRequestOptions<TQuery, TRequest>
   ): Promise<StreamResponse> {
     const response = await this.streamRequest<TQuery, TRequest>({
       method: "POST",
-      url: agrs.url,
-      query: agrs.query,
-      request: agrs.request,
+      url: args.url,
+      query: args.query,
+      request: args.request,
+      abortSignal: args.abortSignal,
     });
 
     return response;
@@ -186,6 +193,7 @@ export class HttpClient implements IHttpClient {
       headers: this.headers,
       body: JSON.stringify(args.request),
       credentials: "include",
+      signal: args.abortSignal,
     });
 
     const authorizationHeader = response.headers.get("authorization");
@@ -212,6 +220,7 @@ export class HttpClient implements IHttpClient {
       headers,
       body: JSON.stringify(args.request),
       credentials: "include",
+      signal: args.abortSignal,
     });
 
     const authorizationHeader = response.headers.get("Authorization");
@@ -238,9 +247,9 @@ export class HttpClient implements IHttpClient {
 
       const xhr = new XMLHttpRequest();
 
-      headers.forEach((value, key) => xhr.setRequestHeader(key, value));
-
       xhr.open("POST", url, true);
+
+      headers.forEach((value, key) => xhr.setRequestHeader(key, value));
 
       if (args.onProgress != null) {
         xhr.upload.onprogress = args.onProgress;

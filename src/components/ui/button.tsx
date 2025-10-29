@@ -67,3 +67,23 @@ export function IconButton(props: IconButtonProps) {
     />
   );
 }
+
+export function TextButton(props: ButtonProps) {
+  const { sx, ...rest } = props;
+
+  return (
+    <Button
+      sx={{
+        padding: "0px",
+        textTransform: "none",
+        color: "secondary.main",
+        backgroundColor: "inherit",
+        "&:hover": { backgroundColor: "inherit" },
+        ...sx,
+      }}
+      variant="text"
+      disableRipple
+      {...rest}
+    />
+  );
+}

@@ -11,7 +11,7 @@ import {
   MessageCircleMoreIcon,
   MessageCirclePlusIcon,
 } from "lucide-react";
-import { Fragment, useEffect } from "react";
+import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 import { useSidebarStore } from "../../state/sidebar";
@@ -80,12 +80,6 @@ export function Sidebar() {
 
   const { isOpen, setIsOpen } = useSidebarStore();
 
-  useEffect(() => {
-    if (isMobile) {
-      setIsOpen(false);
-    }
-  }, [isMobile]);
-
   const content = (
     <Fragment>
       <Link to="/">
@@ -128,7 +122,7 @@ export function Sidebar() {
       </Link>
       <SidebarMenu sx={{ marginTop: "16px" }}>
         <SidebarMenuItem
-          href="/"
+          href="/new"
           text={t("new_chat")}
           icon={<MessageCirclePlusIcon size="24px" />}
           hideTooltip={isOpen}

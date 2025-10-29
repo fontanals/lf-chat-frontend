@@ -13,7 +13,7 @@ export function useSignup() {
       services.auth.signup(args.request),
     onSuccess: (response) => {
       queryClient.setQueryData<GetUserResponse>(["user"], response.user);
-      navigate("/");
+      navigate("/new");
     },
   });
 }
@@ -27,7 +27,7 @@ export function useSignin() {
       services.auth.signin(args.request),
     onSuccess: (response) => {
       queryClient.setQueryData<GetUserResponse>(["user"], response.user);
-      navigate("/");
+      navigate("/new");
     },
   });
 }

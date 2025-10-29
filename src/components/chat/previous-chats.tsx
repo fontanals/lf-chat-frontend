@@ -2,10 +2,15 @@ import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import { useChats, useDeleteChat, useUpdateChat } from "../../hooks/chat";
+import {
+  usePreviousChats,
+  useDeleteChat,
+  useUpdateChat,
+} from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
 import { useSidebarStore } from "../../state/sidebar";
 import { ArrayUtils } from "../../utils/arrays";
+import { LinkButton } from "../ui/link";
 import { Text } from "../ui/text";
 import { ChatList, ChatListItem } from "./chat-list";
 import { DeleteChatDialog } from "./delete-chat-dialog";
@@ -25,7 +30,7 @@ export function PreviousChats() {
   const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
-  const { data: paginatedChats } = useChats();
+  const { data: chats } = usePreviousChats();
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: deleteChat } = useDeleteChat();
 
@@ -66,13 +71,13 @@ export function PreviousChats() {
           overflowY: "auto",
         }}
       >
-        {!ArrayUtils.isNullOrEmpty(paginatedChats?.items) && (
+        {!ArrayUtils.isNullOrEmpty(chats?.items) && (
           <Text sx={{ padding: "0px 8px", color: "text.secondary" }}>
             {t("previous_chats")}
           </Text>
         )}
         <ChatList sx={{ marginTop: "8px", padding: "0px" }}>
-          {paginatedChats?.items.map((chat) => (
+          {chats?.items.map((chat) => (
             <ChatListItem
               key={chat.id}
               sx={{
@@ -94,6 +99,15 @@ export function PreviousChats() {
               }}
             />
           ))}
+          {(chats?.totalItems ?? 0) > 25 && (
+            <LinkButton
+              style={{ justifyContent: "center" }}
+              primary
+              to="/history"
+            >
+              {t("view_complete_history")}
+            </LinkButton>
+          )}
         </ChatList>
       </Box>
       <RenameChatDialog

@@ -14,6 +14,7 @@ import { UserContentBlock } from "../models/entities/message";
 import { useChatStore } from "../state/chat";
 import { ArrayUtils } from "../utils/arrays";
 import { StringUtils } from "../utils/strings";
+import { ObjectUtils } from "../utils/objects";
 
 export function NewChatPage() {
   const [searchParams] = useSearchParams();
@@ -109,7 +110,10 @@ export function NewChatPage() {
         uploadMap={uploadMap}
         onAddDocuments={handleAddDocuments}
         onRemoveDocument={handleRemoveDocument}
-        disabled={StringUtils.isNullOrWhitespace(message)}
+        disabled={
+          StringUtils.isNullOrWhitespace(message) &&
+          ObjectUtils.isEmpty(uploadMap)
+        }
       />
     </ContentPanel>
   );

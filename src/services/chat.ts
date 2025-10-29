@@ -18,8 +18,8 @@ import {
   GetChatResponse,
   GetChatsResponse,
   SendMessageEvent,
-  UpdateMessageResponse,
   UpdateChatResponse,
+  UpdateMessageResponse,
 } from "../models/responses/chat";
 import { IBaseService } from "./base";
 
@@ -34,12 +34,14 @@ export interface IChatService {
   ): Promise<GetChatMessagesResponse>;
   createChat(
     request: CreateChatRequest,
-    onEvent: (event: SendMessageEvent) => void
+    onEvent: (event: SendMessageEvent) => void,
+    abortSignal: AbortSignal
   ): Promise<void>;
   sendMessage(
     params: SendMessageParams,
     request: SendMessageRequest,
-    onEvent: (event: SendMessageEvent) => void
+    onEvent: (event: SendMessageEvent) => void,
+    abortSignal: AbortSignal
   ): Promise<void>;
   updateChat(
     params: UpdateChatParams,
@@ -92,24 +94,28 @@ export class ChatService implements IChatService {
 
   async createChat(
     request: CreateChatRequest,
-    onEvent: (event: SendMessageEvent) => void
+    onEvent: (event: SendMessageEvent) => void,
+    abortSignal: AbortSignal
   ): Promise<void> {
     await this.baseService.streamPost<SendMessageEvent, CreateChatRequest>({
       url: "/api/chats",
       request,
       onEvent,
+      abortSignal,
     });
   }
 
   async sendMessage(
     params: SendMessageParams,
     request: SendMessageRequest,
-    onEvent: (event: SendMessageEvent) => void
+    onEvent: (event: SendMessageEvent) => void,
+    abortSignal: AbortSignal
   ): Promise<void> {
     await this.baseService.streamPost<SendMessageEvent, SendMessageRequest>({
       url: `/api/chats/${params.chatId}/messages`,
       request,
       onEvent,
+      abortSignal,
     });
   }
 

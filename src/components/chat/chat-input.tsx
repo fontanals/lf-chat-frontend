@@ -1,5 +1,5 @@
 import { Box, IconButton, InputBase, SxProps, alpha } from "@mui/material";
-import { ArrowUpRightIcon, PaperclipIcon } from "lucide-react";
+import { ArrowUpRightIcon, CircleStopIcon, PaperclipIcon } from "lucide-react";
 import { ChangeEventHandler } from "react";
 import { useDropzone } from "react-dropzone";
 import { UploadMap } from "../../hooks/document";
@@ -8,9 +8,11 @@ import { DocumentIndicator } from "../document/document-indicator";
 export type ChatInputProps = {
   containerSx?: SxProps;
   placeholder: string;
+  isStreaming: boolean;
   value: string;
   onChange: ChangeEventHandler<HTMLInputElement>;
   onSubmit: () => void;
+  onStop: () => void;
   uploadMap?: UploadMap;
   onAddDocuments?: (files: File[]) => void;
   onRemoveDocument?: (id: string) => void;
@@ -102,10 +104,14 @@ export function ChatInput(props: ChatInputProps) {
             },
             "& .MuiTouchRipple-child": { borderRadius: "8px" },
           }}
-          onClick={props.onSubmit}
+          onClick={props.isStreaming ? props.onStop : props.onSubmit}
           disabled={props.disabled}
         >
-          <ArrowUpRightIcon size="24px" />
+          {props.isStreaming ? (
+            <CircleStopIcon size="24px" />
+          ) : (
+            <ArrowUpRightIcon size="24px" />
+          )}
         </IconButton>
       </Box>
       <input {...getInputProps()} />

@@ -1,8 +1,11 @@
 import { createBrowserRouter, Navigate } from "react-router";
+import { AuthLayout } from "../components/layout/auth-layout";
 import { MainLayout } from "../components/layout/main-layout";
 import { ChatPage } from "../pages/chat";
 import { ChatHistoryPage } from "../pages/chat-history";
+import { ErrorPage } from "../pages/error";
 import { NewChatPage } from "../pages/new-chat";
+import { NotFoundPage } from "../pages/not-found";
 import { ProfilePage } from "../pages/profile";
 import { ProjectPage } from "../pages/project";
 import { ProjectsPage } from "../pages/projects";
@@ -11,10 +14,17 @@ import { SignupPage } from "../pages/signup";
 import { PrivateRoute } from "./private-route";
 
 export const router = createBrowserRouter([
-  { path: "/signup", element: <SignupPage /> },
-  { path: "/signin", element: <SigninPage /> },
+  {
+    element: <AuthLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: "/signup", element: <SignupPage /> },
+      { path: "/signin", element: <SigninPage /> },
+    ],
+  },
   {
     element: <PrivateRoute />,
+    errorElement: <ErrorPage />,
     children: [
       {
         element: <MainLayout />,
@@ -30,4 +40,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/error", element: <ErrorPage /> },
+  { path: "*", element: <NotFoundPage /> },
 ]);
