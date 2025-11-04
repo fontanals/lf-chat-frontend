@@ -85,5 +85,15 @@
   "accept": "Aceitar",
   "view_complete_history": "Ver Histórico Completo",
   "load_more": "Carregar Mais",
-  "message_interrupted_due_to_size_constraints": "Mensagem interrompida devido a limitações de comprimento."
+  "message_interrupted_due_to_size_constraints": "Mensagem interrompida devido a limitações de comprimento.",
+  "processing_document_name": "A processar documento {{name}}",
+  "failed_to_process_document_name": "Falha ao processar documento {{name}}",
+  "processed_document_name_successfully": "Documento {{name}} processado com sucesso",
+  "reading_document_name": "A ler documento {{name}}",
+  "failed_to_read_document_name": "Falha ao ler documento {{name}}",
+  "read_document_name_successfully": "Documento {{name}} lido com sucesso",
+  "chat_not_found": "Chat não encontrado",
+  "max_users_reached_error_message": "Número máximo de utilizadores registados atingido. Por favor, utilize a conta de demonstração para testar a aplicação.",
+  "max_user_documents_reached_error_message": "Número máximo de documentos atingido. Pode eliminar chats ou projetos anteriores que contenham documentos para carregar novos.",
+  "invalid_email_or_password": "Email ou palavra-passe inválidos"
 }

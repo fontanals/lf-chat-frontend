@@ -3,7 +3,8 @@ export type Document = {
   name: string;
   mimetype: string;
   sizeInBytes: number;
-  messageId?: string | null;
+  isProcessed: boolean;
+  chatId?: string | null;
   projectId?: string | null;
   createdAt?: Date;
   udpatedAt?: Date;

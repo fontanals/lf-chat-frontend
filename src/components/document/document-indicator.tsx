@@ -2,18 +2,14 @@ import { Box, alpha } from "@mui/material";
 import { FileIcon, XIcon } from "lucide-react";
 import { MouseEventHandler, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Document } from "../../models/entities/document";
 import { IconButton } from "../ui/button";
 import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
 
 export type DocumentIndicatorProps = {
-  document: Omit<
-    Document,
-    "sizeInBytes" | "messageId" | "projectId" | "createdAt" | "udpatedAt"
-  >;
+  document: { id: string; name: string };
   onRemoveDocument?: MouseEventHandler<HTMLButtonElement>;
-  removeDisabled?: boolean;
+  disableRemove?: boolean;
 };
 
 export function DocumentIndicator(props: DocumentIndicatorProps) {
@@ -33,7 +29,7 @@ export function DocumentIndicator(props: DocumentIndicatorProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {!props.removeDisabled && isHovered && (
+      {!props.disableRemove && isHovered && (
         <Tooltip title={t("remove_document")} variant="error">
           <IconButton
             sx={{

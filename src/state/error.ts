@@ -2,11 +2,18 @@ import { create } from "zustand";
 import { ApplicationError } from "../utils/errors";
 
 export type ErrorStore = {
+  showError: boolean;
   error: ApplicationError | null;
-  setError: (error: ApplicationError | null) => void;
+  displayError: (error: ApplicationError) => void;
+  clearError: () => void;
 };
 
 export const useErrorStore = create<ErrorStore>((set) => ({
+  showError: false,
   error: null,
-  setError: (error) => set({ error }),
+  displayError: (error) => set({ showError: true, error }),
+  clearError: () => {
+    set({ showError: false });
+    setTimeout(() => set({ error: null }), 100);
+  },
 }));

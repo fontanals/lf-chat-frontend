@@ -1,8 +1,9 @@
+import { Box } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { MessageCircleOffIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
-import { Virtuoso } from "react-virtuoso";
+import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
 import { ChatMessage, ContinueMessage } from "../components/chat/chat-message";
@@ -10,6 +11,8 @@ import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
 import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
 import { ContentPanel } from "../components/layout/content-panel";
+import { Link } from "../components/ui/link";
+import { Text } from "../components/ui/text";
 import {
   useChat,
   useChatMessages,
@@ -21,22 +24,17 @@ import {
 } from "../hooks/chat";
 import { useDeleteDocument, useUploadDocuments } from "../hooks/document";
 import { MessageFeedback, UserContentBlock } from "../models/entities/message";
-import { useAlertStore } from "../state/alert";
 import { useChatStore } from "../state/chat";
 import { ObjectUtils } from "../utils/objects";
 import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
   const { chatId } = useParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  const displayAlert = useAlertStore((state) => state.displayAlert);
-
-  const { pendingMessages, streamingMessages, removePendingMessage } =
-    useChatStore();
-  const pendingMessage = pendingMessages[chatId!];
+  const { pendingChats, streamingMessages, removePendingChat } = useChatStore();
+  const pendingChat = pendingChats[chatId!];
   const streamingMessage = streamingMessages[chatId!];
 
   const [activePath, setActivePath] = useState<string[]>([]);
@@ -46,20 +44,23 @@ export function ChatPage() {
   const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { data: chat, isLoading: isLoadingChat } = useChat(chatId!, {
     expand: ["project"],
   });
-  const { data: messageTree } = useChatMessages(
-    chatId!,
-    pendingMessage == null
-  );
+  const { data: messageTree } = useChatMessages(chatId!, pendingChat == null);
   const { mutate: createChat, isPending: isPendingCreateChat } = useCreateChat(
     abortControllerRef,
+    messagesContainerRef,
     setShowContinueMessage
   );
   const { mutate: sendMessage, isPending: isPendingSendMessage } =
-    useSendMessage(abortControllerRef, setShowContinueMessage);
+    useSendMessage(
+      abortControllerRef,
+      messagesContainerRef,
+      setShowContinueMessage
+    );
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: updateMessage } = useUpdateMessage();
   const { mutate: deleteChat } = useDeleteChat();
@@ -67,18 +68,12 @@ export function ChatPage() {
   const { mutate: deleteDocument } = useDeleteDocument();
 
   useEffect(() => {
-    if (pendingMessage != null) {
-      removePendingMessage(pendingMessage.chatId);
+    if (pendingChat != null) {
+      removePendingChat(pendingChat.chat.id);
 
-      createChat({
-        request: {
-          id: pendingMessage.chatId,
-          message: pendingMessage.content,
-          projectId: pendingMessage.projectId,
-        },
-      });
+      createChat(pendingChat);
     }
-  }, [pendingMessage, createChat, removePendingMessage]);
+  }, [pendingChat, createChat, removePendingChat]);
 
   useEffect(() => {
     const lastMessageId =
@@ -99,17 +94,11 @@ export function ChatPage() {
   }, [messageTree]);
 
   useEffect(() => {
-    if (
-      chat == null &&
-      pendingMessage == null &&
-      !isLoadingChat &&
-      !isPendingCreateChat
-    ) {
-      displayAlert({ severity: "error", message: t("chat_not_found_alert") });
-
-      navigate("/new");
-    }
-  }, [chat, pendingMessage, isLoadingChat, isPendingCreateChat]);
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "instant",
+    });
+  }, [activePath]);
 
   function handleRenameChat(title: string) {
     setIsRenameChatDialogOpen(false);
@@ -123,38 +112,41 @@ export function ChatPage() {
     deleteChat({ params: { chatId: chatId! } });
   }
 
-  function handleSelectMessage(messageId: string) {
-    const message = messageTree?.messages[messageId];
+  const handleSelectMessage = useCallback(
+    (messageId: string) => {
+      const message = messageTree?.messages[messageId];
 
-    if (message == null) {
-      return;
-    }
+      if (message == null) {
+        return;
+      }
 
-    const newActivePath = activePath.slice(
-      0,
-      message.parentMessageId != null
-        ? activePath.indexOf(message.parentMessageId) + 1
-        : 0
-    );
+      const newActivePath = activePath.slice(
+        0,
+        message.parentMessageId != null
+          ? activePath.indexOf(message.parentMessageId) + 1
+          : 0
+      );
 
-    newActivePath.push(message.id);
+      newActivePath.push(message.id);
 
-    let nextMessageId =
-      message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
+      let nextMessageId =
+        message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
 
-    while (nextMessageId != null) {
-      let nextMessage = messageTree?.messages[nextMessageId];
+      while (nextMessageId != null) {
+        let nextMessage = messageTree?.messages[nextMessageId];
 
-      newActivePath.push(nextMessageId);
+        newActivePath.push(nextMessageId);
 
-      nextMessageId =
-        nextMessage?.childrenMessageIds?.[
-          nextMessage.childrenMessageIds.length - 1
-        ];
-    }
+        nextMessageId =
+          nextMessage?.childrenMessageIds?.[
+            nextMessage.childrenMessageIds.length - 1
+          ];
+      }
 
-    setActivePath(newActivePath);
-  }
+      setActivePath(newActivePath);
+    },
+    [activePath, messageTree]
+  );
 
   function handleAddDocuments(files: File[]) {
     files.forEach((file) => uploadDocument({ request: { id: uuid(), file } }));
@@ -175,7 +167,7 @@ export function ChatPage() {
       params: { chatId: chatId! },
       request: {
         id: uuid(),
-        content: [{ type: "text", text: message }],
+        content: [{ type: "text", id: uuid(), text: message }],
         parentMessageId:
           messageTree?.latestPath[messageTree.latestPath.length - 1],
       },
@@ -189,36 +181,59 @@ export function ChatPage() {
     queryClient.invalidateQueries({ queryKey: ["messages", chatId] });
   }
 
-  function handleEditMessage(
-    content: UserContentBlock[],
-    parentMessageId?: string | null
-  ) {
-    sendMessage({
-      params: { chatId: chatId! },
-      request: { id: uuid(), content, parentMessageId },
-    });
-  }
+  const handleEditMessage = useCallback(
+    (content: UserContentBlock[], parentMessageId?: string | null) => {
+      sendMessage({
+        params: { chatId: chatId! },
+        request: { id: uuid(), content, parentMessageId },
+      });
+    },
+    [chatId, sendMessage]
+  );
 
-  function handleChangeMessageFeedback(
-    messageId: string,
-    feedback: MessageFeedback | null
-  ) {
-    updateMessage({
-      params: { chatId: chatId!, messageId },
-      request: { feedback },
-    });
-  }
+  const handleChangeMessageFeedback = useCallback(
+    (messageId: string, feedback: MessageFeedback | null) => {
+      updateMessage({
+        params: { chatId: chatId!, messageId },
+        request: { feedback },
+      });
+    },
+    [chatId, updateMessage]
+  );
 
   function handleContinueMessage() {
     sendMessage({
       params: { chatId: chatId! },
       request: {
         id: uuid(),
-        content: [{ type: "text", text: t("continue") }],
+        content: [{ type: "text", id: uuid(), text: t("continue") }],
         parentMessageId:
           messageTree?.latestPath[messageTree.latestPath.length - 1],
       },
     });
+  }
+
+  if (pendingChat == null && !isLoadingChat && chat == null) {
+    return (
+      <ContentPanel>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <Box>
+            <MessageCircleOffIcon size="24px" />
+          </Box>
+          <Text>{t("chat_not_found")}</Text>
+          <Link to="/new">{t("start_a_new_chat")}</Link>
+        </Box>
+      </ContentPanel>
+    );
   }
 
   return (
@@ -230,42 +245,30 @@ export function ChatPage() {
           onDeleteChat={() => setIsDeleteChatDialogOpen(true)}
         />
       )}
-      <Virtuoso
-        style={{
+      <Box
+        ref={messagesContainerRef}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
           width: "100%",
+          height: "100%",
           maxWidth: "800px",
+          overflow: "auto",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
-        followOutput="smooth"
-        data={[
-          ...activePath,
-          streamingMessage != null ? "streaming" : null,
-          showContinueMessage ? "continue" : null,
-        ].filter((messageId) => messageId != null)}
-        itemContent={(index, messageId) => {
-          if (messageId === "continue") {
-            return (
-              <ContinueMessage
-                onDismiss={() => setShowContinueMessage(false)}
-                onAccept={handleContinueMessage}
-              />
-            );
-          }
-
-          const message =
-            messageId === "streaming"
-              ? streamingMessage
-              : messageTree?.messages[messageId];
-
-          if (message == null) {
-            return null;
-          }
-
+      >
+        {activePath.map((messageId) => {
+          const message = messageTree?.messages[messageId];
           const parentMessage =
             message?.parentMessageId != null
               ? messageTree?.messages[message.parentMessageId]
               : null;
+
+          if (message == null) {
+            return null;
+          }
 
           return (
             <ChatMessage
@@ -278,11 +281,28 @@ export function ChatPage() {
               onSelectMessage={handleSelectMessage}
               onEditMessage={handleEditMessage}
               onChangeMessageFeedback={handleChangeMessageFeedback}
-              hideActions={index === activePath.length}
             />
           );
-        }}
-      />
+        })}
+        {streamingMessage != null &&
+          streamingMessage.id !== activePath[activePath.length - 1] && (
+            <ChatMessage
+              key={streamingMessage.id}
+              messageIds={[streamingMessage.id]}
+              message={streamingMessage}
+              onSelectMessage={handleSelectMessage}
+              onEditMessage={handleEditMessage}
+              onChangeMessageFeedback={handleChangeMessageFeedback}
+              isStreaming
+            />
+          )}
+        {showContinueMessage && (
+          <ContinueMessage
+            onAccept={handleContinueMessage}
+            onDismiss={() => setShowContinueMessage(false)}
+          />
+        )}
+      </Box>
       <ChatInput
         containerSx={{ marginTop: "32px", maxWidth: "600px" }}
         placeholder={t("reply_to_assistant")}

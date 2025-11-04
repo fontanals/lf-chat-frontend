@@ -23,7 +23,7 @@ export const queryClient = new QueryClient({
         return;
       }
 
-      useErrorStore.setState({ error: ApplicationError.copy(error) });
+      useErrorStore.setState({ error: applicationError });
     },
   }),
 });

@@ -1,36 +1,36 @@
 import { create } from "zustand";
 import { AssistantMessage, UserContentBlock } from "../models/entities/message";
+import { Chat } from "../models/entities/chat";
 
-export type PendingMessage = {
-  content: UserContentBlock[];
-  chatId: string;
-  projectId?: string | null;
+export type PendingChat = {
+  chat: Chat;
+  message: UserContentBlock[];
 };
 
 type ChatStore = {
-  pendingMessages: Record<string, PendingMessage>;
+  pendingChats: Record<string, PendingChat>;
   streamingMessages: Record<string, AssistantMessage>;
-  setPendingMessage: (chatId: string, message: PendingMessage) => void;
+  setPendingChat: (chatId: string, message: PendingChat) => void;
   setStreamingMessage: (chatId: string, message: AssistantMessage) => void;
-  removePendingMessage: (chatId: string) => void;
+  removePendingChat: (chatId: string) => void;
   removeStreamingMessage: (chaId: string) => void;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
-  pendingMessages: {},
+  pendingChats: {},
   streamingMessages: {},
-  setPendingMessage: (chatId, message) =>
+  setPendingChat: (chatId, message) =>
     set((state) => ({
-      pendingMessages: { ...state.pendingMessages, [chatId]: message },
+      pendingChats: { ...state.pendingChats, [chatId]: message },
     })),
   setStreamingMessage: (chatId, message) =>
     set((state) => ({
       streamingMessages: { ...state.streamingMessages, [chatId]: message },
     })),
-  removePendingMessage: (chatId) =>
+  removePendingChat: (chatId) =>
     set((state) => {
-      const { [chatId]: _, ...rest } = state.pendingMessages;
-      return { pendingMessages: rest };
+      const { [chatId]: _, ...rest } = state.pendingChats;
+      return { pendingChats: rest };
     }),
   removeStreamingMessage: (chatId) =>
     set((state) => {

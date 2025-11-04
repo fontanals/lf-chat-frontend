@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl, Typography } from "@mui/material";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import z from "zod";
@@ -21,6 +22,9 @@ type SigninFormSchema = z.infer<typeof signinFormSchema>;
 export function SigninPage() {
   const { t } = useTranslation();
 
+  const [isInvalidEmailOrPassword, setIsInvalidEmailOrPassword] =
+    useState(false);
+
   const {
     register,
     handleSubmit,
@@ -29,7 +33,7 @@ export function SigninPage() {
     resolver: zodResolver(signinFormSchema),
   });
 
-  const { mutate: signin, isPending } = useSignin();
+  const { mutate: signin, isPending } = useSignin(setIsInvalidEmailOrPassword);
 
   function onSubmit(formValues: SigninFormSchema) {
     signin({ request: formValues });
@@ -65,6 +69,11 @@ export function SigninPage() {
             {t("dont_have_an_account")} <Link to="/signup">{t("sign_up")}</Link>
           </Text>
         </Box>
+        {isInvalidEmailOrPassword && (
+          <Text sx={{ color: "error.main" }} variant="caption">
+            {t("invalid_email_or_password")}
+          </Text>
+        )}
         <form onSubmit={handleSubmit(onSubmit)}>
           <Box
             sx={{

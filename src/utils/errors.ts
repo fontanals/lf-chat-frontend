@@ -3,8 +3,9 @@ export enum ApplicationErrorCode {
   Unauthorized = 401,
   NotFound = 404,
   InternalServerError = 500,
-  InvalidEmailOrPassword = 10000,
-  UserMessageViolatesContentPolicy = 10001,
+  InvalidEmailOrPassword = 1000,
+  MaxUsersReached = 1001,
+  MaxUserDocumentsReached = 1002,
 }
 
 export class ApplicationError extends Error {
@@ -13,6 +14,15 @@ export class ApplicationError extends Error {
   constructor(code: ApplicationErrorCode, message: string) {
     super(message);
     this.code = code;
+  }
+
+  getStatusCode() {
+    switch (this.code) {
+      case ApplicationErrorCode.InvalidEmailOrPassword:
+        return ApplicationErrorCode.BadRequest;
+      default:
+        return this.code;
+    }
   }
 
   static badRequest(): ApplicationError {
@@ -50,10 +60,17 @@ export class ApplicationError extends Error {
     );
   }
 
-  static userMessageViolatesContentPolicy(): ApplicationError {
+  static maxUsersReached(): ApplicationError {
     return new ApplicationError(
-      ApplicationErrorCode.UserMessageViolatesContentPolicy,
-      "User message violates content policy."
+      ApplicationErrorCode.MaxUsersReached,
+      "Maximum number of users reached."
+    );
+  }
+
+  static maxUserDocumentsReached(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.MaxUserDocumentsReached,
+      "Maximum number of documents for the user reached."
     );
   }
 

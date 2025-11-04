@@ -10,12 +10,14 @@ import {
 } from "lucide-react";
 import {
   Fragment,
+  memo,
   MouseEventHandler,
   ReactNode,
   useEffect,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { v4 as uuid } from "uuid";
 import {
   AssistantMessage,
   Message,
@@ -30,6 +32,8 @@ import { Input } from "../ui/input";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
 import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
+import StreamingIndicator from "./streaming-indicator";
+import { ToolCallIndicator } from "./tool-call-indicator";
 
 export type ContinueMessageProps = {
   onAccept: MouseEventHandler<HTMLButtonElement>;
@@ -46,7 +50,6 @@ export function ContinueMessage(props: ContinueMessageProps) {
         flexDirection: "column",
         alignItems: "flex-end",
         gap: "8px",
-        paddingBlock: "8px",
       }}
     >
       <Box
@@ -85,11 +88,11 @@ export function UserMessageComponent(props: {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const textPart = props.message.content.find(
-      (contentPart) => contentPart.type === "text"
+    const textContentBlock = props.message.content.find(
+      (contentBlock) => contentBlock.type === "text"
     );
 
-    setTextContent(textPart?.text ?? "");
+    setTextContent(textContentBlock?.text ?? "");
   }, [props.message.content]);
 
   function handleEdit(event: React.FormEvent) {
@@ -98,33 +101,33 @@ export function UserMessageComponent(props: {
 
     if (!StringUtils.isNullOrWhitespace(textContent)) {
       const messageContent: UserContentBlock[] = props.message.content.filter(
-        (contentPart) => contentPart.type !== "text"
+        (contentBlock) => contentBlock.type !== "text"
       );
 
-      messageContent.push({ type: "text", text: textContent });
+      messageContent.push({ type: "text", id: uuid(), text: textContent });
 
       props.onEditMessage(messageContent, props.message.parentMessageId);
     } else {
-      const textPart = props.message.content.find(
-        (contentPart) => contentPart.type === "text"
+      const textContentBlock = props.message.content.find(
+        (contentBlock) => contentBlock.type === "text"
       );
 
-      setTextContent(textPart?.text ?? "");
+      setTextContent(textContentBlock?.text ?? "");
     }
   }
 
   function handleCancelEdit() {
     setIsEditing(false);
 
-    const textPart = props.message.content.find(
-      (contentPart) => contentPart.type === "text"
+    const textContentBlock = props.message.content.find(
+      (contentBlock) => contentBlock.type === "text"
     );
 
-    setTextContent(textPart?.text ?? "");
+    setTextContent(textContentBlock?.text ?? "");
   }
 
   const hasDocuments = props.message.content.some(
-    (contentPart) => contentPart.type === "document"
+    (contentBlock) => contentBlock.type === "document"
   );
 
   if (isEditing) {
@@ -136,7 +139,6 @@ export function UserMessageComponent(props: {
             flexDirection: "column",
             alignItems: "flex-end",
             gap: "8px",
-            paddingBlock: "8px",
           }}
         >
           <Input
@@ -155,7 +157,6 @@ export function UserMessageComponent(props: {
           />
           <Box sx={{ display: "flex", gap: "8px" }}>
             <ShadowButton type="button" primary onClick={handleCancelEdit}>
-              <PencilIcon size="16px" />
               Cancel
             </ShadowButton>
             <ShadowButton type="submit">
@@ -175,18 +176,17 @@ export function UserMessageComponent(props: {
         flexDirection: "column",
         alignItems: "flex-end",
         gap: "8px",
-        paddingBlock: "8px",
       }}
     >
       {hasDocuments && (
         <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {props.message.content
-            .filter((contentPart) => contentPart.type === "document")
-            .map((contentPart) => (
+            .filter((contentBlock) => contentBlock.type === "document")
+            .map((contentBlock) => (
               <DocumentIndicator
-                key={contentPart.id}
-                document={contentPart}
-                removeDisabled
+                key={contentBlock.id}
+                document={contentBlock}
+                disableRemove
               />
             ))}
         </Box>
@@ -226,14 +226,14 @@ export function AssistantMessageComponent(props: {
     messageId: string,
     feedback: MessageFeedback | null
   ) => void;
-  hideActions?: boolean;
+  isStreaming?: boolean;
 }) {
   const { t } = useTranslation();
 
   function handleCopy() {
     const textContent = props.message.content
-      .filter((contentPart) => contentPart.type === "text")
-      .map((contentPart) => contentPart.text)
+      .filter((contentBlock) => contentBlock.type === "text")
+      .map((contentBlock) => contentBlock.text)
       .join("\n");
 
     navigator.clipboard.writeText(textContent);
@@ -245,49 +245,38 @@ export function AssistantMessageComponent(props: {
     )
   ) {
     return (
-      <Box sx={{ paddingBlock: "8px" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "12px",
-            backgroundColor: "error.main",
-            borderRadius: "8px",
-          }}
-        >
-          <AlertCircleIcon size="16px" />
-          <Text>
-            {props.message.finishReason === "content-filter"
-              ? t("assistant_content_filter_message")
-              : t("assistant_error_message")}
-          </Text>
-        </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          padding: "12px",
+          backgroundColor: "error.main",
+          borderRadius: "8px",
+        }}
+      >
+        <AlertCircleIcon size="16px" />
+        <Text>
+          {props.message.finishReason === "content-filter"
+            ? t("assistant_content_filter_message")
+            : t("assistant_error_message")}
+        </Text>
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-        paddingBlock: "8px",
-      }}
-    >
-      <Box sx={{ width: "100%", paddingInline: "12px", fontSize: "14px" }}>
-        {props.message.content.map((contentPart, index) => {
-          switch (contentPart.type) {
-            case "text":
-              return (
-                <MarkdownRenderer key={index} content={contentPart.text} />
-              );
-            default:
-              return null;
-          }
-        })}
-      </Box>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      {props.message.content.map((contentBlock, index) => {
+        switch (contentBlock.type) {
+          case "text":
+            return <MarkdownRenderer key={index} content={contentBlock.text} />;
+          case "tool-call":
+            return (
+              <ToolCallIndicator key={index} contentBlock={contentBlock} />
+            );
+        }
+      })}
       {props.message.finishReason === "interrupted" && (
         <Text sx={{ color: "text.secondary" }} variant="caption">
           {t("message_interrupted_by_user")}
@@ -299,8 +288,16 @@ export function AssistantMessageComponent(props: {
           {t("message_interrupted_due_to_size_constraints")}
         </Text>
       )}
-      {!props.hideActions && (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+      {props.isStreaming ? (
+        <StreamingIndicator />
+      ) : (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+          }}
+        >
           <Tooltip title={t("copy")}>
             <IconButton onClick={handleCopy}>
               <CopyIcon size="16px" />
@@ -360,10 +357,10 @@ export type ChatMessageProps = {
     messageId: string,
     feedback: MessageFeedback | null
   ) => void;
-  hideActions?: boolean;
+  isStreaming?: boolean;
 };
 
-export const ChatMessage = (props: ChatMessageProps) => {
+export const ChatMessage = memo((props: ChatMessageProps) => {
   const messageIndex = props.messageIds.findIndex(
     (messageId) => messageId === props.message.id
   );
@@ -406,7 +403,7 @@ export const ChatMessage = (props: ChatMessageProps) => {
     <AssistantMessageComponent
       message={props.message}
       onChangeMessageFeedback={props.onChangeMessageFeedback}
-      hideActions={props.hideActions}
+      isStreaming={props.isStreaming}
     />
   );
-};
+});

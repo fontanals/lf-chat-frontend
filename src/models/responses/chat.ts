@@ -9,6 +9,7 @@ import {
   TextStartPart,
   ToolCallDeltaPart,
   ToolCallEndPart,
+  ToolCallPart,
   ToolCallResultPart,
   ToolCallStartPart,
 } from "../entities/message";
@@ -28,6 +29,8 @@ export type ToolCallDeltaEvent = ServerSentEvent<
   "tool-call-delta",
   ToolCallDeltaPart
 >;
+
+export type ToolCallEvent = ServerSentEvent<"tool-call", ToolCallPart>;
 
 export type ToolCallResultEvent = ServerSentEvent<
   "tool-call-result",
@@ -52,6 +55,7 @@ export type SendMessageEvent =
   | TextEndEvent
   | ToolCallStartEvent
   | ToolCallDeltaEvent
+  | ToolCallEvent
   | ToolCallResultEvent
   | ToolCallEndEvent
   | MessageStartEvent

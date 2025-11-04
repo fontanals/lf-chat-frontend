@@ -17,11 +17,15 @@ export class MockDocumentService implements IDocumentService {
     request: UploadDocumentRequest,
     onProgress?: (event: ProgressEvent) => void
   ): Promise<UploadDocumentResponse> {
+    throw ApplicationError.maxUserDocumentsReached();
+
     const document: Document = {
       id: request.id,
       name: request.file.name,
       mimetype: request.file.type,
       sizeInBytes: request.file.size,
+      isProcessed: false,
+      chatId: null,
       projectId: request.projectId ?? null,
       createdAt: new Date(),
       udpatedAt: new Date(),

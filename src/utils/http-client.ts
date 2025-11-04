@@ -45,6 +45,8 @@ export type UploadRequestOptions<TQuery extends Query = Query> = {
 export type StreamResponse = ReadableStream<Uint8Array<ArrayBuffer>>;
 
 export interface IHttpClient {
+  setHeader(key: string, value: string): void;
+  removeHeader(key: string): void;
   get<TResponse = unknown, TQuery extends Query = Query>(
     args: GetRequestOptions<TQuery>
   ): Promise<TResponse>;
@@ -74,6 +76,14 @@ export class HttpClient implements IHttpClient {
     "Content-Type": "application/json",
     accept: "application/json",
   });
+
+  setHeader(key: string, value: string) {
+    this.headers.set(key, value);
+  }
+
+  removeHeader(key: string) {
+    this.headers.delete(key);
+  }
 
   async get<TResponse = unknown, TQuery extends Query = Query>(
     args: GetRequestOptions<TQuery>
@@ -190,7 +200,7 @@ export class HttpClient implements IHttpClient {
 
     const response = await fetch(url.toString(), {
       method: args.method,
-      headers: this.headers,
+      headers: new Headers(this.headers),
       body: JSON.stringify(args.request),
       credentials: "include",
       signal: args.abortSignal,
@@ -246,6 +256,8 @@ export class HttpClient implements IHttpClient {
       headers.delete("Content-Type");
 
       const xhr = new XMLHttpRequest();
+
+      xhr.withCredentials = true;
 
       xhr.open("POST", url, true);
 

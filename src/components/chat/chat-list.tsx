@@ -32,7 +32,7 @@ export function ChatListItem(props: ChatListItemProps) {
       }}
     >
       <Link
-        style={{ flex: 1 }}
+        style={{ width: "100%", overflow: "hidden" }}
         to={`/chats/${props.chat.id}`}
         onClick={props.onSelectChat}
       >

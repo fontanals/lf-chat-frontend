@@ -6,6 +6,8 @@ import {
 } from "../models/requests/document";
 import { GetProjectResponse } from "../models/responses/project";
 import { services } from "../services/provider";
+import { useErrorStore } from "../state/error";
+import { ApplicationError } from "../utils/errors";
 
 export type UploadItem = {
   id: string;
@@ -17,6 +19,8 @@ export type UploadItem = {
 export type UploadMap = Record<string, UploadItem>;
 
 export function useUploadDocuments(projectId?: string) {
+  const displayError = useErrorStore((state) => state.displayError);
+
   const [uploadMap, setUploadMap] = useState<UploadMap>({});
 
   const { mutate: uploadDocument } = useUploadDocument(projectId);
@@ -52,7 +56,7 @@ export function useUploadDocuments(projectId?: string) {
           },
         },
         {
-          onError: () => {
+          onError: (error) => {
             setUploadMap((uploadMap) => {
               const newUploadMap = { ...uploadMap };
 
@@ -60,6 +64,8 @@ export function useUploadDocuments(projectId?: string) {
 
               return newUploadMap;
             });
+
+            displayError(ApplicationError.copy(error));
           },
         }
       );
@@ -122,6 +128,8 @@ export function useUploadDocument(projectId?: string) {
             name: args.request.file.name,
             mimetype: args.request.file.type,
             sizeInBytes: args.request.file.size,
+            isProcessed: false,
+            chatId: null,
             projectId: project.id,
           });
 

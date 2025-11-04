@@ -13,14 +13,14 @@ import {
   useSearchParams,
 } from "react-router";
 import { v4 as uuid } from "uuid";
-import { Chat } from "../models/entities/chat";
 import {
   AssistantContentBlock,
   AssistantMessage,
+  TextContentBlock,
+  ToolCallContentBlock,
   UserMessage,
 } from "../models/entities/message";
 import {
-  CreateChatRequest,
   DeleteChatParams,
   GetChatQuery,
   GetChatsQuery,
@@ -37,7 +37,7 @@ import {
   GetChatsResponse,
 } from "../models/responses/chat";
 import { services } from "../services/provider";
-import { useChatStore } from "../state/chat";
+import { PendingChat, useChatStore } from "../state/chat";
 import { SearchParamsUtils } from "../utils/search-params";
 
 export function usePreviousChats() {
@@ -70,7 +70,7 @@ export function useProjectChats(projectId: string, query?: GetChatsQuery) {
 
 export function useChat(chatId: string, query?: GetChatQuery) {
   return useQuery({
-    queryKey: ["chats", chatId, query],
+    queryKey: ["chats", chatId],
     queryFn: () => services.chat.getChat({ chatId }, query),
   });
 }
@@ -85,6 +85,7 @@ export function useChatMessages(chatId: string, enabled = true) {
 
 export function useCreateChat(
   abortControllerRef: RefObject<AbortController | null>,
+  messagesContainerRef: RefObject<HTMLDivElement | null>,
   setShowContinueMessage: Dispatch<SetStateAction<boolean>>
 ) {
   const queryClient = useQueryClient();
@@ -97,15 +98,15 @@ export function useCreateChat(
   );
 
   return useMutation({
-    mutationFn: (args: { request: CreateChatRequest }) => {
+    mutationFn: (pendingChat: PendingChat) => {
       abortControllerRef.current = new AbortController();
 
-      const chat: Chat = { id: args.request.id, title: "" };
+      const chat = pendingChat.chat;
 
       const userMessage: UserMessage = {
         id: uuid(),
         role: "user",
-        content: args.request.message,
+        content: pendingChat.message,
         parentMessageId: null,
         chatId: chat.id,
         childrenMessageIds: [],
@@ -122,31 +123,29 @@ export function useCreateChat(
         childrenMessageIds: [],
       };
 
-      let currentContentBlock: AssistantContentBlock | null = null;
+      queryClient.setQueryData<GetChatResponse>(["chats", chat.id], chat);
+
+      const messageTree: GetChatMessagesResponse = {
+        latestPath: [userMessage.id],
+        rootMessageIds: [userMessage.id],
+        messages: { [userMessage.id]: userMessage },
+      };
+
+      queryClient.setQueryData<GetChatMessagesResponse>(
+        ["messages", chat.id],
+        messageTree
+      );
+
+      const contentBlocks = new Map<string, AssistantContentBlock>();
 
       return services.chat.createChat(
-        args.request,
+        {
+          id: chat.id,
+          message: pendingChat.message,
+          projectId: chat.project?.id,
+        },
         (event) => {
           switch (event.event) {
-            case "start": {
-              queryClient.setQueryData<GetChatResponse>(
-                ["chats", chat.id],
-                chat
-              );
-
-              const messageTree: GetChatMessagesResponse = {
-                latestPath: [userMessage.id],
-                rootMessageIds: [userMessage.id],
-                messages: { [userMessage.id]: userMessage },
-              };
-
-              queryClient.setQueryData<GetChatMessagesResponse>(
-                ["messages", chat.id],
-                messageTree
-              );
-
-              break;
-            }
             case "message-start": {
               assistantMessage.id = event.data.messageId;
 
@@ -157,17 +156,63 @@ export function useCreateChat(
               break;
             }
             case "text-start": {
-              currentContentBlock = { type: "text", text: "" };
+              const contentBlock: TextContentBlock = {
+                type: "text",
+                id: event.data.id,
+                text: "",
+              };
 
-              assistantMessage.content.push(currentContentBlock);
+              contentBlocks.set(event.data.id, contentBlock);
+
+              assistantMessage.content.push(contentBlock);
 
               setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
               break;
             }
             case "text-delta": {
-              if (currentContentBlock?.type === "text") {
-                currentContentBlock.text += event.data.delta;
+              const contentBlock = contentBlocks.get(event.data.id);
+
+              if (contentBlock != null && contentBlock.type === "text") {
+                contentBlock.text += event.data.delta;
+              }
+
+              setStreamingMessage(assistantMessage.chatId, assistantMessage);
+
+              break;
+            }
+            case "tool-call-start": {
+              const contentBlock = {
+                type: "tool-call",
+                id: event.data.id,
+                name: event.data.name,
+              } as ToolCallContentBlock;
+
+              contentBlocks.set(event.data.id, contentBlock);
+
+              assistantMessage.content.push(contentBlock);
+
+              setStreamingMessage(assistantMessage.chatId, assistantMessage);
+
+              break;
+            }
+            case "tool-call": {
+              const contentBlock = contentBlocks.get(event.data.id);
+
+              if (contentBlock != null && contentBlock.type === "tool-call") {
+                contentBlock.input = event.data.input;
+              }
+
+              setStreamingMessage(assistantMessage.chatId, assistantMessage);
+
+              break;
+            }
+            case "tool-call-result": {
+              const contentBlock = contentBlocks.get(event.data.id);
+
+              if (contentBlock != null && contentBlock.type === "tool-call") {
+                contentBlock.input = event.data.input;
+                contentBlock.output = event.data.output;
               }
 
               setStreamingMessage(assistantMessage.chatId, assistantMessage);
@@ -175,8 +220,6 @@ export function useCreateChat(
               break;
             }
             case "message-end": {
-              removeStreamingMessage(assistantMessage.chatId);
-
               const messageTree: GetChatMessagesResponse = {
                 latestPath: [userMessage.id, assistantMessage.id],
                 rootMessageIds: [userMessage.id],
@@ -187,7 +230,7 @@ export function useCreateChat(
               };
 
               queryClient.setQueryData<GetChatMessagesResponse>(
-                ["messages", args.request.id],
+                ["messages", chat.id],
                 messageTree
               );
 
@@ -201,15 +244,26 @@ export function useCreateChat(
               break;
             }
           }
+
+          setTimeout(
+            () =>
+              messagesContainerRef.current?.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: "smooth",
+              }),
+            100
+          );
         },
         abortControllerRef.current.signal
       );
     },
     onSuccess: (_, args) => {
+      removeStreamingMessage(args.chat.id);
+
       queryClient.invalidateQueries({ queryKey: ["chats"] });
 
       queryClient.invalidateQueries({
-        queryKey: ["messages", args.request.id],
+        queryKey: ["messages", args.chat.id],
       });
     },
   });
@@ -217,6 +271,7 @@ export function useCreateChat(
 
 export function useSendMessage(
   abortControllerRef: RefObject<AbortController | null>,
+  messagesContainerRef: RefObject<HTMLDivElement | null>,
   setShowContinueMessage: Dispatch<SetStateAction<boolean>>
 ) {
   const queryClient = useQueryClient();
@@ -255,52 +310,54 @@ export function useSendMessage(
         childrenMessageIds: [],
       };
 
-      let currentContentBlock: AssistantContentBlock | null = null;
+      queryClient.setQueryData<GetChatMessagesResponse>(
+        ["messages", userMessage.chatId],
+        (response) => {
+          if (response == null) {
+            return response;
+          }
+
+          const latestPath =
+            userMessage.parentMessageId == null
+              ? [userMessage.id]
+              : response.latestPath
+                  .slice(
+                    0,
+                    response.latestPath.indexOf(userMessage.parentMessageId) + 1
+                  )
+                  .concat(userMessage.id);
+
+          const rootMessageIds =
+            userMessage.parentMessageId == null
+              ? response.rootMessageIds.concat(userMessage.id)
+              : response.rootMessageIds;
+
+          const messages = {
+            ...response.messages,
+            ...(userMessage.parentMessageId != null
+              ? {
+                  [userMessage.parentMessageId]: {
+                    ...response.messages[userMessage.parentMessageId],
+                    childrenMessageIds: response.messages[
+                      userMessage.parentMessageId
+                    ].childrenMessageIds?.concat(userMessage.id),
+                  },
+                }
+              : {}),
+            [userMessage.id]: userMessage,
+          };
+
+          return { latestPath, rootMessageIds, messages };
+        }
+      );
+
+      const contentBlocks = new Map<string, AssistantContentBlock>();
 
       return services.chat.sendMessage(
         args.params,
         args.request,
         (event) => {
           switch (event.event) {
-            case "start": {
-              queryClient.setQueryData<GetChatMessagesResponse>(
-                ["messages", userMessage.chatId],
-                (response) => {
-                  if (response == null) {
-                    return response;
-                  }
-
-                  const latestPath =
-                    userMessage.parentMessageId == null
-                      ? [userMessage.id]
-                      : response.latestPath.concat(userMessage.id);
-
-                  const rootMessageIds =
-                    userMessage.parentMessageId == null
-                      ? response.rootMessageIds.concat(userMessage.id)
-                      : response.rootMessageIds;
-
-                  const messages = {
-                    ...response.messages,
-                    ...(userMessage.parentMessageId != null
-                      ? {
-                          [userMessage.parentMessageId]: {
-                            ...response.messages[userMessage.parentMessageId],
-                            childrenMessageIds: response.messages[
-                              userMessage.parentMessageId
-                            ].childrenMessageIds?.concat(userMessage.id),
-                          },
-                        }
-                      : {}),
-                    [userMessage.id]: userMessage,
-                  };
-
-                  return { latestPath, rootMessageIds, messages };
-                }
-              );
-
-              break;
-            }
             case "message-start": {
               assistantMessage.id = event.data.messageId;
 
@@ -309,17 +366,63 @@ export function useSendMessage(
               break;
             }
             case "text-start": {
-              currentContentBlock = { type: "text", text: "" };
+              const contentBlock: TextContentBlock = {
+                type: "text",
+                id: event.data.id,
+                text: "",
+              };
 
-              assistantMessage.content.push(currentContentBlock);
+              contentBlocks.set(event.data.id, contentBlock);
+
+              assistantMessage.content.push(contentBlock);
 
               setStreamingMessage(assistantMessage.chatId, assistantMessage);
 
               break;
             }
             case "text-delta": {
-              if (currentContentBlock?.type === "text") {
-                currentContentBlock.text += event.data.delta;
+              const contentBlock = contentBlocks.get(event.data.id);
+
+              if (contentBlock != null && contentBlock.type === "text") {
+                contentBlock.text += event.data.delta;
+              }
+
+              setStreamingMessage(assistantMessage.chatId, assistantMessage);
+
+              break;
+            }
+            case "tool-call-start": {
+              const contentBlock = {
+                type: "tool-call",
+                id: event.data.id,
+                name: event.data.name,
+              } as ToolCallContentBlock;
+
+              contentBlocks.set(event.data.id, contentBlock);
+
+              assistantMessage.content.push(contentBlock);
+
+              setStreamingMessage(assistantMessage.chatId, assistantMessage);
+
+              break;
+            }
+            case "tool-call": {
+              const contentBlock = contentBlocks.get(event.data.id);
+
+              if (contentBlock != null && contentBlock.type === "tool-call") {
+                contentBlock.input = event.data.input;
+              }
+
+              setStreamingMessage(assistantMessage.chatId, assistantMessage);
+
+              break;
+            }
+            case "tool-call-result": {
+              const contentBlock = contentBlocks.get(event.data.id);
+
+              if (contentBlock != null && contentBlock.type === "tool-call") {
+                contentBlock.input = event.data.input;
+                contentBlock.output = event.data.output;
               }
 
               setStreamingMessage(assistantMessage.chatId, assistantMessage);
@@ -328,8 +431,6 @@ export function useSendMessage(
             }
             case "message-end": {
               userMessage.childrenMessageIds = [assistantMessage.id];
-
-              removeStreamingMessage(assistantMessage.chatId);
 
               queryClient.setQueryData<GetChatMessagesResponse>(
                 ["messages", userMessage.chatId],
@@ -366,11 +467,22 @@ export function useSendMessage(
               break;
             }
           }
+
+          setTimeout(
+            () =>
+              messagesContainerRef.current?.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: "smooth",
+              }),
+            100
+          );
         },
         abortControllerRef.current.signal
       );
     },
     onSuccess: (_, args) => {
+      removeStreamingMessage(args.params.chatId);
+
       queryClient.invalidateQueries({
         queryKey: ["messages", args.params.chatId],
       });

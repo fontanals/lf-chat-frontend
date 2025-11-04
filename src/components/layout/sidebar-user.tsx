@@ -65,7 +65,7 @@ export function SidebarUser() {
           }}
           variant="square"
         >
-          L
+          {user.name[0].toUpperCase()}
         </Avatar>
         <Box sx={{ display: "grid", flex: 1 }}>
           <Text sx={{ lineHeight: 1 }} noWrap>

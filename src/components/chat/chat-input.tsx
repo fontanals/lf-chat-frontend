@@ -49,6 +49,7 @@ export function ChatInput(props: ChatInputProps) {
     >
       <InputBase
         sx={{ fontSize: "14px" }}
+        autoFocus
         placeholder={props.placeholder}
         fullWidth
         multiline

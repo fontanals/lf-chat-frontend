@@ -17,13 +17,26 @@ export function ErrorDialog() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { error, setError } = useErrorStore();
+  const { showError, error, clearError } = useErrorStore();
 
   useEffect(() => {
     if (error?.code === ApplicationErrorCode.Unauthorized) {
       navigate("/signin");
     }
   }, [error]);
+
+  function getErrorMessage() {
+    switch (error?.code) {
+      case ApplicationErrorCode.Unauthorized:
+        return t("session_expired_error_message");
+      case ApplicationErrorCode.MaxUsersReached:
+        return t("max_users_reached_error_message");
+      case ApplicationErrorCode.MaxUserDocumentsReached:
+        return t("max_user_documents_reached_error_message");
+      default:
+        return t("error_message");
+    }
+  }
 
   return (
     <Dialog
@@ -36,21 +49,17 @@ export function ErrorDialog() {
           },
         },
       }}
-      open={error != null}
-      onClose={() => setError(null)}
+      open={showError}
+      onClose={clearError}
     >
       <DialogTitle sx={{ padding: "16px" }} variant="body1">
         {t("error")}
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
-        <Text>
-          {error?.code === ApplicationErrorCode.Unauthorized
-            ? t("session_expired_error_message")
-            : t("error_message")}
-        </Text>
+        <Text>{getErrorMessage()}</Text>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
-        <ShadowButton onClick={() => setError(null)}>{t("ok")}</ShadowButton>
+        <ShadowButton onClick={clearError}>{t("ok")}</ShadowButton>
       </DialogActions>
     </Dialog>
   );

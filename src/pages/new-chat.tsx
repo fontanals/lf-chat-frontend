@@ -13,8 +13,8 @@ import { useUser } from "../hooks/user";
 import { UserContentBlock } from "../models/entities/message";
 import { useChatStore } from "../state/chat";
 import { ArrayUtils } from "../utils/arrays";
-import { StringUtils } from "../utils/strings";
 import { ObjectUtils } from "../utils/objects";
+import { StringUtils } from "../utils/strings";
 
 export function NewChatPage() {
   const [searchParams] = useSearchParams();
@@ -23,7 +23,7 @@ export function NewChatPage() {
 
   const projectId = searchParams.get("projectId");
 
-  const setPendingMessage = useChatStore((state) => state.setPendingMessage);
+  const setPendingChat = useChatStore((state) => state.setPendingChat);
 
   const [message, setMessage] = useState("");
 
@@ -42,20 +42,22 @@ export function NewChatPage() {
 
     const chatId = uuid();
 
-    const contentParts: UserContentBlock[] = [];
+    const contentBlocks: UserContentBlock[] = [];
 
     Object.values(uploadMap).forEach((item) =>
-      contentParts.push({
+      contentBlocks.push({
         type: "document",
         id: item.id,
         name: item.name,
-        mimetype: item.mimetype,
       })
     );
 
-    contentParts.push({ type: "text", text: message });
+    contentBlocks.push({ type: "text", id: uuid(), text: message });
 
-    setPendingMessage(chatId, { content: contentParts, chatId });
+    setPendingChat(chatId, {
+      chat: { id: chatId, title: t("new_chat"), project },
+      message: contentBlocks,
+    });
 
     navigate(`/chats/${chatId}`);
   }
@@ -105,8 +107,10 @@ export function NewChatPage() {
         containerSx={{ marginTop: "16px", maxWidth: "600px" }}
         placeholder={t("how_can_i_help_you_today")}
         value={message}
+        isStreaming={false}
         onChange={(event) => setMessage(event.target.value)}
         onSubmit={handleSendMessage}
+        onStop={() => {}}
         uploadMap={uploadMap}
         onAddDocuments={handleAddDocuments}
         onRemoveDocument={handleRemoveDocument}

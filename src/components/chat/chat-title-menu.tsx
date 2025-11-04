@@ -31,7 +31,7 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
           <Link to={`/projects/${props.chat.project.id}`}>
             <Text
               sx={{
-                maxWidth: { xs: "50px", sm: "100px", md: "200px" },
+                maxWidth: { xs: "100px", sm: "200px", md: "300px" },
                 "&:hover": { color: "secondary.main" },
               }}
               noWrap
@@ -44,7 +44,7 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
       )}
       <Button
         sx={{
-          maxWidth: { sm: "100px", md: "200px" },
+          maxWidth: { xs: "150px", sm: "300px", md: "500px" },
           padding: "0px",
           textTransform: "none",
           "&:hover": { color: "secondary.main", backgroundColor: "inherit" },
@@ -52,7 +52,9 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
         endIcon={<ChevronDownIcon width="16px" height="16px" />}
         onClick={(event) => setAnchorElement(event?.currentTarget)}
       >
-        {props.chat.title}
+        <Text component="span" noWrap>
+          {props.chat.title}
+        </Text>
       </Button>
       <ChatMenu
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}

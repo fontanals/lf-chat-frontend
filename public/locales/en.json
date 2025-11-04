@@ -85,5 +85,15 @@
   "accept": "Accept",
   "view_complete_history": "View Complete History",
   "load_more": "Load More",
-  "message_interrupted_due_to_size_constraints": "Message interrupted due to size constraints."
+  "message_interrupted_due_to_size_constraints": "Message interrupted due to size constraints.",
+  "processing_document_name": "Processing document {{name}}",
+  "failed_to_process_document_name": "Failed to process document {{name}}",
+  "processed_document_name_successfully": "Processed document {{name}} successfully",
+  "reading_document_name": "Reading document {{name}}",
+  "failed_to_read_document_name": "Failed to read document {{name}}",
+  "read_document_name_successfully": "Read document {{name}} successfully",
+  "chat_not_found": "Chat not found",
+  "max_users_reached_error_message": "Maximum number of registered users reached. Please use the demo account for testing the application.",
+  "max_user_documents_reached_error_message": "Maximum number of documents has been reached. You can delete previous chats or projects containing documents to upload new ones.",
+  "invalid_email_or_password": "Invalid email or password"
 }
