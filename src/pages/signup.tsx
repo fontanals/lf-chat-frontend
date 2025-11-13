@@ -64,7 +64,7 @@ export function SignupPage() {
             sx={{ fontWeight: "bold", color: "secondary.main" }}
             variant="h4"
           >
-            AI CHAT
+            LF CHAT
           </Text>
           <Text sx={{ marginTop: "8px" }}>
             {t("already_have_an_account")}{" "}

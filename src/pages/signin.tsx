@@ -63,7 +63,7 @@ export function SigninPage() {
             sx={{ fontWeight: "bold", color: "secondary.main" }}
             variant="h4"
           >
-            AI CHAT
+            LF CHAT
           </Text>
           <Text sx={{ marginTop: "8px" }}>
             {t("dont_have_an_account")} <Link to="/signup">{t("sign_up")}</Link>

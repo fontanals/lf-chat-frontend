@@ -4,8 +4,9 @@ export enum ApplicationErrorCode {
   NotFound = 404,
   InternalServerError = 500,
   InvalidEmailOrPassword = 1000,
-  MaxUsersReached = 1001,
-  MaxUserDocumentsReached = 1002,
+  InvalidPassword = 1001,
+  MaxUsersReached = 1002,
+  MaxUserDocumentsReached = 1003,
 }
 
 export class ApplicationError extends Error {
@@ -57,6 +58,13 @@ export class ApplicationError extends Error {
     return new ApplicationError(
       ApplicationErrorCode.InvalidEmailOrPassword,
       "Invalid email or password."
+    );
+  }
+
+  static invalidPassword(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.InvalidPassword,
+      "Invalid password."
     );
   }
 

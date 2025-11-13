@@ -10,13 +10,13 @@ import { useTranslation } from "react-i18next";
 import { ShadowButton } from "../ui/button";
 import { Text } from "../ui/text";
 
-export type DeleteChatDialogProps = {
+export type DeleteAccountDialogProps = {
   isOpen: boolean;
-  onDeleteChat: () => void;
+  onDeleteAccount: () => void;
   onCancel: () => void;
 };
 
-export function DeleteChatDialog(props: DeleteChatDialogProps) {
+export function DeleteAccountDialog(props: DeleteAccountDialogProps) {
   const { t } = useTranslation();
 
   return (
@@ -36,16 +36,16 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
       onClose={props.onCancel}
     >
       <DialogTitle sx={{ padding: "16px" }} variant="body2">
-        {t("delete_chat")}
+        {t("delete_account")}
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
-        <Text>{t("are_you_sure_you_want_to_delete_this_chat")}</Text>
+        <Text>{t("are_you_sure_you_want_to_delete_your_account")}</Text>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
         <ShadowButton color="primary" onClick={props.onCancel}>
           {t("cancel")}
         </ShadowButton>
-        <ShadowButton color="error" onClick={props.onDeleteChat}>
+        <ShadowButton color="error" onClick={props.onDeleteAccount}>
           <Trash2Icon size="16px" />
           {t("delete")}
         </ShadowButton>

@@ -48,16 +48,10 @@ export function DeleteProjectDialog(props: DeleteProjectDialogProps) {
         </Text>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
-        <ShadowButton primary onClick={props.onCancel}>
+        <ShadowButton color="primary" onClick={props.onCancel}>
           {t("cancel")}
         </ShadowButton>
-        <ShadowButton
-          sx={{
-            color: "error.main",
-            backgroundColor: (theme) => alpha(theme.palette.error.main, 0.2),
-          }}
-          onClick={props.onDeleteProject}
-        >
+        <ShadowButton color="error" onClick={props.onDeleteProject}>
           <Trash2Icon size="16px" />
           {t("delete")}
         </ShadowButton>

@@ -95,5 +95,19 @@
   "chat_not_found": "Chat not found",
   "max_users_reached_error_message": "Maximum number of registered users reached. Please use the demo account for testing the application.",
   "max_user_documents_reached_error_message": "Maximum number of documents has been reached. You can delete previous chats or projects containing documents to upload new ones.",
-  "invalid_email_or_password": "Invalid email or password"
+  "invalid_email_or_password": "Invalid email or password",
+  "security": "Security",
+  "change_password": "Change Password",
+  "current_password": "Current Password",
+  "new_password": "New Password",
+  "confirm_new_password": "Confirm New Password",
+  "current_password_is_required": "Current password is required",
+  "new_password_is_required": "New password is required",
+  "confirm_new_password_is_required": "Confirm new password is required",
+  "new_passwords_do_not_match": "New passwords do not match",
+  "password_changed_successfully": "Password changed successfully",
+  "invalid_current_password": "Invalid current password",
+  "delete_account": "Delete Account",
+  "are_you_sure_you_want_to_delete_your_account": "Are you sure you want to delete your account? This action cannot be undone and all your data will be deleted.",
+  "profile_menu": "Profile Menu"
 }

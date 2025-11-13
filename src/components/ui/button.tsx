@@ -26,8 +26,10 @@ export function ContainedButton(props: ButtonProps) {
   );
 }
 
-export function ShadowButton(props: ButtonProps & { primary?: boolean }) {
-  const { sx, primary, ...rest } = props;
+export function ShadowButton(
+  props: ButtonProps & { color?: "primary" | "secondary" | "error" }
+) {
+  const { sx, color, ...rest } = props;
 
   return (
     <Button
@@ -36,10 +38,17 @@ export function ShadowButton(props: ButtonProps & { primary?: boolean }) {
         fontSize: "14px",
         textTransform: "none",
         borderRadius: "8px",
-        color: primary ? "primary.main" : "secondary.main",
+        color:
+          color === "primary"
+            ? "primary.main"
+            : color === "error"
+            ? "error.main"
+            : "secondary.main",
         backgroundColor: (theme) =>
-          primary
+          color === "primary"
             ? alpha(theme.palette.primary.main, 0.1)
+            : color === "error"
+            ? alpha(theme.palette.error.main, 0.2)
             : alpha(theme.palette.secondary.main, 0.2),
 
         ...sx,

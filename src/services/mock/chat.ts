@@ -154,15 +154,21 @@ export class MockChatService implements IChatService {
           )
           .sort(
             (chatA, chatB) =>
-              (chatB.createdAt?.getTime() ?? 0) -
-              (chatA.createdAt?.getTime() ?? 0)
+              (chatB.createdAt != null
+                ? new Date(chatB.createdAt).getTime()
+                : 0) -
+              (chatA.createdAt != null
+                ? new Date(chatA.createdAt).getTime()
+                : 0)
           );
 
         const paginatedChats = chats
           .filter(
             (chat) =>
               query?.cursor == null ||
-              (chat.createdAt?.getTime() ?? 0) > query.cursor.getTime()
+              (chat.createdAt != null
+                ? new Date(chat.createdAt).getTime()
+                : 0) > query.cursor.getTime()
           )
           .slice(0, limit)
           .map((chat) => ({ ...chat }));
@@ -170,10 +176,7 @@ export class MockChatService implements IChatService {
         resolve({
           items: paginatedChats,
           totalItems: chats.length,
-          nextCursor:
-            chats.length > limit
-              ? chats[limit].createdAt?.toISOString()
-              : undefined,
+          nextCursor: chats.length > limit ? chats[limit].createdAt : undefined,
         });
       }, 300)
     );
@@ -265,8 +268,8 @@ export class MockChatService implements IChatService {
       id: request.id,
       title: mockMessage.title,
       projectId: request.projectId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const userMessage: UserMessage = {
@@ -275,8 +278,8 @@ export class MockChatService implements IChatService {
       content: request.message,
       parentMessageId: null,
       chatId: chat.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const assistantMessage: AssistantMessage = {
@@ -287,8 +290,8 @@ export class MockChatService implements IChatService {
       finishReason: "stop",
       parentMessageId: userMessage.id,
       chatId: chat.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     mockData.chats.push(chat);
@@ -307,12 +310,17 @@ export class MockChatService implements IChatService {
 
     const contentBlock: TextContentBlock = {
       type: "text",
+      id: uuid(),
       text: mockMessage.message,
     };
 
     onEvent({
       event: "text-start",
-      data: { type: "text-start", messageId: assistantMessage.id },
+      data: {
+        type: "text-start",
+        id: contentBlock.id,
+        messageId: assistantMessage.id,
+      },
     });
 
     sleep(50);
@@ -326,8 +334,9 @@ export class MockChatService implements IChatService {
         event: "text-delta",
         data: {
           type: "text-delta",
-          messageId: assistantMessage.id,
+          id: contentBlock.id,
           delta: index < words.length - 1 ? word + " " : word,
+          messageId: assistantMessage.id,
         },
       });
 
@@ -338,7 +347,11 @@ export class MockChatService implements IChatService {
 
     onEvent({
       event: "text-end",
-      data: { type: "text-end", messageId: assistantMessage.id },
+      data: {
+        type: "text-end",
+        id: contentBlock.id,
+        messageId: assistantMessage.id,
+      },
     });
 
     sleep(50);
@@ -347,8 +360,8 @@ export class MockChatService implements IChatService {
       event: "message-end",
       data: {
         type: "message-end",
-        messageId: assistantMessage.id,
         finishReason: "stop",
+        messageId: assistantMessage.id,
       },
     });
 
@@ -379,8 +392,8 @@ export class MockChatService implements IChatService {
       content: request.content,
       parentMessageId: request.parentMessageId ?? null,
       chatId: params.chatId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const assistantMessage: AssistantMessage = {
@@ -391,8 +404,8 @@ export class MockChatService implements IChatService {
       finishReason: "stop",
       parentMessageId: userMessage.id,
       chatId: params.chatId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     mockData.messages.push(userMessage);
@@ -410,12 +423,17 @@ export class MockChatService implements IChatService {
 
     const contentBlock: TextContentBlock = {
       type: "text",
+      id: uuid(),
       text: mockMessage.message,
     };
 
     onEvent({
       event: "text-start",
-      data: { type: "text-start", messageId: assistantMessage.id },
+      data: {
+        type: "text-start",
+        id: contentBlock.id,
+        messageId: assistantMessage.id,
+      },
     });
 
     sleep(50);
@@ -429,8 +447,9 @@ export class MockChatService implements IChatService {
         event: "text-delta",
         data: {
           type: "text-delta",
-          messageId: assistantMessage.id,
+          id: contentBlock.id,
           delta: index < words.length - 1 ? word + " " : word,
+          messageId: assistantMessage.id,
         },
       });
 
@@ -441,7 +460,11 @@ export class MockChatService implements IChatService {
 
     onEvent({
       event: "text-end",
-      data: { type: "text-end", messageId: assistantMessage.id },
+      data: {
+        type: "text-end",
+        id: contentBlock.id,
+        messageId: assistantMessage.id,
+      },
     });
 
     sleep(50);
@@ -450,8 +473,8 @@ export class MockChatService implements IChatService {
       event: "message-end",
       data: {
         type: "message-end",
-        messageId: assistantMessage.id,
         finishReason: "stop",
+        messageId: assistantMessage.id,
       },
     });
 
@@ -478,7 +501,7 @@ export class MockChatService implements IChatService {
 
         mockData.chats = mockData.chats.map((chat) =>
           chat.id === params.chatId
-            ? { ...chat, ...request, updatedAt: new Date() }
+            ? { ...chat, ...request, updatedAt: new Date().toISOString() }
             : chat
         );
 

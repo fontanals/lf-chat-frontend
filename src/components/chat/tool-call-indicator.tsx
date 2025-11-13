@@ -3,7 +3,7 @@ import { CheckIcon, XIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   ProcessDocumentToolCallContentBlock,
-  SearchDocumentToolCallContentBlock,
+  ReadDocumentToolCallContentBlock,
   ToolCallContentBlock,
 } from "../../models/entities/message";
 import { Text } from "../ui/text";
@@ -82,12 +82,12 @@ export function ProcessDocumentToolCallIndicator(
   );
 }
 
-export type SearchDocumentToolCallIndicatorProps = {
-  contentBlock: SearchDocumentToolCallContentBlock;
+export type ReadDocumentToolCallIndicatorProps = {
+  contentBlock: ReadDocumentToolCallContentBlock;
 };
 
-export function SearchDocumentToolCallIndicator(
-  props: SearchDocumentToolCallIndicatorProps
+export function ReadDocumentToolCallIndicator(
+  props: ReadDocumentToolCallIndicatorProps
 ) {
   const { t } = useTranslation();
 
@@ -164,6 +164,6 @@ export function ToolCallIndicator(props: ToolCallIndicatorProps) {
   return props.contentBlock.name === "processDocument" ? (
     <ProcessDocumentToolCallIndicator contentBlock={props.contentBlock} />
   ) : (
-    <SearchDocumentToolCallIndicator contentBlock={props.contentBlock} />
+    <ReadDocumentToolCallIndicator contentBlock={props.contentBlock} />
   );
 }

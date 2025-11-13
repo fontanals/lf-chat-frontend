@@ -104,11 +104,11 @@ export function Sidebar() {
               backgroundColor: "background.default",
             }}
           >
-            AI
+            LF
           </Avatar>
           <Box>
             <Text sx={{ fontWeight: "bold", lineHeight: 1 }} variant="body1">
-              AI CHAT
+              LF CHAT
             </Text>
             <Text
               sx={{ lineHeight: 1, color: "text.secondary" }}

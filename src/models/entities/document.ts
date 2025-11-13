@@ -1,5 +1,6 @@
 export type Document = {
   id: string;
+  key: string;
   name: string;
   mimetype: string;
   sizeInBytes: number;

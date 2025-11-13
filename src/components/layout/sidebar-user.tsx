@@ -52,6 +52,7 @@ export function SidebarUser() {
               alpha(theme.palette.secondary.main, 0.2),
           },
         }}
+        aria-label={t("profile_menu")}
         onClick={(event) => setAnchorElement(event.currentTarget)}
       >
         <Avatar

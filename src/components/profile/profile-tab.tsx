@@ -128,7 +128,11 @@ export function ProfileTab(props: ProfileTabProps) {
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
           {isEditing ? (
             <Fragment>
-              <ShadowButton type="button" primary onClick={handleCancel}>
+              <ShadowButton
+                type="button"
+                color="primary"
+                onClick={handleCancel}
+              >
                 {t("cancel")}
               </ShadowButton>
               <ShadowButton type="submit">

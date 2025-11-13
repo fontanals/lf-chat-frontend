@@ -105,7 +105,7 @@ export function EditProjectDialog(props: EditProjectDialogProps) {
         </form>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
-        <ShadowButton primary onClick={props.onCancel}>
+        <ShadowButton color="primary" onClick={props.onCancel}>
           {t("cancel")}
         </ShadowButton>
         <ShadowButton type="submit" form="edit-project-form">

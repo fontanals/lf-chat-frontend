@@ -1,11 +1,12 @@
+import { Box } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { ContentPanel } from "../components/layout/content-panel";
 import { ProfileTab } from "../components/profile/profile-tab";
+import { SecurityTab } from "../components/profile/security-tab";
 import { SettingsTab } from "../components/profile/settings-tab";
 import { Tabs } from "../components/ui/tabs";
 import { useUser } from "../hooks/user";
-import { Box } from "@mui/material";
 
 export function ProfilePage() {
   const { tab = "profile" } = useParams();
@@ -20,6 +21,11 @@ export function ProfilePage() {
           tabs={[
             { href: "/profile", value: "profile", label: t("profile") },
             {
+              href: "/profile/security",
+              value: "security",
+              label: t("security"),
+            },
+            {
               href: "/profile/settings",
               value: "settings",
               label: t("settings"),
@@ -29,6 +35,7 @@ export function ProfilePage() {
         />
       </Box>
       {user != null && tab === "profile" && <ProfileTab user={user} />}
+      {user != null && tab === "security" && <SecurityTab />}
       {user != null && tab === "settings" && <SettingsTab />}
     </ContentPanel>
   );

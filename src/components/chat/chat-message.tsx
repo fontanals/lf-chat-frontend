@@ -63,7 +63,7 @@ export function ContinueMessage(props: ContinueMessageProps) {
         <Text sx={{ whiteSpace: "pre" }}>{t("continue")}</Text>
       </Box>
       <Box sx={{ display: "flex", gap: "8px" }}>
-        <ShadowButton size="small" primary onClick={props.onDismiss}>
+        <ShadowButton size="small" color="primary" onClick={props.onDismiss}>
           {t("dismiss")}
         </ShadowButton>
         <ShadowButton size="small" onClick={props.onAccept}>
@@ -156,7 +156,11 @@ export function UserMessageComponent(props: {
             }}
           />
           <Box sx={{ display: "flex", gap: "8px" }}>
-            <ShadowButton type="button" primary onClick={handleCancelEdit}>
+            <ShadowButton
+              type="button"
+              color="primary"
+              onClick={handleCancelEdit}
+            >
               Cancel
             </ShadowButton>
             <ShadowButton type="submit">
