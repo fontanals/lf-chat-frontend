@@ -16,8 +16,5 @@ export const useAlertStore = create<AlertStore>((set) => ({
   showAlert: false,
   alert: null,
   displayAlert: (alert) => set({ showAlert: true, alert }),
-  clearAlert: () => {
-    set({ showAlert: false });
-    setTimeout(() => set({ alert: null }), 100);
-  },
+  clearAlert: () => set({ showAlert: false }),
 }));

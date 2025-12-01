@@ -1,16 +1,16 @@
 import { create } from "zustand";
 import { AssistantMessage, UserContentBlock } from "../models/entities/message";
-import { Chat } from "../models/entities/chat";
 
-export type PendingChat = {
-  chat: Chat;
+type PendingChat = {
+  id: string;
   message: UserContentBlock[];
+  projectId?: string | null;
 };
 
 type ChatStore = {
   pendingChats: Record<string, PendingChat>;
   streamingMessages: Record<string, AssistantMessage>;
-  setPendingChat: (chatId: string, message: PendingChat) => void;
+  setPendingChat: (chatId: string, chat: PendingChat) => void;
   setStreamingMessage: (chatId: string, message: AssistantMessage) => void;
   removePendingChat: (chatId: string) => void;
   removeStreamingMessage: (chaId: string) => void;
@@ -19,9 +19,10 @@ type ChatStore = {
 export const useChatStore = create<ChatStore>((set) => ({
   pendingChats: {},
   streamingMessages: {},
-  setPendingChat: (chatId, message) =>
+  abortControllers: {},
+  setPendingChat: (chatId, chat) =>
     set((state) => ({
-      pendingChats: { ...state.pendingChats, [chatId]: message },
+      pendingChats: { ...state.pendingChats, [chatId]: chat },
     })),
   setStreamingMessage: (chatId, message) =>
     set((state) => ({

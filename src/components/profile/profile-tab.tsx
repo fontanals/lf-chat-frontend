@@ -14,7 +14,7 @@ import { Label } from "../ui/label";
 import { Text } from "../ui/text";
 
 const profileFormSchema = z.object({
-  name: z.string().min(1, "name_is_required"),
+  name: z.string().min(1, "profile.error.name_required"),
   displayName: z.string().optional(),
   customPrompt: z.string().optional(),
 });
@@ -34,7 +34,7 @@ export function ProfileTab(props: ProfileTabProps) {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
+    reset,
   } = useForm<ProfileFormSchema>({
     defaultValues: {
       name: props.user.name,
@@ -58,66 +58,62 @@ export function ProfileTab(props: ProfileTabProps) {
 
   function handleCancel() {
     setIsEditing(false);
-    setValue("name", props.user.name);
-    setValue("displayName", props.user.displayName);
-    setValue("customPrompt", props.user.customPrompt ?? "");
+    reset({
+      name: props.user.name,
+      displayName: props.user.displayName,
+      customPrompt: props.user.customPrompt ?? "",
+    });
   }
 
   return (
-    <Box sx={{ width: "100%", maxWidth: "800px" }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginTop: "32px",
-        }}
-      >
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+        width: "100%",
+        maxWidth: "800px",
+        marginTop: "16px",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <UserIcon size="20px" />
-        <Text variant="body1">{t("profile")}</Text>
+        <Text variant="body1">{t("profile.title.profile")}</Text>
       </Box>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            marginTop: "16px",
-            marginBottom: "24px",
-          }}
-        >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <FormControl>
-            <Label htmlFor="name">{t("name")}</Label>
+            <Label htmlFor="name">{t("profile.field.name")}</Label>
             <Input
               id="name"
-              placeholder={t("name")}
+              placeholder={t("profile.field.name")}
               {...register("name")}
               disabled={!isEditing}
             />
             {errors.name != null && (
               <Text variant="caption" color="error">
-                {t(errors.name.message!)}
+                {t(errors.name.message as any)}
               </Text>
             )}
           </FormControl>
           <FormControl>
             <Label htmlFor="display-name">
-              {t("how_the_assistant_should_address_you")}
+              {t("profile.field.display_name")}
             </Label>
             <Input
               id="display-name"
-              placeholder={t("display_name")}
+              placeholder={t("profile.field.display_name")}
               {...register("displayName")}
               disabled={!isEditing}
             />
           </FormControl>
           <FormControl>
             <Label htmlFor="preferences">
-              {t("personal_preferences_to_share_with_assistant")}
+              {t("profile.field.preferences")}
             </Label>
             <Input
               id="preferences"
-              placeholder={t("preferences")}
+              placeholder={t("profile.field.preferences")}
               multiline
               rows={3}
               {...register("customPrompt")}
@@ -125,7 +121,14 @@ export function ProfileTab(props: ProfileTabProps) {
             />
           </FormControl>
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "8px",
+            marginTop: "16px",
+          }}
+        >
           {isEditing ? (
             <Fragment>
               <ShadowButton
@@ -133,17 +136,17 @@ export function ProfileTab(props: ProfileTabProps) {
                 color="primary"
                 onClick={handleCancel}
               >
-                {t("cancel")}
+                {t("profile.button.cancel")}
               </ShadowButton>
               <ShadowButton type="submit">
                 <SaveIcon size="16px" />
-                {t("save_changes")}
+                {t("profile.button.save_changes")}
               </ShadowButton>
             </Fragment>
           ) : (
             <ShadowButton type="button" onClick={() => setIsEditing(true)}>
               <PencilIcon size="16px" />
-              {t("edit")}
+              {t("profile.button.edit")}
             </ShadowButton>
           )}
         </Box>

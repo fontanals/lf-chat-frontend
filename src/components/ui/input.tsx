@@ -10,7 +10,7 @@ export function Input(props: InputProps) {
         fontSize: "14px",
         paddingInline: "12px",
         borderRadius: "8px",
-        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+        backgroundColor: "background.default",
         "& .MuiInputBase-input": {
           color: "text.primary",
           "&::placeholder": {

@@ -15,25 +15,23 @@ import { Text } from "../components/ui/text";
 import { useDeleteChat, useHistoryChats, useUpdateChat } from "../hooks/chat";
 import { Chat } from "../models/entities/chat";
 import { ArrayUtils } from "../utils/arrays";
-import { SearchParamsUtils } from "../utils/search-params";
 
 export function ChatHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
 
   const paramsSearch = searchParams.get("search") ?? "";
-  const cursor = SearchParamsUtils.getDate(searchParams, "cursor");
 
   const [search, setSearch] = useState(paramsSearch);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
-  const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState<
+    "rename-chat" | "delete-chat" | "none"
+  >("none");
 
   const debouncedSearchTimeoutRef = useRef<any>(null);
 
-  const { data, hasNextPage, isLoading } = useHistoryChats({
+  const { data, hasNextPage, isLoading, fetchNextPage } = useHistoryChats({
     search: paramsSearch,
-    cursor: cursor ?? undefined,
     limit: 25,
   });
   const { mutate: updateChat } = useUpdateChat();
@@ -60,8 +58,8 @@ export function ChatHistoryPage() {
       updateChat({ params: { chatId: selectedChat.id }, request: { title } });
     }
 
-    setIsRenameChatDialogOpen(false);
     setSelectedChat(null);
+    setOpenDialog("none");
   }
 
   function handleDeleteChat() {
@@ -69,8 +67,8 @@ export function ChatHistoryPage() {
       deleteChat({ params: { chatId: selectedChat.id } });
     }
 
-    setIsDeleteChatDialogOpen(false);
     setSelectedChat(null);
+    setOpenDialog("none");
   }
 
   return (
@@ -93,17 +91,17 @@ export function ChatHistoryPage() {
           }}
         >
           <Text sx={{ paddingInline: "16px" }} variant="body1">
-            {t("chat_history")}
+            {t("chat.title.chat_history")}
           </Text>
           <LinkButton to="/">
             <PlusIcon size="16px" />
-            {t("new_chat")}
+            {t("chat.button.new_chat")}
           </LinkButton>
         </Box>
         <Box>
           <Input
             sx={{ width: "100%", maxWidth: "800px" }}
-            placeholder={t("search")}
+            placeholder={t("chat.placeholder.search")}
             fullWidth
             value={search}
             onChange={handleSearchChange}
@@ -112,7 +110,7 @@ export function ChatHistoryPage() {
             sx={{ paddingInline: "16px", color: "secondary.main" }}
             variant="caption"
           >
-            {t("total_chats_found", { total: totalChats })}
+            {t("chat.text.total_chats", { total: totalChats })}
           </Text>
         </Box>
       </Box>
@@ -128,11 +126,11 @@ export function ChatHistoryPage() {
           <Box>
             <MessageCircleIcon size="20px" />
           </Box>
-          <Text>{t("no_chats_yet")}</Text>
-          <Link to="/new">{t("start_a_new_chat")}</Link>
+          <Text>{t("chat.text.no_chats")}</Text>
+          <Link to="/new">{t("chat.link.start_new_chat")}</Link>
         </Box>
       )}
-      <ChatList
+      <Box
         sx={{
           width: "100%",
           maxWidth: "800px",
@@ -142,42 +140,47 @@ export function ChatHistoryPage() {
           msOverflowStyle: "none",
         }}
       >
-        {chats.map((chat) => (
-          <ChatListItem
-            key={chat.id}
-            sx={{ paddingInline: "16px" }}
-            chat={chat}
-            onRenameChat={() => {
-              setSelectedChat(chat);
-              setIsRenameChatDialogOpen(true);
-            }}
-            onDeleteChat={() => {
-              setSelectedChat(chat);
-              setIsDeleteChatDialogOpen(true);
-            }}
-          />
-        ))}
+        <ChatList data-testid="history-chat-list">
+          {chats.map((chat) => (
+            <ChatListItem
+              key={chat.id}
+              sx={{ paddingInline: "16px" }}
+              chat={chat}
+              onRename={() => {
+                setSelectedChat(chat);
+                setOpenDialog("rename-chat");
+              }}
+              onDelete={() => {
+                setSelectedChat(chat);
+                setOpenDialog("delete-chat");
+              }}
+            />
+          ))}
+        </ChatList>
         {hasNextPage && (
-          <ShadowButton sx={{ marginBlock: "8px" }}>
-            {t("load_more")}
+          <ShadowButton
+            sx={{ marginBlock: "8px" }}
+            onClick={() => fetchNextPage()}
+          >
+            {t("chat.button.load_more")}
           </ShadowButton>
         )}
-      </ChatList>
+      </Box>
       <RenameChatDialog
-        isOpen={isRenameChatDialogOpen}
+        isOpen={openDialog === "rename-chat"}
         title={selectedChat?.title ?? ""}
-        onRenameChat={handleRenameChat}
+        onRename={handleRenameChat}
         onCancel={() => {
-          setIsRenameChatDialogOpen(false);
           setSelectedChat(null);
+          setOpenDialog("none");
         }}
       />
       <DeleteChatDialog
-        isOpen={isDeleteChatDialogOpen}
-        onDeleteChat={handleDeleteChat}
+        isOpen={openDialog === "delete-chat"}
+        onDelete={handleDeleteChat}
         onCancel={() => {
-          setIsDeleteChatDialogOpen(false);
           setSelectedChat(null);
+          setOpenDialog("none");
         }}
       />
       <LoadingBackdrop isLoading={isLoading} />

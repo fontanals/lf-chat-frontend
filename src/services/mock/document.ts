@@ -8,53 +8,37 @@ import {
   UploadDocumentResponse,
 } from "../../models/responses/document";
 import { ApplicationError } from "../../utils/errors";
-import { sleep } from "../../utils/functions";
 import { IDocumentService } from "../document";
 import { mockData } from "./data";
 
 export class MockDocumentService implements IDocumentService {
   async uploadDocument(
-    request: UploadDocumentRequest,
-    onProgress?: (event: ProgressEvent) => void
+    request: UploadDocumentRequest
   ): Promise<UploadDocumentResponse> {
-    throw ApplicationError.maxUserDocumentsReached();
+    return new Promise((resolve, reject) =>
+      setTimeout(() => {
+        if (mockData.documents.length >= 10) {
+          return reject(ApplicationError.maxUserDocumentsReached());
+        }
 
-    const document: Document = {
-      id: request.id,
-      name: request.file.name,
-      mimetype: request.file.type,
-      sizeInBytes: request.file.size,
-      isProcessed: false,
-      chatId: null,
-      projectId: request.projectId ?? null,
-      createdAt: new Date(),
-      udpatedAt: new Date(),
-    };
+        const document: Document = {
+          id: request.id,
+          key: "",
+          name: request.file.name,
+          mimetype: request.file.type,
+          sizeInBytes: request.file.size,
+          isProcessed: false,
+          chatId: null,
+          projectId: request.projectId ?? null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
 
-    mockData.documents.push(document);
+        mockData.documents.push(document);
 
-    sleep(100);
-
-    onProgress?.({
-      loaded: request.file.size / 3,
-      total: request.file.size,
-    } as any);
-
-    sleep(100);
-
-    onProgress?.({
-      loaded: (request.file.size / 3) * 2,
-      total: request.file.size,
-    } as any);
-
-    sleep(100);
-
-    onProgress?.({
-      loaded: request.file.size,
-      total: request.file.size,
-    } as any);
-
-    return document.id;
+        resolve(document.id);
+      }, 300)
+    );
   }
 
   async deleteDocument(

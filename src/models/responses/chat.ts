@@ -61,6 +61,8 @@ export type SendMessageEvent =
   | MessageStartEvent
   | MessageEndEvent;
 
+export type GetAssistantStatusResponse = "open-ai" | "mock";
+
 export type GetChatsResponse = CursorPagination<Chat, string>;
 
 export type GetChatResponse = Chat;
@@ -76,3 +78,5 @@ export type UpdateChatResponse = string;
 export type UpdateMessageResponse = string;
 
 export type DeleteChatResponse = string;
+
+export type DeleteAllChatsResponse = boolean;

@@ -8,8 +8,8 @@ export type ChatMenuProps = {
   anchorOrigin?: PopoverOrigin;
   transformOrigin?: PopoverOrigin;
   anchorElement: HTMLElement | null;
-  onRenameChat: MouseEventHandler<HTMLLIElement>;
-  onDeleteChat: MouseEventHandler<HTMLLIElement>;
+  onRename: MouseEventHandler<HTMLLIElement>;
+  onDelete: MouseEventHandler<HTMLLIElement>;
   onClose: (event: any) => void;
 };
 
@@ -29,9 +29,9 @@ export function ChatMenu(props: ChatMenuProps) {
       open={Boolean(props.anchorElement)}
       onClose={props.onClose}
     >
-      <MenuItem onClick={props.onRenameChat}>
+      <MenuItem onClick={props.onRename}>
         <PencilIcon size="16px" />
-        {t("rename")}
+        {t("chat.menu_item.rename")}
       </MenuItem>
       <MenuItem
         sx={{
@@ -40,10 +40,10 @@ export function ChatMenu(props: ChatMenuProps) {
             backgroundColor: (theme) => alpha(theme.palette.error.main, 0.2),
           },
         }}
-        onClick={props.onDeleteChat}
+        onClick={props.onDelete}
       >
         <Trash2Icon size="16px" />
-        {t("delete")}
+        {t("chat.menu_item.delete")}
       </MenuItem>
     </Menu>
   );

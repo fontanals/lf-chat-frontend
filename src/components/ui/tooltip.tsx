@@ -6,15 +6,12 @@ import {
 } from "@mui/material";
 
 export const Tooltip = styled(
-  ({ className, color, ...props }: TooltipProps & { variant?: "error" }) => (
+  ({ className, color, ...props }: TooltipProps) => (
     <MuiTooltip {...props} classes={{ popper: className }} />
   )
-)(({ theme, variant }) => ({
+)(({ theme }) => ({
   [`& .${tooltipClasses.tooltip}`]: {
     color: theme.palette.background.paper,
-    backgroundColor:
-      variant === "error"
-        ? theme.palette.error.main
-        : theme.palette.secondary.main,
+    backgroundColor: theme.palette.secondary.main,
   },
 }));

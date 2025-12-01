@@ -13,7 +13,9 @@ import {
   UpdateMessageRequest,
 } from "../models/requests/chat";
 import {
+  DeleteAllChatsResponse,
   DeleteChatResponse,
+  GetAssistantStatusResponse,
   GetChatMessagesResponse,
   GetChatResponse,
   GetChatsResponse,
@@ -24,6 +26,7 @@ import {
 import { IBaseService } from "./base";
 
 export interface IChatService {
+  getAssistantStatus(): Promise<GetAssistantStatusResponse>;
   getChats(query?: GetChatsQuery): Promise<GetChatsResponse>;
   getChat(
     params: GetChatParams,
@@ -52,6 +55,7 @@ export interface IChatService {
     request: UpdateMessageRequest
   ): Promise<UpdateMessageResponse>;
   deleteChat(params: DeleteChatParams): Promise<DeleteChatResponse>;
+  deleteAllChats(): Promise<DeleteAllChatsResponse>;
 }
 
 export class ChatService implements IChatService {
@@ -59,6 +63,14 @@ export class ChatService implements IChatService {
 
   constructor(baseService: IBaseService) {
     this.baseService = baseService;
+  }
+
+  async getAssistantStatus(): Promise<GetAssistantStatusResponse> {
+    const response = await this.baseService.get<GetAssistantStatusResponse>({
+      url: "/api/chats/assistant-status",
+    });
+
+    return response;
   }
 
   async getChats(query?: GetChatsQuery): Promise<GetChatsResponse> {
@@ -149,6 +161,14 @@ export class ChatService implements IChatService {
   async deleteChat(params: DeleteChatParams): Promise<DeleteChatResponse> {
     const response = await this.baseService.delete<DeleteChatResponse>({
       url: `/api/chats/${params.chatId}`,
+    });
+
+    return response;
+  }
+
+  async deleteAllChats(): Promise<DeleteAllChatsResponse> {
+    const response = await this.baseService.delete<DeleteAllChatsResponse>({
+      url: `/api/chats`,
     });
 
     return response;

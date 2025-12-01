@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:test": "vite --mode test --port 5174",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "playwright test --workers=1 --ui"
+    "test": "playwright test --workers=1 --project=chromium",
+    "test:ui": "playwright test --workers=1 --ui"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -40,6 +42,7 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
+    "dotenv": "^17.2.3",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

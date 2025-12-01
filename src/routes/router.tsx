@@ -9,8 +9,11 @@ import { NotFoundPage } from "../pages/not-found";
 import { ProfilePage } from "../pages/profile";
 import { ProjectPage } from "../pages/project";
 import { ProjectsPage } from "../pages/projects";
+import { RecoverPasswordPage } from "../pages/recover-password";
+import { ResetPasswordPage } from "../pages/reset-password";
 import { SigninPage } from "../pages/signin";
 import { SignupPage } from "../pages/signup";
+import { VerifyAccountPage } from "../pages/verify-account";
 import { PrivateRoute } from "./private-route";
 
 export const router = createBrowserRouter([
@@ -19,7 +22,10 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "/signup", element: <SignupPage /> },
+      { path: "/verify-account", element: <VerifyAccountPage /> },
       { path: "/signin", element: <SigninPage /> },
+      { path: "/recover-password", element: <RecoverPasswordPage /> },
+      { path: "/reset-password", element: <ResetPasswordPage /> },
     ],
   },
   {

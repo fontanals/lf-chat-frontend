@@ -8,9 +8,9 @@ export type ProjectMenuProps = {
   anchorOrigin?: PopoverOrigin;
   transformOrigin?: PopoverOrigin;
   anchorElement: HTMLElement | null;
-  onEditProject: MouseEventHandler<HTMLLIElement>;
-  onDeleteProject: MouseEventHandler<HTMLLIElement>;
-  onClose: (event: any) => void;
+  onEdit: MouseEventHandler<HTMLLIElement>;
+  onDelete: MouseEventHandler<HTMLLIElement>;
+  onClose: () => void;
 };
 
 export function ProjectMenu(props: ProjectMenuProps) {
@@ -29,9 +29,9 @@ export function ProjectMenu(props: ProjectMenuProps) {
       open={Boolean(props.anchorElement)}
       onClose={props.onClose}
     >
-      <MenuItem onClick={props.onEditProject}>
+      <MenuItem onClick={props.onEdit}>
         <PencilIcon size="16px" />
-        {t("edit")}
+        {t("project.menu_item.edit")}
       </MenuItem>
       <MenuItem
         sx={{
@@ -40,10 +40,10 @@ export function ProjectMenu(props: ProjectMenuProps) {
             backgroundColor: (theme) => alpha(theme.palette.error.main, 0.2),
           },
         }}
-        onClick={props.onDeleteProject}
+        onClick={props.onDelete}
       >
         <Trash2Icon size="16px" />
-        {t("delete")}
+        {t("project.menu_item.delete")}
       </MenuItem>
     </Menu>
   );

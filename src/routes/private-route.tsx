@@ -1,13 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet } from "react-router";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
-import { services } from "../services/provider";
+import { useUser } from "../hooks/user";
 
 export function PrivateRoute() {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["user"],
-    queryFn: () => services.user.getUser(),
-  });
+  const { data: user, isLoading } = useUser();
 
   if (isLoading) {
     return <LoadingBackdrop isLoading />;

@@ -4,6 +4,6 @@ export type User = {
   email: string;
   displayName: string;
   customPrompt?: string | null;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 };

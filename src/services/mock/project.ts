@@ -64,8 +64,8 @@ export class MockProjectService implements IProjectService {
           id: request.id,
           title: request.title,
           description: request.description,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         mockData.projects.push(project);
@@ -91,7 +91,7 @@ export class MockProjectService implements IProjectService {
 
         project.title = request.title ?? project.title;
         project.description = request.description ?? project.description;
-        project.updatedAt = new Date();
+        project.updatedAt = new Date().toISOString();
 
         resolve(project.id);
       }, 300)

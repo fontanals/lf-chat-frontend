@@ -1,12 +1,10 @@
-import { Box, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import { PropsWithChildren } from "react";
 import { useSidebarStore } from "../../state/sidebar";
 import { IconButton } from "../ui/button";
 
 export function ContentPanel(props: PropsWithChildren) {
-  const theme = useTheme();
-
   const { isOpen, setIsOpen } = useSidebarStore();
 
   return (
@@ -16,21 +14,20 @@ export function ContentPanel(props: PropsWithChildren) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        height: "calc(100vh - 32px)",
-        marginTop: "16px",
-        marginBottom: "16px",
-        marginRight: "16px",
-        marginLeft: { xs: "16px", sm: isOpen ? "256px" : "72px" },
-        paddingBlock: "64px",
+        height: "100vh",
+        marginLeft: { xs: "0px", sm: isOpen ? "256px" : "72px" },
+        paddingTop: "64px",
+        paddingBottom: "32px",
         paddingInline: { xs: "16px", sm: "32px", md: "64px" },
-        borderRadius: "8px",
         backgroundColor: "background.paper",
-        transition: theme.transitions.create("margin", {
-          easing: theme.transitions.easing.sharp,
-          duration: isOpen
-            ? theme.transitions.duration.leavingScreen
-            : theme.transitions.duration.enteringScreen,
-        }),
+        borderLeft: (theme) => `1px solid ${theme.palette.divider}`,
+        transition: (theme) =>
+          theme.transitions.create("margin", {
+            easing: theme.transitions.easing.sharp,
+            duration: isOpen
+              ? theme.transitions.duration.leavingScreen
+              : theme.transitions.duration.enteringScreen,
+          }),
       }}
     >
       <IconButton

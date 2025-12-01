@@ -1,113 +1,263 @@
 {
-  "already_have_an_account": "Já tem uma conta?",
-  "dont_have_an_account": "Não tem uma conta?",
-  "sign_up": "Registar",
-  "sign_in": "Iniciar Sessão",
-  "sign_out": "Terminar Sessão",
-  "name": "Nome",
-  "email": "Email",
-  "password": "Palavra-passe",
-  "name_is_required": "O nome é obrigatório",
-  "invalid_email_address": "Endereço de email inválido",
-  "email_is_required": "O email é obrigatório",
-  "password_is_required": "A palavra-passe é obrigatória",
-  "password_must_be_at_least_6_characters_long": "A palavra-passe deve ter pelo menos 6 caracteres",
-  "by_continuing_you_agree_to_our": "Ao continuar, concorda com os nossos",
-  "terms_of_usage": "Termos de Utilização",
-  "privacy_policy": "Política de Privacidade",
-  "and": "e",
-  "profile": "Perfil",
-  "settings": "Definições",
-  "how_the_assistant_should_address_you": "Como o assistente deve tratá-lo",
-  "display_name": "Nome de Apresentação",
-  "personal_preferences_to_share_with_assistant": "Preferências pessoais a partilhar com o assistente",
-  "preferences": "Preferências",
-  "cancel": "Cancelar",
-  "save_changes": "Guardar Alterações",
-  "edit": "Editar",
-  "theme": "Tema",
-  "language": "Idioma",
-  "light": "Claro",
-  "dark": "Escuro",
-  "match_system": "Copiar Sistema",
-  "english": "Inglês",
-  "portuguese": "Português",
-  "new_chat": "Novo Chat",
-  "chat_history": "Histórico de Chats",
-  "previous_chats": "Chats Anteriores",
-  "rename": "Renomear",
-  "delete": "Eliminar",
-  "rename_chat": "Renomear Chat",
-  "delete_chat": "Eliminar Chat",
-  "are_you_sure_you_want_to_delete_this_chat": "Tem a certeza de que deseja eliminar este chat?",
-  "welcome_user_name_how_are_you_doing_today": "Bem-vindo, {{name}}! Como está hoje?",
-  "how_can_i_help_you_today": "Como posso ajudá-lo hoje?",
-  "reply_to_assistant": "Responder ao assistente...",
-  "total_chats_found": "{{total}} chats encontrados",
-  "search": "Pesquisar",
-  "copy": "Copiar",
-  "like": "Gosto",
-  "dislike": "Desgosto",
-  "projects": "Projetos",
-  "create_project": "Criar Projeto",
-  "description": "Descrição",
-  "edit_project": "Editar Projeto",
-  "delete_project": "Eliminar Projeto",
-  "are_you_sure_you_want_to_delete_the_project": "Tem a certeza de que deseja eliminar o projeto \"{{title}}\"?",
-  "project_name_is_required": "O nome do projeto é obrigatório",
-  "documents": "Documentos",
-  "chats": "Chats",
-  "add_document": "Adicionar Documento",
-  "remove_document": "Remover Documento",
-  "add_pdf_documents_as_context_to_the_project": "Adicionar documentos PDF como contexto para o projeto",
-  "title": "Título",
-  "title_is_required": "O título é obrigatório",
-  "no_chats_yet": "Não há chats ainda",
-  "start_a_new_chat": "Iniciar um novo chat",
-  "no_projects_yet": "Não há projetos ainda",
-  "create_your_first_project": "Crie o seu primeiro projeto",
-  "no_documents_yet": "Não há documentos ainda",
-  "add_a_document_as_context_to_the_project": "Adicionar um documento como contexto para o projeto",
-  "drop_to_upload": "Soltar para Adicionar",
-  "error": "Erro",
-  "error_message": "Algo correu mal. Por favor, tente novamente mais tarde.",
-  "session_expired_error_message": "A sua sessão expirou. Por favor, inicie sessão novamente.",
-  "error_page_message": "Ocorreu um erro inesperado ao carregar esta página.",
-  "go_back_to_homepage": "Voltar à página inicial",
-  "page_not_found": "Página Não Encontrada",
-  "page_not_found_message": "A página que procura não existe.",
-  "chat_not_found_alert": "Chat não encontrado.",
-  "message_interrupted_by_user": "Mensagem interrompida pelo utilizador",
-  "assistant_error_message": "Ocorreu um erro ao gerar a resposta. Por favor, tente novamente.",
-  "assistant_content_filter_message": "Esta mensagem viola a nossa política de conteúdo e não pode ser respondida.",
-  "continue": "Continue",
-  "dismiss": "Dispensar",
-  "accept": "Aceitar",
-  "view_complete_history": "Ver Histórico Completo",
-  "load_more": "Carregar Mais",
-  "message_interrupted_due_to_size_constraints": "Mensagem interrompida devido a limitações de comprimento.",
-  "processing_document_name": "A processar documento {{name}}",
-  "failed_to_process_document_name": "Falha ao processar documento {{name}}",
-  "processed_document_name_successfully": "Documento {{name}} processado com sucesso",
-  "reading_document_name": "A ler documento {{name}}",
-  "failed_to_read_document_name": "Falha ao ler documento {{name}}",
-  "read_document_name_successfully": "Documento {{name}} lido com sucesso",
-  "chat_not_found": "Chat não encontrado",
-  "max_users_reached_error_message": "Número máximo de utilizadores registados atingido. Por favor, utilize a conta de demonstração para testar a aplicação.",
-  "max_user_documents_reached_error_message": "Número máximo de documentos atingido. Pode eliminar chats ou projetos anteriores que contenham documentos para carregar novos.",
-  "invalid_email_or_password": "Email ou palavra-passe inválidos",
-  "security": "Segurança",
-  "change_password": "Alterar Password",
-  "current_password": "Password Atual",
-  "new_password": "Nova Password",
-  "confirm_new_password": "Confirmar Nova Password",
-  "current_password_is_required": "A password atual é obrigatória",
-  "new_password_is_required": "A nova password é obrigatória",
-  "confirm_new_password_is_required": "A confirmação da nova password é obrigatória",
-  "new_passwords_do_not_match": "As novas passwords não coincidem",
-  "password_changed_successfully": "Password alterada com sucesso",
-  "invalid_current_password": "Password atual inválida",
-  "delete_account": "Eliminar Conta",
-  "are_you_sure_you_want_to_delete_your_account": "Tem a certeza de que deseja eliminar a sua conta? Esta ação é irreversível e todos os seus dados serão perdidos.",
-  "profile_menu": "Menu de Perfil"
+  "common": {
+    "title": {
+      "page_not_found": "Página Não Encontrada",
+      "error": "Erro"
+    },
+    "text": {
+      "transparency_notice": "Esta é uma aplicação demo alimentada pelos modelos da OpenAI. Os resultados podem ser imprecisos, verifique informações importantes"
+    },
+    "button": {
+      "ok": "Ok",
+      "delete": "Eliminar",
+      "cancel": "Cancelar",
+      "back_homepage": "Voltar à Página Inicial"
+    },
+    "message": {
+      "page_not_found": "A página que procura não foi encontrada",
+      "error_page": "Ocorreu um erro. Tente atualizar ou voltar à página inicial."
+    },
+    "error": {
+      "content_filter": "O conteúdo viola os nossos <Link>termos de uso<Link>",
+      "try_again": "Ocorreu um erro. Por favor, tente novamente mais tarde."
+    }
+  },
+  "auth": {
+    "link": {
+      "signup": "Registar",
+      "signin": "Iniciar Sessão",
+      "forgot_password": "Esqueceu-se da sua palavra-passe?"
+    },
+    "text": {
+      "already_have_account": "Já tem uma conta?",
+      "no_account": "Não tem uma conta?",
+      "terms": "Ao continuar, concorda com os nossos <br /> <TermsOfUseLink>Termos de Uso</TermsOfUseLink> e <PrivacyPolicyLink>Política de Privacidade</PrivacyPolicyLink>",
+      "verify_account": "Por favor, verifique a sua conta para começar a usar a aplicação",
+      "dismiss_account_verification": "Se não se registou connosco, pode ignorar este link com segurança"
+    },
+    "field": {
+      "name": "Nome",
+      "email": "Email",
+      "password": "Palavra-passe",
+      "new_password": "Nova Palavra-passe",
+      "confirm_password": "Confirmar Palavra-passe"
+    },
+    "button": {
+      "signup": "Registar",
+      "signin": "Iniciar Sessão",
+      "verify_account": "Verificar Conta",
+      "recover_password": "Recuperar Palavra-passe",
+      "reset_password": "Redefinir Palavra-passe"
+    },
+    "message": {
+      "verification_email_sent": "Um email de verificação de conta foi enviado para a sua caixa de entrada",
+      "account_verified": "A sua conta foi verificada. Já pode <Link>iniciar sessão</Link>",
+      "recovery_email_sent": "Um email de recuperação de palavra-passe foi enviado para a sua caixa de entrada",
+      "password_reset": "A sua palavra-passe foi redefinida. Já pode <Link>iniciar sessão</Link> utilizando a sua nova palavra-passe"
+    },
+    "error": {
+      "name_required": "Nome é obrigatório",
+      "email_required": "Email é obrigatório",
+      "password_required": "Palavra-passe é obrigatória",
+      "new_password_required": "Nova palavra-passe é obrigatória",
+      "confirm_password_required": "Confirmar palavra-passe é obrigatório",
+      "email_invalid": "Endereço de email inválido",
+      "email_or_password_invalid": "Email ou palavra-passe inválidos",
+      "password_min_length": "A palavra-passe deve ter pelo menos 8 caracteres",
+      "confirm_password_no_match": "A confirmação da palavra-passe não corresponde",
+      "invalid_account_verification_link": "Este link já não é válido. Por favor, reinicie o processo de <Link>registo</Link>",
+      "invalid_password_reset_link": "Este link já não é válido. Por favor, reinicie o processo de <Link>recuperação de palavra-passe</Link>",
+      "session_expired": "A sua sessão expirou. Por favor, inicie sessão novamente."
+    }
+  },
+  "profile": {
+    "menu": {
+      "profile": "Menu de Perfil"
+    },
+    "menu_item": {
+      "profile": "Perfil",
+      "settings": "Definições",
+      "signout": "Terminar Sessão"
+    },
+    "title": {
+      "profile": "Perfil",
+      "settings": "Definições",
+      "data": "Dados",
+      "account": "Conta",
+      "theme": "Tema",
+      "language": "Idioma",
+      "delete_all_chats": "Eliminar Todos os Chats",
+      "delete_account": "Eliminar Conta"
+    },
+    "text": {
+      "delete_all_chats": "Eliminar todos os Chats",
+      "delete_account": "Eliminar conta"
+    },
+    "field": {
+      "name": "Nome",
+      "display_name": "Como o assistente deve tratá-lo",
+      "preferences": "Instruções personalizadas para o assistente"
+    },
+    "button": {
+      "edit": "Editar",
+      "save_changes": "Guardar Alterações",
+      "cancel": "Cancelar",
+      "english": "Inglês",
+      "portuguese": "Português",
+      "delete_all_chats": "Eliminar Todos os Chats",
+      "delete_account": "Eliminar Conta"
+    },
+    "tooltip": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "match_system": "Igual ao Sistema"
+    },
+    "message": {
+      "delete_all_chats": "Tem a certeza de que pretende eliminar todos os chats?",
+      "delete_account": "Tem a certeza de que pretende eliminar a sua conta? Esta ação não pode ser desfeita e perderá todos os seus dados."
+    },
+    "error": {
+      "name_required": "Nome é obrigatório",
+      "max_documents": "Número máximo de documentos atingido. Elimine alguns documentos para carregar mais."
+    }
+  },
+  "chat": {
+    "link": {
+      "start_new_chat": "Iniciar Novo Chat"
+    },
+    "menu": {
+      "profile": "Perfil"
+    },
+    "menu_item": {
+      "new_chat": "Novo Chat",
+      "chat_history": "Histórico de Chats",
+      "projects": "Projetos",
+      "rename": "Renomear",
+      "delete": "Eliminar"
+    },
+    "label": {
+      "write_to_assistant": "Escrever para o assistente",
+      "attach_document": "Anexar documento",
+      "send_message": "Enviar mensagem",
+      "stop_response": "Parar resposta",
+      "chat_options": "Mais opções para {{title}}",
+      "edit_message": "Editar mensagem",
+      "remove_document": "Remover documento {{name}}"
+    },
+    "title": {
+      "new_chat": "Novo Chat",
+      "chat_history": "Histórico de Chats",
+      "rename_chat": "Renomear Chat",
+      "delete_chat": "Eliminar Chat"
+    },
+    "text": {
+      "assistant_status_openai": "Status: OpenAI",
+      "assistant_status_mock": "Status: Mock",
+      "previous_chats": "Chats Recentes",
+      "welcome": "Bem-vindo {{name}}! Como está hoje?",
+      "continue": "Continuar",
+      "total_chats": "{{total}} chats encontrados",
+      "no_chats": "Ainda não há chats"
+    },
+    "placeholder": {
+      "new_chat": "Como posso ajudá-lo hoje?",
+      "new_message": "Responder ao assistente",
+      "search": "Pesquisar",
+      "chat_title": "Título do Chat",
+      "edit_message": "Editar Mensagem"
+    },
+    "button": {
+      "complete_history": "Ver Histórico Completo",
+      "new_chat": "Novo Chat",
+      "edit": "Editar",
+      "rename": "Renomear",
+      "cancel": "Cancelar",
+      "load_more": "Carregar Mais",
+      "dismiss": "Dispensar",
+      "accept": "Aceitar"
+    },
+    "tooltip": {
+      "copy": "Copiar",
+      "like": "Gosto",
+      "dislike": "Não Gosto",
+      "edit": "Editar",
+      "remove_document": "Remover Documento"
+    },
+    "message": {
+      "assistant_status_openai": "O assistente está a usar modelos da OpenAI.",
+      "assistant_status_mock": "Limite mensal de custos atingido. O assistente está agora a retornar respostas pré-definidas para simulação.",
+      "user_content_filter": "Esta mensagem não pode ser exibida porque viola os nossos <Link>termos de uso<Link>",
+      "assistant_content_filter": "Esta mensagem não pode ser respondida porque viola os nossos <Link>termos de uso</Link>",
+      "interrupted_by_user": "Mensagem interrompida pelo utilizador",
+      "interrupted_by_size": "Mensagem interrompida devido a restrições de tamanho",
+      "delete_chat": "Tem a certeza de que pretende eliminar este chat?",
+      "processing_document": "A processar documento {{name}}",
+      "process_document": "Processar documento {{name}}",
+      "reading_document": "A ler documento {{name}}",
+      "read_document": "Documento {{name}} lido"
+    },
+    "error": {
+      "chat_not_found": "Chat não encontrado",
+      "assistant_message": "Ocorreu um erro ao gerar esta resposta",
+      "process_document": "Falha ao processar documento {{name}}",
+      "read_document": "Falha ao ler documento {{name}}",
+      "invalid_document_type": "Tipo de ficheiro inválido. A aplicação suporta apenas documentos TXT e PDF. Por favor, carregue um ficheiro válido."
+    }
+  },
+  "project": {
+    "menu_item": {
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "label": {
+      "edit_project": "Editar projeto",
+      "delete_project": "Eliminar projeto",
+      "add_document": "Adicionar documento",
+      "project_options": "Mais opções para {{title}}"
+    },
+    "title": {
+      "projects": "Projetos",
+      "documents": "Documentos",
+      "chats": "Chats",
+      "create_project": "Criar Projeto",
+      "edit_project": "Editar Projeto",
+      "delete_project": "Eliminar Projeto"
+    },
+    "text": {
+      "no_projects": "Ainda não há projetos",
+      "total_chats": "{{total}} chats encontrados",
+      "no_chats": "Ainda não há chats",
+      "drop_files": "Arraste para carregar",
+      "no_documents": "Ainda não há documentos",
+      "add_documents": "Adicione documentos como contexto para o projeto"
+    },
+    "field": {
+      "title": "Título",
+      "description": "Descrição"
+    },
+    "placeholder": {
+      "search": "Pesquisar"
+    },
+    "button": {
+      "create_project": "Criar Projeto",
+      "create_first_project": "Crie Seu Primeiro Projeto",
+      "edit": "Editar",
+      "cancel": "Cancelar",
+      "new_chat": "Novo Chat",
+      "start_new_chat": "Iniciar Novo Chat",
+      "load_more": "Carregar Mais"
+    },
+    "tooltip": {
+      "edit_project": "Editar Projeto",
+      "delete_project": "Eliminar Projeto",
+      "add_document": "Adicionar Documento"
+    },
+    "message": {
+      "delete_project": "Tem a certeza de que pretende eliminar o projeto \"{{name}}\"?"
+    },
+    "error": {
+      "title_required": "Título é obrigatório",
+      "invalid_document_type": "Tipo de ficheiro inválido. A aplicação suporta apenas documentos TXT e PDF. Por favor, carregue um ficheiro válido."
+    }
+  }
 }

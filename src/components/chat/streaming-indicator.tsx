@@ -21,6 +21,7 @@ export default function StreamingIndicator() {
         gap: "8px",
         padding: "8px 16px",
       }}
+      data-testid="streaming-indicator"
     >
       {[0, 1, 2].map((index) => (
         <Box

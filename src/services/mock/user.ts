@@ -1,9 +1,5 @@
+import { UpdateUserRequest } from "../../models/requests/user";
 import {
-  ChangePasswordRequest,
-  UpdateUserRequest,
-} from "../../models/requests/user";
-import {
-  ChangePasswordResponse,
   DeleteUserResponse,
   GetUserResponse,
   UpdateUserResponse,
@@ -27,19 +23,11 @@ export class MockUserService implements IUserService {
       setTimeout(() => {
         const user = mockData.users[0];
 
-        mockData.users[0] = { ...user, ...request, updatedAt: new Date() };
-
-        resolve(user.id);
-      }, 300)
-    );
-  }
-
-  async changePassword(
-    request: ChangePasswordRequest
-  ): Promise<ChangePasswordResponse> {
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        const user = mockData.users[0];
+        mockData.users[0] = {
+          ...user,
+          ...request,
+          updatedAt: new Date().toISOString(),
+        };
 
         resolve(user.id);
       }, 300)

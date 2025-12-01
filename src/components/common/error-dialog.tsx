@@ -6,11 +6,12 @@ import {
   alpha,
 } from "@mui/material";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { useErrorStore } from "../../state/error";
 import { ApplicationErrorCode } from "../../utils/errors";
 import { ShadowButton } from "../ui/button";
+import { Link } from "../ui/link";
 import { Text } from "../ui/text";
 
 export function ErrorDialog() {
@@ -20,21 +21,26 @@ export function ErrorDialog() {
   const { showError, error, clearError } = useErrorStore();
 
   useEffect(() => {
-    if (error?.code === ApplicationErrorCode.Unauthorized) {
+    if (showError && error?.code === ApplicationErrorCode.Unauthorized) {
+      navigate("/signin");
+      clearError();
+    }
+
+    if (showError && error?.code === ApplicationErrorCode.SessionExpired) {
       navigate("/signin");
     }
-  }, [error]);
+  }, [showError, error, navigate, clearError]);
 
-  function getErrorMessage() {
+  function getErrorKey() {
     switch (error?.code) {
-      case ApplicationErrorCode.Unauthorized:
-        return t("session_expired_error_message");
-      case ApplicationErrorCode.MaxUsersReached:
-        return t("max_users_reached_error_message");
+      case ApplicationErrorCode.SessionExpired:
+        return "auth.error.session_expired";
       case ApplicationErrorCode.MaxUserDocumentsReached:
-        return t("max_user_documents_reached_error_message");
+        return "profile.error.max_documents";
+      case ApplicationErrorCode.ContentFilter:
+        return "common.error.content_filter";
       default:
-        return t("error_message");
+        return "common.error.try_again";
     }
   }
 
@@ -45,21 +51,30 @@ export function ErrorDialog() {
         backdrop: {
           sx: {
             backgroundColor: (theme) =>
-              alpha(theme.palette.secondary.main, 0.3),
+              alpha(theme.palette.secondary.main, 0.2),
           },
         },
       }}
-      open={showError}
+      open={showError && error?.code !== ApplicationErrorCode.Unauthorized}
       onClose={clearError}
     >
       <DialogTitle sx={{ padding: "16px" }} variant="body1">
-        {t("error")}
+        {t("common.title.error")}
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
-        <Text>{getErrorMessage()}</Text>
+        <Text>
+          <Trans
+            i18nKey={getErrorKey()}
+            components={{
+              Link: <Link to="/#" />,
+            }}
+          />
+        </Text>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
-        <ShadowButton onClick={clearError}>{t("ok")}</ShadowButton>
+        <ShadowButton onClick={clearError}>
+          {t("common.button.ok")}
+        </ShadowButton>
       </DialogActions>
     </Dialog>
   );

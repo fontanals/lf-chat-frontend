@@ -178,6 +178,7 @@ export type UserMessage = {
   role: "user";
   content: UserContentBlock[];
   parentMessageId?: string | null;
+  finishReason?: "content-filter" | null;
   chatId: string;
   createdAt?: string;
   updatedAt?: string;

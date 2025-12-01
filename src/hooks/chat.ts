@@ -5,7 +5,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Dispatch, RefObject, SetStateAction } from "react";
+import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useLocation,
   useNavigate,
@@ -13,6 +14,7 @@ import {
   useSearchParams,
 } from "react-router";
 import { v4 as uuid } from "uuid";
+import { Chat } from "../models/entities/chat";
 import {
   AssistantContentBlock,
   AssistantMessage,
@@ -21,6 +23,7 @@ import {
   UserMessage,
 } from "../models/entities/message";
 import {
+  CreateChatRequest,
   DeleteChatParams,
   GetChatQuery,
   GetChatsQuery,
@@ -37,8 +40,15 @@ import {
   GetChatsResponse,
 } from "../models/responses/chat";
 import { services } from "../services/provider";
-import { PendingChat, useChatStore } from "../state/chat";
+import { useChatStore } from "../state/chat";
 import { SearchParamsUtils } from "../utils/search-params";
+
+export function useAssistantStatus() {
+  return useQuery({
+    queryKey: ["assistant-status"],
+    queryFn: () => services.chat.getAssistantStatus(),
+  });
+}
 
 export function usePreviousChats() {
   return useQuery({
@@ -51,7 +61,8 @@ export function usePreviousChats() {
 export function useHistoryChats(query?: GetChatsQuery) {
   return useInfiniteQuery({
     queryKey: ["chats", "history", query],
-    queryFn: () => services.chat.getChats(query),
+    queryFn: ({ pageParam }) =>
+      services.chat.getChats({ ...query, cursor: pageParam }),
     initialPageParam: new Date().toISOString(),
     getNextPageParam: (page) => page.nextCursor,
     placeholderData: keepPreviousData,
@@ -61,7 +72,8 @@ export function useHistoryChats(query?: GetChatsQuery) {
 export function useProjectChats(projectId: string, query?: GetChatsQuery) {
   return useInfiniteQuery({
     queryKey: ["chats", "project", projectId, query],
-    queryFn: () => services.chat.getChats({ projectId, ...query }),
+    queryFn: ({ pageParam }) =>
+      services.chat.getChats({ ...query, projectId, cursor: pageParam }),
     initialPageParam: new Date().toISOString(),
     getNextPageParam: (page) => page.nextCursor,
     placeholderData: keepPreviousData,
@@ -83,11 +95,8 @@ export function useChatMessages(chatId: string, enabled = true) {
   });
 }
 
-export function useCreateChat(
-  abortControllerRef: RefObject<AbortController | null>,
-  messagesContainerRef: RefObject<HTMLDivElement | null>,
-  setShowContinueMessage: Dispatch<SetStateAction<boolean>>
-) {
+export function useCreateChat() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const setStreamingMessage = useChatStore(
@@ -97,16 +106,22 @@ export function useCreateChat(
     (state) => state.removeStreamingMessage
   );
 
-  return useMutation({
-    mutationFn: (pendingChat: PendingChat) => {
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: (args: { request: CreateChatRequest }) => {
       abortControllerRef.current = new AbortController();
 
-      const chat = pendingChat.chat;
+      const chat: Chat = {
+        id: args.request.id,
+        title: t("chat.title.new_chat"),
+        projectId: args.request.projectId,
+      };
 
       const userMessage: UserMessage = {
         id: uuid(),
         role: "user",
-        content: pendingChat.message,
+        content: args.request.message,
         parentMessageId: null,
         chatId: chat.id,
         childrenMessageIds: [],
@@ -139,11 +154,7 @@ export function useCreateChat(
       const contentBlocks = new Map<string, AssistantContentBlock>();
 
       return services.chat.createChat(
-        {
-          id: chat.id,
-          message: pendingChat.message,
-          projectId: chat.project?.id,
-        },
+        args.request,
         (event) => {
           switch (event.event) {
             case "message-start": {
@@ -234,46 +245,30 @@ export function useCreateChat(
                 messageTree
               );
 
-              if (
-                event.data.finishReason === "length" ||
-                event.data.finishReason === "tool-calls"
-              ) {
-                setShowContinueMessage(true);
-              }
-
               break;
             }
           }
-
-          setTimeout(
-            () =>
-              messagesContainerRef.current?.scrollTo({
-                top: messagesContainerRef.current.scrollHeight,
-                behavior: "smooth",
-              }),
-            100
-          );
         },
         abortControllerRef.current.signal
       );
     },
     onSuccess: (_, args) => {
-      removeStreamingMessage(args.chat.id);
+      removeStreamingMessage(args.request.id);
+
+      queryClient.invalidateQueries({ queryKey: ["assistant-status"] });
 
       queryClient.invalidateQueries({ queryKey: ["chats"] });
 
       queryClient.invalidateQueries({
-        queryKey: ["messages", args.chat.id],
+        queryKey: ["messages", args.request.id],
       });
     },
   });
+
+  return { ...mutation, onAbort: () => abortControllerRef.current?.abort() };
 }
 
-export function useSendMessage(
-  abortControllerRef: RefObject<AbortController | null>,
-  messagesContainerRef: RefObject<HTMLDivElement | null>,
-  setShowContinueMessage: Dispatch<SetStateAction<boolean>>
-) {
+export function useSendMessage() {
   const queryClient = useQueryClient();
 
   const setStreamingMessage = useChatStore(
@@ -283,7 +278,9 @@ export function useSendMessage(
     (state) => state.removeStreamingMessage
   );
 
-  return useMutation({
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const mutation = useMutation({
     mutationFn: (args: {
       params: SendMessageParams;
       request: SendMessageRequest;
@@ -457,25 +454,9 @@ export function useSendMessage(
                 }
               );
 
-              if (
-                event.data.finishReason === "length" ||
-                event.data.finishReason === "tool-calls"
-              ) {
-                setShowContinueMessage(true);
-              }
-
               break;
             }
           }
-
-          setTimeout(
-            () =>
-              messagesContainerRef.current?.scrollTo({
-                top: messagesContainerRef.current.scrollHeight,
-                behavior: "smooth",
-              }),
-            100
-          );
         },
         abortControllerRef.current.signal
       );
@@ -483,11 +464,15 @@ export function useSendMessage(
     onSuccess: (_, args) => {
       removeStreamingMessage(args.params.chatId);
 
+      queryClient.invalidateQueries({ queryKey: ["assistant-status"] });
+
       queryClient.invalidateQueries({
         queryKey: ["messages", args.params.chatId],
       });
     },
   });
+
+  return { ...mutation, onAbort: () => abortControllerRef.current?.abort() };
 }
 
 export function useUpdateChat() {
@@ -880,6 +865,40 @@ export function useDeleteChat() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
+}
+
+export function useDeleteAllChats() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => services.chat.deleteAllChats(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["chats"] });
+
+      const previousChats = queryClient.getQueryData<GetChatsResponse>([
+        "chats",
+        "previous",
+      ]);
+
+      queryClient.setQueryData<GetChatsResponse>(["chats", "previous"], () => ({
+        items: [],
+        totalItems: 0,
+      }));
+
+      return { previousChats };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData<GetChatsResponse>(
+        ["chats", "previous"],
+        context?.previousChats
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }

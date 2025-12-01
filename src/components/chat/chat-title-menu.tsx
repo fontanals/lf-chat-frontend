@@ -2,18 +2,37 @@ import { Box, Button } from "@mui/material";
 import { ChevronDownIcon } from "lucide-react";
 import { Fragment, useState } from "react";
 import { Link } from "react-router";
+import { useDeleteChat, useUpdateChat } from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
 import { Text } from "../ui/text";
 import { ChatMenu } from "./chat-menu";
+import { DeleteChatDialog } from "./delete-chat-dialog";
+import { RenameChatDialog } from "./rename-chat-dialog";
 
 export type ChatTitleMenuProps = {
   chat: Chat;
-  onRenameChat: () => void;
-  onDeleteChat: () => void;
 };
 
 export function ChatTitleMenu(props: ChatTitleMenuProps) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
+  const [openDialog, setOpenDialog] = useState<
+    "rename-chat" | "delete-chat" | "none"
+  >("none");
+
+  const { mutate: updateChat } = useUpdateChat();
+  const { mutate: deleteChat } = useDeleteChat();
+
+  function handleRenameChat(title: string) {
+    updateChat({ params: { chatId: props.chat.id }, request: { title } });
+
+    setOpenDialog("none");
+  }
+
+  function handleDeleteChat() {
+    deleteChat({ params: { chatId: props.chat.id } });
+
+    setOpenDialog("none");
+  }
 
   return (
     <Box
@@ -60,15 +79,26 @@ export function ChatTitleMenu(props: ChatTitleMenuProps) {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         anchorElement={anchorElement}
-        onRenameChat={() => {
+        onRename={() => {
           setAnchorElement(null);
-          props.onRenameChat();
+          setOpenDialog("rename-chat");
         }}
-        onDeleteChat={() => {
+        onDelete={() => {
           setAnchorElement(null);
-          props.onDeleteChat();
+          setOpenDialog("delete-chat");
         }}
         onClose={() => setAnchorElement(null)}
+      />
+      <RenameChatDialog
+        isOpen={openDialog === "rename-chat"}
+        title={props.chat.title}
+        onRename={handleRenameChat}
+        onCancel={() => setOpenDialog("none")}
+      />
+      <DeleteChatDialog
+        isOpen={openDialog === "delete-chat"}
+        onDelete={handleDeleteChat}
+        onCancel={() => setOpenDialog("none")}
       />
     </Box>
   );

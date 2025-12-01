@@ -1,18 +1,9 @@
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  alpha,
-} from "@mui/material";
-import { Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ShadowButton } from "../ui/button";
-import { Text } from "../ui/text";
+import { DeleteDialog } from "../common/delete-dialog";
 
 export type DeleteChatDialogProps = {
   isOpen: boolean;
-  onDeleteChat: () => void;
+  onDelete: () => void;
   onCancel: () => void;
 };
 
@@ -20,36 +11,12 @@ export function DeleteChatDialog(props: DeleteChatDialogProps) {
   const { t } = useTranslation();
 
   return (
-    <Dialog
-      slotProps={{
-        paper: {
-          sx: { minWidth: "300px", borderRadius: "16px" },
-        },
-        backdrop: {
-          sx: {
-            backgroundColor: (theme) =>
-              alpha(theme.palette.secondary.main, 0.3),
-          },
-        },
-      }}
-      open={props.isOpen}
-      onClose={props.onCancel}
-    >
-      <DialogTitle sx={{ padding: "16px" }} variant="body2">
-        {t("delete_chat")}
-      </DialogTitle>
-      <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
-        <Text>{t("are_you_sure_you_want_to_delete_this_chat")}</Text>
-      </DialogContent>
-      <DialogActions sx={{ padding: "16px" }}>
-        <ShadowButton color="primary" onClick={props.onCancel}>
-          {t("cancel")}
-        </ShadowButton>
-        <ShadowButton color="error" onClick={props.onDeleteChat}>
-          <Trash2Icon size="16px" />
-          {t("delete")}
-        </ShadowButton>
-      </DialogActions>
-    </Dialog>
+    <DeleteDialog
+      title={t("chat.title.delete_chat")}
+      message={t("chat.message.delete_chat")}
+      isOpen={props.isOpen}
+      onDelete={props.onDelete}
+      onCancel={props.onCancel}
+    />
   );
 }

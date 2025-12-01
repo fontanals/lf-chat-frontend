@@ -1,0 +1,15 @@
+name: lf_chat_frontend_dev
+services:
+  app:
+    container_name: lf_chat_app
+    build:
+      context: .
+      target: development
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host 0.0.0.0
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules

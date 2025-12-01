@@ -11,10 +11,10 @@ import {
 import { Chat } from "../../models/entities/chat";
 import { Project } from "../../models/entities/project";
 import { ArrayUtils } from "../../utils/arrays";
-import { SearchParamsUtils } from "../../utils/search-params";
 import { ChatList, ChatListItem } from "../chat/chat-list";
 import { DeleteChatDialog } from "../chat/delete-chat-dialog";
 import { RenameChatDialog } from "../chat/rename-chat-dialog";
+import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { Link, LinkButton } from "../ui/link";
 import { Text } from "../ui/text";
@@ -28,20 +28,19 @@ export function ProjectChats(props: ProjectChatsProps) {
   const { t } = useTranslation();
 
   const paramsSearch = searchParams.get("search") ?? "";
-  const cursor = SearchParamsUtils.getDate(searchParams, "cursor");
 
   const [search, setSearch] = useState(paramsSearch);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
-  const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState<
+    "rename-chat" | "delete-chat" | "none"
+  >("none");
 
   const debouncedSearchTimeoutRef = useRef<any>(null);
 
-  const { data, isLoading } = useProjectChats(props.project.id, {
-    search: paramsSearch,
-    cursor: cursor ?? undefined,
-    limit: 25,
-  });
+  const { data, isLoading, hasNextPage, fetchNextPage } = useProjectChats(
+    props.project.id,
+    { search: paramsSearch, limit: 25 }
+  );
   const { mutate: updateChat } = useUpdateChat();
   const { mutate: deleteChat } = useDeleteChat();
 
@@ -65,12 +64,18 @@ export function ProjectChats(props: ProjectChatsProps) {
     if (selectedChat != null) {
       updateChat({ params: { chatId: selectedChat.id }, request: { title } });
     }
+
+    setSelectedChat(null);
+    setOpenDialog("none");
   }
 
   function handleDeleteChat() {
     if (selectedChat != null) {
       deleteChat({ params: { chatId: selectedChat.id } });
     }
+
+    setSelectedChat(null);
+    setOpenDialog("none");
   }
 
   return (
@@ -82,6 +87,7 @@ export function ProjectChats(props: ProjectChatsProps) {
         width: "100%",
         maxWidth: "800px",
         marginTop: "8px",
+        overflow: "hidden",
       }}
     >
       <Box
@@ -93,15 +99,15 @@ export function ProjectChats(props: ProjectChatsProps) {
         }}
       >
         <Text sx={{ paddingInline: "16px", color: "text.secondary" }}>
-          {t("chats")}
+          {t("project.title.chats")}
         </Text>
         <LinkButton to={`/new?projectId=${props.project.id}`}>
-          {t("new_chat")}
+          {t("project.button.new_chat")}
         </LinkButton>
       </Box>
       <Box>
         <Input
-          placeholder={t("search")}
+          placeholder={t("project.placeholder.search")}
           fullWidth
           value={search}
           onChange={handleSearchChange}
@@ -110,7 +116,7 @@ export function ProjectChats(props: ProjectChatsProps) {
           sx={{ paddingInline: "16px", color: "secondary.main" }}
           variant="caption"
         >
-          {t("total_chats_found", { total: totalChats })}
+          {t("project.text.total_chats", { total: totalChats })}
         </Text>
       </Box>
       {!isLoading && ArrayUtils.isNullOrEmpty(chats) && (
@@ -125,45 +131,62 @@ export function ProjectChats(props: ProjectChatsProps) {
           <Box>
             <MessageCircleIcon size="20px" />
           </Box>
-          <Text>{t("no_chats_yet")}</Text>
+          <Text>{t("project.text.no_chats")}</Text>
           <Link to={`/new?projectId=${props.project.id}`}>
-            {t("start_a_new_chat")}
+            {t("project.button.start_new_chat")}
           </Link>
         </Box>
       )}
-      <ChatList
+      <Box
         sx={{
+          flex: 1,
           overflow: "auto",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
       >
-        {chats.map((chat) => (
-          <ChatListItem
-            key={chat.id}
-            sx={{ paddingInline: "16px" }}
-            chat={chat}
-            onRenameChat={() => {
-              setSelectedChat(chat);
-              setIsRenameChatDialogOpen(true);
-            }}
-            onDeleteChat={() => {
-              setSelectedChat(chat);
-              setIsDeleteChatDialogOpen(true);
-            }}
-          />
-        ))}
-      </ChatList>
+        <ChatList data-testid="project-chat-list">
+          {chats.map((chat) => (
+            <ChatListItem
+              key={chat.id}
+              sx={{ paddingInline: "16px" }}
+              chat={chat}
+              onRename={() => {
+                setSelectedChat(chat);
+                setOpenDialog("rename-chat");
+              }}
+              onDelete={() => {
+                setSelectedChat(chat);
+                setOpenDialog("delete-chat");
+              }}
+            />
+          ))}
+        </ChatList>
+        {hasNextPage && (
+          <ShadowButton
+            sx={{ width: "100%", marginBlock: "8px" }}
+            onClick={() => fetchNextPage()}
+          >
+            {t("project.button.load_more")}
+          </ShadowButton>
+        )}
+      </Box>
       <RenameChatDialog
-        isOpen={isRenameChatDialogOpen}
+        isOpen={openDialog === "rename-chat"}
         title={selectedChat?.title ?? ""}
-        onRenameChat={handleRenameChat}
-        onCancel={() => setIsRenameChatDialogOpen(false)}
+        onRename={handleRenameChat}
+        onCancel={() => {
+          setSelectedChat(null);
+          setOpenDialog("none");
+        }}
       />
       <DeleteChatDialog
-        isOpen={isDeleteChatDialogOpen}
-        onDeleteChat={handleDeleteChat}
-        onCancel={() => setIsDeleteChatDialogOpen(false)}
+        isOpen={openDialog === "delete-chat"}
+        onDelete={handleDeleteChat}
+        onCancel={() => {
+          setSelectedChat(null);
+          setOpenDialog("none");
+        }}
       />
     </Box>
   );

@@ -3,7 +3,6 @@ import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useParams } from "react-router";
-import { v4 as uuid } from "uuid";
 import { ContentPanel } from "../components/layout/content-panel";
 import { DeleteProjectDialog } from "../components/project/delete-project-dialog";
 import {
@@ -16,7 +15,6 @@ import { IconButton } from "../components/ui/button";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
 import { Tooltip } from "../components/ui/tooltip";
-import { useDeleteDocument, useUploadDocument } from "../hooks/document";
 import {
   useDeleteProject,
   useProject,
@@ -27,49 +25,30 @@ export function ProjectPage() {
   const { projectId } = useParams();
   const { t } = useTranslation();
 
-  const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = useState(false);
-  const [isDeleteProjectDialogOpen, setIsDeleteProjectDialogOpen] =
-    useState(false);
+  const [openDialog, setOpenDialog] = useState<
+    "edit-project" | "delete-project" | "none"
+  >("none");
 
   const { data: project, isLoading } = useProject(projectId!, {
     expand: ["documents"],
   });
   const { mutate: updateProject } = useUpdateProject();
   const { mutate: deleteProject } = useDeleteProject();
-  const { mutate: uploadProjectDocument } = useUploadDocument(projectId!);
-  const { mutate: deleteProjectDocument } = useDeleteDocument(projectId!);
 
   function handleEditProject(values: EditProjectFormSchema) {
-    setIsEditProjectDialogOpen(false);
-
     if (project != null) {
-      updateProject({
-        params: { projectId: project.id },
-        request: values,
-      });
+      updateProject({ params: { projectId: project.id }, request: values });
     }
+
+    setOpenDialog("none");
   }
 
   function handleDeleteProject() {
-    setIsDeleteProjectDialogOpen(false);
-
     if (project != null) {
       deleteProject({ params: { projectId: project.id } });
     }
-  }
 
-  function handleAddDocument(files?: File[]) {
-    files?.forEach((file) =>
-      uploadProjectDocument({
-        request: { id: uuid(), file, projectId: projectId! },
-        // TODO: implement upload progress
-        onProgress: () => {},
-      })
-    );
-  }
-
-  function handleDeleteDocument(documentId: string) {
-    deleteProjectDocument({ params: { documentId } });
+    setOpenDialog("none");
   }
 
   if (isLoading) {
@@ -94,47 +73,48 @@ export function ProjectPage() {
           gap: "16px",
           width: "100%",
           maxWidth: "800px",
+          marginTop: "16px",
         }}
       >
         <Box sx={{ display: "grid", gap: "8px", paddingInline: "16px" }}>
           <Text sx={{ color: "secondary.main" }} variant="body1">
-            {project?.title ?? ""}
+            {project.title}
           </Text>
-          <Text noWrap>{project?.description ?? ""}</Text>
+          <Text noWrap>{project.description}</Text>
         </Box>
         <Box sx={{ display: "flex", gap: "8px" }}>
-          <Tooltip title={t("edit_project")}>
-            <IconButton onClick={() => setIsEditProjectDialogOpen(true)}>
+          <Tooltip title={t("project.tooltip.edit_project")}>
+            <IconButton
+              aria-label={t("project.label.edit_project")}
+              onClick={() => setOpenDialog("edit-project")}
+            >
               <PencilIcon size="16px" />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("delete_project")} variant="error">
+          <Tooltip title={t("project.tooltip.delete_project")}>
             <IconButton
               sx={{ "&:hover": { color: "error.main" } }}
-              onClick={() => setIsDeleteProjectDialogOpen(true)}
+              aria-label={t("project.label.delete_project")}
+              onClick={() => setOpenDialog("delete-project")}
             >
               <Trash2Icon size="16px" />
             </IconButton>
           </Tooltip>
         </Box>
       </Box>
-      <ProjectDocuments
-        project={project}
-        onAddDocument={handleAddDocument}
-        onRemoveDocument={handleDeleteDocument}
-      />
+      <ProjectDocuments project={project} />
       <ProjectChats project={project} />
       <EditProjectDialog
-        isOpen={isEditProjectDialogOpen}
+        isOpen={openDialog === "edit-project"}
         project={project}
-        onEditProject={handleEditProject}
-        onCancel={() => setIsEditProjectDialogOpen(false)}
+        onEdit={handleEditProject}
+        onCancel={() => setOpenDialog("none")}
       />
       <DeleteProjectDialog
-        isOpen={isDeleteProjectDialogOpen}
+        isOpen={openDialog === "delete-project"}
         project={project}
-        onDeleteProject={handleDeleteProject}
-        onCancel={() => setIsDeleteProjectDialogOpen(false)}
+        onDelete={handleDeleteProject}
+        onCancel={() => setOpenDialog("none")}
       />
     </ContentPanel>
   );

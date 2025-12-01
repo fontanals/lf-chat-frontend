@@ -1,6 +1,7 @@
 import { List, ListItem, ListProps, SxProps } from "@mui/material";
 import { EllipsisVerticalIcon } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Project } from "../../models/entities/project";
 import { IconButton } from "../ui/button";
@@ -15,6 +16,8 @@ export type ProjectListItemProps = {
 };
 
 export function ProjectListItem(props: ProjectListItemProps) {
+  const { t } = useTranslation();
+
   const [isHovered, setIsHovered] = useState(false);
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
@@ -46,17 +49,20 @@ export function ProjectListItem(props: ProjectListItemProps) {
       </Link>
       <IconButton
         sx={{ color: "primary.main", "&:hover": { color: "primary.main" } }}
+        aria-label={t("project.label.project_options", {
+          title: props.project.title,
+        })}
         onClick={(event) => setAnchorElement(event.currentTarget)}
       >
         <EllipsisVerticalIcon size="16px" />
       </IconButton>
       <ProjectMenu
         anchorElement={anchorElement}
-        onEditProject={() => {
+        onEdit={() => {
           setAnchorElement(null);
           props.onEdit();
         }}
-        onDeleteProject={() => {
+        onDelete={() => {
           setAnchorElement(null);
           props.onDelete();
         }}

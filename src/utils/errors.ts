@@ -3,10 +3,12 @@ export enum ApplicationErrorCode {
   Unauthorized = 401,
   NotFound = 404,
   InternalServerError = 500,
-  InvalidEmailOrPassword = 1000,
-  InvalidPassword = 1001,
-  MaxUsersReached = 1002,
-  MaxUserDocumentsReached = 1003,
+  InvalidAccountVerificationToken = 1000,
+  InvalidEmailOrPassword = 1001,
+  SessionExpired = 1002,
+  InvalidPasswordRecoveryToken = 1003,
+  MaxUserDocumentsReached = 1004,
+  ContentFilter = 1005,
 }
 
 export class ApplicationError extends Error {
@@ -15,15 +17,6 @@ export class ApplicationError extends Error {
   constructor(code: ApplicationErrorCode, message: string) {
     super(message);
     this.code = code;
-  }
-
-  getStatusCode() {
-    switch (this.code) {
-      case ApplicationErrorCode.InvalidEmailOrPassword:
-        return ApplicationErrorCode.BadRequest;
-      default:
-        return this.code;
-    }
   }
 
   static badRequest(): ApplicationError {
@@ -54,6 +47,13 @@ export class ApplicationError extends Error {
     );
   }
 
+  static invalidAccountVerificationToken(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.InvalidAccountVerificationToken,
+      "Invalid account verification token."
+    );
+  }
+
   static invalidEmailOrPassword(): ApplicationError {
     return new ApplicationError(
       ApplicationErrorCode.InvalidEmailOrPassword,
@@ -61,24 +61,31 @@ export class ApplicationError extends Error {
     );
   }
 
-  static invalidPassword(): ApplicationError {
+  static sessionExpired(): ApplicationError {
     return new ApplicationError(
-      ApplicationErrorCode.InvalidPassword,
-      "Invalid password."
+      ApplicationErrorCode.SessionExpired,
+      "Session expired."
     );
   }
 
-  static maxUsersReached(): ApplicationError {
+  static invalidPasswordRecoveryToken(): ApplicationError {
     return new ApplicationError(
-      ApplicationErrorCode.MaxUsersReached,
-      "Maximum number of users reached."
+      ApplicationErrorCode.InvalidPasswordRecoveryToken,
+      "Invalid password recovery token."
     );
   }
 
   static maxUserDocumentsReached(): ApplicationError {
     return new ApplicationError(
       ApplicationErrorCode.MaxUserDocumentsReached,
-      "Maximum number of documents for the user reached."
+      "Maximum number of user documents reached."
+    );
+  }
+
+  static contentFilter(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.ContentFilter,
+      "Content violates content policy."
     );
   }
 

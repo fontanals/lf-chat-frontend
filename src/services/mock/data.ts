@@ -9,11 +9,12 @@ import { User } from "../../models/entities/user";
 const users: User[] = [
   {
     id: uuid(),
-    name: "Lucas Fontana",
+    name: "Demo User",
     email: "demo@lfchat.com",
-    displayName: "Lucas",
+    displayName: "Demo",
     customPrompt: null,
-    createdAt: addDays(new Date(), -25),
+    createdAt: addDays(new Date(), -25).toISOString(),
+    updatedAt: addDays(new Date(), -25).toISOString(),
   },
 ];
 
@@ -22,7 +23,8 @@ const projects: Project[] = [
     id: uuid(),
     title: "Finance Tracking",
     description: "Project for tracking and analisys of personal finance.",
-    createdAt: addDays(new Date(), -22),
+    createdAt: addDays(new Date(), -22).toISOString(),
+    updatedAt: addDays(new Date(), -22).toISOString(),
   },
 ];
 
@@ -36,7 +38,8 @@ const documents: Document[] = [
     isProcessed: true,
     chatId: null,
     projectId: projects[0].id,
-    createdAt: addDays(new Date(), -22),
+    createdAt: addDays(new Date(), -22).toISOString(),
+    updatedAt: addDays(new Date(), -22).toISOString(),
   },
 ];
 
@@ -141,7 +144,26 @@ const messages: Message[] = [
       {
         type: "text",
         id: uuid(),
-        text: "Sure! Here's a summary of your expenses based on the provided document:\n\n---\n\n### **Monthly Expenses Summary**\n\n1. **Housing**: $1,200 (Rent/Mortgage)\n2. **Utilities**: $150 (Electricity, Water, Internet)\n3. **Groceries**: $400\n4. **Transportation**: $100 (Gas, Public Transit)\n5. **Dining Out**: $200\n6. **Entertainment**: $100\n7. **Healthcare**: $80\n8. **Miscellaneous**: $70\n\n---\n\n### **Total Monthly Expenses**: $2,300\n\n### **Key Insights**:\n- Your largest expense is housing, which is typical.\n- Groceries and dining out combined make up a significant portion of your budget; consider meal planning to save more.\n- Entertainment and miscellaneous expenses are relatively low, which is good for discretionary spending.\n\nWould you like me to help you create a budget plan based on this summary?",
+        text: "Sure! Let me read your expenses notes first.",
+      },
+      {
+        type: "tool-call",
+        id: uuid(),
+        name: "processDocument",
+        input: { id: documents[0].id, name: documents[0].name },
+        output: { success: true, data: documents[0].id },
+      },
+      {
+        type: "tool-call",
+        id: uuid(),
+        name: "readDocument",
+        input: { id: documents[0].id, name: documents[0].name, query: "" },
+        output: { success: true, data: "<document-chunk>...</document-chunk>" },
+      },
+      {
+        type: "text",
+        id: uuid(),
+        text: "Here's a summary of your expenses based on the provided document:\n\n---\n\n### **Monthly Expenses Summary**\n\n1. **Housing**: $1,200 (Rent/Mortgage)\n2. **Utilities**: $150 (Electricity, Water, Internet)\n3. **Groceries**: $400\n4. **Transportation**: $100 (Gas, Public Transit)\n5. **Dining Out**: $200\n6. **Entertainment**: $100\n7. **Healthcare**: $80\n8. **Miscellaneous**: $70\n\n---\n\n### **Total Monthly Expenses**: $2,300\n\n### **Key Insights**:\n- Your largest expense is housing, which is typical.\n- Groceries and dining out combined make up a significant portion of your budget; consider meal planning to save more.\n- Entertainment and miscellaneous expenses are relatively low, which is good for discretionary spending.\n\nWould you like me to help you create a budget plan based on this summary?",
       },
     ],
     feedback: null,

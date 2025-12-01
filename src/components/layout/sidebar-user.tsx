@@ -1,4 +1,12 @@
-import { alpha, Avatar, Box, Button } from "@mui/material";
+import {
+  alpha,
+  Avatar,
+  Box,
+  Button,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronsUpDownIcon,
   LogOutIcon,
@@ -7,23 +15,45 @@ import {
 } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useSignout } from "../../hooks/auth";
 import { useUser } from "../../hooks/user";
+import { services } from "../../services/provider";
+import { useSidebarStore } from "../../state/sidebar";
 import { Menu, MenuItem } from "../ui/menu";
 import { Text } from "../ui/text";
 
 export function SidebarUser() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const setIsOpen = useSidebarStore((state) => state.setIsOpen);
 
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
 
   const { data: user } = useUser();
-
   const { mutate: signout } = useSignout();
+
+  function handleLinkClick() {
+    setAnchorElement(null);
+
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }
 
   function handleSignout() {
     setAnchorElement(null);
+
+    services.httpClient.removeHeader("Authorization");
+    queryClient.clear();
+
+    navigate("/signin");
+
     signout();
   }
 
@@ -52,7 +82,7 @@ export function SidebarUser() {
               alpha(theme.palette.secondary.main, 0.2),
           },
         }}
-        aria-label={t("profile_menu")}
+        aria-label={t("profile.menu.profile")}
         onClick={(event) => setAnchorElement(event.currentTarget)}
       >
         <Avatar
@@ -94,25 +124,25 @@ export function SidebarUser() {
           <Link
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
             to="/profile"
-            onClick={() => setAnchorElement(null)}
+            onClick={handleLinkClick}
           >
             <UserIcon size="16px" />
-            {t("profile")}
+            {t("profile.menu_item.profile")}
           </Link>
         </MenuItem>
         <MenuItem>
           <Link
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
             to="/profile/settings"
-            onClick={() => setAnchorElement(null)}
+            onClick={handleLinkClick}
           >
             <SettingsIcon size="16px" />
-            {t("settings")}
+            {t("profile.menu_item.settings")}
           </Link>
         </MenuItem>
         <MenuItem onClick={handleSignout}>
           <LogOutIcon size="16px" />
-          {t("sign_out")}
+          {t("profile.menu_item.signout")}
         </MenuItem>
       </Menu>
     </Fragment>

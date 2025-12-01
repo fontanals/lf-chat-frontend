@@ -21,7 +21,9 @@ import {
   UpdateMessageRequest,
 } from "../../models/requests/chat";
 import {
+  DeleteAllChatsResponse,
   DeleteChatResponse,
+  GetAssistantStatusResponse,
   GetChatMessagesResponse,
   GetChatResponse,
   GetChatsResponse,
@@ -138,6 +140,10 @@ const mockMessages = [
 ];
 
 export class MockChatService implements IChatService {
+  async getAssistantStatus(): Promise<GetAssistantStatusResponse> {
+    return new Promise((resolve) => setTimeout(() => resolve("mock"), 300));
+  }
+
   async getChats(query?: GetChatsQuery): Promise<GetChatsResponse> {
     return new Promise((resolve) =>
       setTimeout(() => {
@@ -168,7 +174,7 @@ export class MockChatService implements IChatService {
               query?.cursor == null ||
               (chat.createdAt != null
                 ? new Date(chat.createdAt).getTime()
-                : 0) > query.cursor.getTime()
+                : 0) < new Date(query.cursor).getTime()
           )
           .slice(0, limit)
           .map((chat) => ({ ...chat }));
@@ -553,6 +559,17 @@ export class MockChatService implements IChatService {
         );
 
         resolve(params.chatId);
+      }, 300)
+    );
+  }
+
+  async deleteAllChats(): Promise<DeleteAllChatsResponse> {
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        mockData.messages = [];
+        mockData.chats = [];
+
+        resolve(true);
       }, 300)
     );
   }

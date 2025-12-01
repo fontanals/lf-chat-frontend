@@ -22,12 +22,12 @@ export function ErrorPage() {
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <TriangleAlertIcon size="24px" />
-        <Text variant="h5">{t("error")}</Text>
+        <Text variant="h5">{t("common.title.error")}</Text>
       </Box>
-      <Text variant="h6">{t("error_page_message")}</Text>
+      <Text variant="h6">{t("common.message.error_page")}</Text>
       <LinkButton to="/">
         <HouseIcon size="16px" />
-        {t("go_back_to_homepage")}
+        {t("common.button.back_homepage")}
       </LinkButton>
     </Box>
   );

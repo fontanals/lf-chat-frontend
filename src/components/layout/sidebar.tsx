@@ -14,9 +14,11 @@ import {
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
+import { useAssistantStatus } from "../../hooks/chat";
 import { useSidebarStore } from "../../state/sidebar";
 import { PreviousChats } from "../chat/previous-chats";
 import { Text } from "../ui/text";
+import { Tooltip } from "../ui/tooltip";
 import { SidebarMenu, SidebarMenuItem } from "./sidebar-menu";
 import { SidebarUser } from "./sidebar-user";
 
@@ -80,6 +82,8 @@ export function Sidebar() {
 
   const { isOpen, setIsOpen } = useSidebarStore();
 
+  const { data: assistantStatus } = useAssistantStatus();
+
   const content = (
     <Fragment>
       <Link to="/">
@@ -89,7 +93,6 @@ export function Sidebar() {
             display: "flex",
             alignItems: "center",
             gap: "8px",
-            marginTop: "16px",
             paddingInline: "4px",
             textWrap: "nowrap",
             overflow: "hidden",
@@ -110,20 +113,30 @@ export function Sidebar() {
             <Text sx={{ fontWeight: "bold", lineHeight: 1 }} variant="body1">
               LF CHAT
             </Text>
-            <Text
-              sx={{ lineHeight: 1, color: "text.secondary" }}
-              variant="caption"
-              component="p"
+            <Tooltip
+              title={
+                assistantStatus === "open-ai"
+                  ? t("chat.message.assistant_status_openai")
+                  : t("chat.message.assistant_status_mock")
+              }
             >
-              Free
-            </Text>
+              <Text
+                sx={{ lineHeight: 1, color: "text.secondary" }}
+                variant="caption"
+                component="p"
+              >
+                {assistantStatus === "open-ai"
+                  ? t("chat.text.assistant_status_openai")
+                  : t("chat.text.assistant_status_mock")}
+              </Text>
+            </Tooltip>
           </Box>
         </Box>
       </Link>
       <SidebarMenu sx={{ marginTop: "16px" }}>
         <SidebarMenuItem
           href="/new"
-          text={t("new_chat")}
+          text={t("chat.menu_item.new_chat")}
           icon={<MessageCirclePlusIcon size="24px" />}
           hideTooltip={isOpen}
           onClick={() => {
@@ -135,7 +148,7 @@ export function Sidebar() {
         <SidebarMenuItem
           active={location.pathname === "/history"}
           href="/history"
-          text={t("chat_history")}
+          text={t("chat.menu_item.chat_history")}
           icon={<MessageCircleMoreIcon size="24px" />}
           hideTooltip={isOpen}
           onClick={() => {
@@ -147,7 +160,7 @@ export function Sidebar() {
         <SidebarMenuItem
           active={location.pathname === "/projects"}
           href="/projects"
-          text={t("projects")}
+          text={t("chat.menu_item.projects")}
           icon={<FolderClosedIcon size="24px" />}
           hideTooltip={isOpen}
           onClick={() => {

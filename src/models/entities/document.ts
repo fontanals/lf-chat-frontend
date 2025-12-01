@@ -7,6 +7,6 @@ export type Document = {
   isProcessed: boolean;
   chatId?: string | null;
   projectId?: string | null;
-  createdAt?: Date;
-  udpatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 };

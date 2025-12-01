@@ -33,11 +33,9 @@ export function ProjectsPage() {
   const { t } = useTranslation();
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isCreateProjectDialogOpen, setIsCreateProjectDialogOpen] =
-    useState(false);
-  const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = useState(false);
-  const [isDeleteProjectDialogOpen, setIsDeleteProjectDialogOpen] =
-    useState(false);
+  const [openDialog, setOpenDialog] = useState<
+    "create-project" | "edit-project" | "delete-project" | "none"
+  >("none");
 
   const { data: projects = [], isLoading } = useProjects();
   const { mutate: createProject } = useCreateProject();
@@ -45,28 +43,30 @@ export function ProjectsPage() {
   const { mutate: deleteProject } = useDeleteProject();
 
   function handleCreateProject(values: CreateProjectFormSchema) {
-    setIsCreateProjectDialogOpen(false);
-
     createProject({ request: { id: uuid(), ...values } });
+
+    setOpenDialog("none");
   }
 
   function handleEditProject(values: EditProjectFormSchema) {
-    setIsEditProjectDialogOpen(false);
-
     if (selectedProject != null) {
       updateProject({
         params: { projectId: selectedProject.id },
         request: values,
       });
     }
+
+    setSelectedProject(null);
+    setOpenDialog("none");
   }
 
   function handleDeleteProject() {
-    setIsDeleteProjectDialogOpen(false);
-
     if (selectedProject != null) {
       deleteProject({ params: { projectId: selectedProject.id } });
     }
+
+    setSelectedProject(null);
+    setOpenDialog("none");
   }
 
   return (
@@ -82,11 +82,11 @@ export function ProjectsPage() {
         }}
       >
         <Text sx={{ paddingInline: "16px" }} variant="body1">
-          {t("projects")}
+          {t("project.title.projects")}
         </Text>
-        <ShadowButton onClick={() => setIsCreateProjectDialogOpen(true)}>
+        <ShadowButton onClick={() => setOpenDialog("create-project")}>
           <PlusIcon size="16px" />
-          {t("create_project")}
+          {t("project.button.create_project")}
         </ShadowButton>
       </Box>
       {!isLoading && ArrayUtils.isNullOrEmpty(projects) && (
@@ -101,9 +101,9 @@ export function ProjectsPage() {
           <Box>
             <FolderClosedIcon size="20px" />
           </Box>
-          <Text>{t("no_projects_yet")}</Text>
-          <TextButton onClick={() => setIsCreateProjectDialogOpen(true)}>
-            {t("create_your_first_project")}
+          <Text>{t("project.text.no_projects")}</Text>
+          <TextButton onClick={() => setOpenDialog("create-project")}>
+            {t("project.button.create_first_project")}
           </TextButton>
         </Box>
       )}
@@ -123,31 +123,37 @@ export function ProjectsPage() {
             project={project}
             onEdit={() => {
               setSelectedProject(project);
-              setIsEditProjectDialogOpen(true);
+              setOpenDialog("edit-project");
             }}
             onDelete={() => {
               setSelectedProject(project);
-              setIsDeleteProjectDialogOpen(true);
+              setOpenDialog("delete-project");
             }}
           />
         ))}
       </ProjectList>
       <CreateProjectDialog
-        isOpen={isCreateProjectDialogOpen}
-        onCreateProject={handleCreateProject}
-        onCancel={() => setIsCreateProjectDialogOpen(false)}
+        isOpen={openDialog === "create-project"}
+        onCreate={handleCreateProject}
+        onCancel={() => setOpenDialog("none")}
       />
       <EditProjectDialog
-        isOpen={isEditProjectDialogOpen}
+        isOpen={openDialog === "edit-project"}
         project={selectedProject}
-        onEditProject={handleEditProject}
-        onCancel={() => setIsEditProjectDialogOpen(false)}
+        onEdit={handleEditProject}
+        onCancel={() => {
+          setSelectedProject(null);
+          setOpenDialog("none");
+        }}
       />
       <DeleteProjectDialog
-        isOpen={isDeleteProjectDialogOpen}
+        isOpen={openDialog === "delete-project"}
         project={selectedProject}
-        onDeleteProject={handleDeleteProject}
-        onCancel={() => setIsDeleteProjectDialogOpen(false)}
+        onDelete={handleDeleteProject}
+        onCancel={() => {
+          setSelectedProject(null);
+          setOpenDialog("none");
+        }}
       />
       <LoadingBackdrop isLoading={isLoading} />
     </ContentPanel>

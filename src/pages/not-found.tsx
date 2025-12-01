@@ -20,11 +20,11 @@ export function NotFoundPage() {
       }}
       component="main"
     >
-      <Text variant="h5">{t("page_not_found")}</Text>
-      <Text variant="h6">{t("page_not_found_message")}</Text>
+      <Text variant="h5">{t("common.title.page_not_found")}</Text>
+      <Text variant="h6">{t("common.message.page_not_found")}</Text>
       <LinkButton to="/">
         <HouseIcon size="16px" />
-        {t("go_back_to_homepage")}
+        {t("common.button.back_homepage")}
       </LinkButton>
     </Box>
   );

@@ -1,86 +1,53 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dispatch, SetStateAction } from "react";
-import { useNavigate } from "react-router";
-import { SigninRequest, SignupRequest } from "../models/requests/auth";
-import { GetUserResponse } from "../models/responses/user";
+import { useMutation } from "@tanstack/react-query";
+import {
+  RecoverPasswordRequest,
+  ResetPasswordRequest,
+  SigninRequest,
+  SignupRequest,
+  VerifyAccountRequest,
+} from "../models/requests/auth";
 import { services } from "../services/provider";
-import { useErrorStore } from "../state/error";
-import { ApplicationError, ApplicationErrorCode } from "../utils/errors";
 
-export function useSignup(
-  setIsInvalidEmailOrPassword: Dispatch<SetStateAction<boolean>>
-) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const displayError = useErrorStore((state) => state.displayError);
-
+export function useSignup() {
   return useMutation({
     mutationFn: (args: { request: SignupRequest }) =>
       services.auth.signup(args.request),
-    onSuccess: (response) => {
-      queryClient.setQueryData<GetUserResponse>(["user"], response.user);
-
-      navigate("/new");
-    },
-    onError: (error) => {
-      const applicationError = ApplicationError.copy(error);
-
-      if (
-        applicationError.code === ApplicationErrorCode.InvalidEmailOrPassword
-      ) {
-        setIsInvalidEmailOrPassword(true);
-        return;
-      }
-
-      displayError(applicationError);
-    },
+    onError: undefined,
   });
 }
 
-export function useSignin(
-  setIsInvalidEmailOrPassword: Dispatch<SetStateAction<boolean>>
-) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+export function useVerifyAccount() {
+  return useMutation({
+    mutationFn: (args: { request: VerifyAccountRequest }) =>
+      services.auth.verifyAccount(args.request),
+    onError: undefined,
+  });
+}
 
-  const displayError = useErrorStore((state) => state.displayError);
-
+export function useSignin() {
   return useMutation({
     mutationFn: (args: { request: SigninRequest }) =>
       services.auth.signin(args.request),
-    onSuccess: (response) => {
-      queryClient.setQueryData<GetUserResponse>(["user"], response.user);
-
-      navigate("/new");
-    },
-    onError: (error) => {
-      const applicationError = ApplicationError.copy(error);
-
-      if (
-        applicationError.code === ApplicationErrorCode.InvalidEmailOrPassword
-      ) {
-        setIsInvalidEmailOrPassword(true);
-        return;
-      }
-
-      displayError(applicationError);
-    },
+    onError: undefined,
   });
 }
 
 export function useSignout() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  return useMutation({ mutationFn: () => services.auth.signout() });
+}
 
+export function useRecoverPassword() {
   return useMutation({
-    mutationFn: () => services.auth.signout(),
-    onMutate: () => {
-      navigate("/signin");
-    },
-    onSuccess: () => {
-      services.httpClient.removeHeader("Authorization");
-      queryClient.clear();
-    },
+    mutationFn: (args: { request: RecoverPasswordRequest }) =>
+      services.auth.recoverPassword(args.request),
+    onError: undefined,
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (args: { request: ResetPasswordRequest }) =>
+      services.auth.resetPassword(args.request),
+    onError: undefined,
   });
 }

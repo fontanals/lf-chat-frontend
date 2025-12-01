@@ -1,15 +1,14 @@
 import { Box } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircleOffIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
-import { ChatMessage, ContinueMessage } from "../components/chat/chat-message";
+import { ChatMessage } from "../components/chat/chat-message";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
-import { DeleteChatDialog } from "../components/chat/delete-chat-dialog";
-import { RenameChatDialog } from "../components/chat/rename-chat-dialog";
+import { ContinueMessage } from "../components/chat/continue-message";
 import { ContentPanel } from "../components/layout/content-panel";
 import { Link } from "../components/ui/link";
 import { Text } from "../components/ui/text";
@@ -17,16 +16,10 @@ import {
   useChat,
   useChatMessages,
   useCreateChat,
-  useDeleteChat,
   useSendMessage,
-  useUpdateChat,
-  useUpdateMessage,
 } from "../hooks/chat";
-import { useDeleteDocument, useUploadDocuments } from "../hooks/document";
-import { MessageFeedback, UserContentBlock } from "../models/entities/message";
+import { UserContentBlock } from "../models/entities/message";
 import { useChatStore } from "../state/chat";
-import { ObjectUtils } from "../utils/objects";
-import { StringUtils } from "../utils/strings";
 
 export function ChatPage() {
   const { chatId } = useParams();
@@ -38,40 +31,30 @@ export function ChatPage() {
   const streamingMessage = streamingMessages[chatId!];
 
   const [activePath, setActivePath] = useState<string[]>([]);
-  const [message, setMessage] = useState("");
   const [showContinueMessage, setShowContinueMessage] = useState(false);
-  const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
-  const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { data: chat, isLoading: isLoadingChat } = useChat(chatId!, {
     expand: ["project"],
   });
   const { data: messageTree } = useChatMessages(chatId!, pendingChat == null);
-  const { mutate: createChat, isPending: isPendingCreateChat } = useCreateChat(
-    abortControllerRef,
-    messagesContainerRef,
-    setShowContinueMessage
-  );
-  const { mutate: sendMessage, isPending: isPendingSendMessage } =
-    useSendMessage(
-      abortControllerRef,
-      messagesContainerRef,
-      setShowContinueMessage
-    );
-  const { mutate: updateChat } = useUpdateChat();
-  const { mutate: updateMessage } = useUpdateMessage();
-  const { mutate: deleteChat } = useDeleteChat();
-  const { uploadMap, uploadDocument } = useUploadDocuments();
-  const { mutate: deleteDocument } = useDeleteDocument();
+  const {
+    mutate: createChat,
+    isPending: isPendingCreateChat,
+    onAbort: abortCreateChat,
+  } = useCreateChat();
+  const {
+    mutate: sendMessage,
+    isPending: isPendingSendMessage,
+    onAbort: abortSendMessage,
+  } = useSendMessage();
 
   useEffect(() => {
     if (pendingChat != null) {
-      removePendingChat(pendingChat.chat.id);
+      removePendingChat(pendingChat.id);
 
-      createChat(pendingChat);
+      createChat({ request: pendingChat });
     }
   }, [pendingChat, createChat, removePendingChat]);
 
@@ -100,117 +83,86 @@ export function ChatPage() {
     });
   }, [activePath]);
 
-  function handleRenameChat(title: string) {
-    setIsRenameChatDialogOpen(false);
+  useEffect(() => {
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [streamingMessage]);
 
-    updateChat({ params: { chatId: chatId! }, request: { title } });
-  }
+  function handleSelectMessage(messageId: string) {
+    const message = messageTree?.messages[messageId];
 
-  function handleDeleteChat() {
-    setIsDeleteChatDialogOpen(false);
-
-    deleteChat({ params: { chatId: chatId! } });
-  }
-
-  const handleSelectMessage = useCallback(
-    (messageId: string) => {
-      const message = messageTree?.messages[messageId];
-
-      if (message == null) {
-        return;
-      }
-
-      const newActivePath = activePath.slice(
-        0,
-        message.parentMessageId != null
-          ? activePath.indexOf(message.parentMessageId) + 1
-          : 0
-      );
-
-      newActivePath.push(message.id);
-
-      let nextMessageId =
-        message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
-
-      while (nextMessageId != null) {
-        let nextMessage = messageTree?.messages[nextMessageId];
-
-        newActivePath.push(nextMessageId);
-
-        nextMessageId =
-          nextMessage?.childrenMessageIds?.[
-            nextMessage.childrenMessageIds.length - 1
-          ];
-      }
-
-      setActivePath(newActivePath);
-    },
-    [activePath, messageTree]
-  );
-
-  function handleAddDocuments(files: File[]) {
-    files.forEach((file) => uploadDocument({ request: { id: uuid(), file } }));
-  }
-
-  function handleRemoveDocument(id: string) {
-    deleteDocument({ params: { documentId: id } });
-  }
-
-  function handleSendMessage() {
-    if (StringUtils.isNullOrWhitespace(message)) {
+    if (message == null) {
       return;
     }
 
-    setMessage("");
+    const newActivePath = activePath.slice(
+      0,
+      message.parentMessageId != null
+        ? activePath.indexOf(message.parentMessageId) + 1
+        : 0
+    );
 
+    newActivePath.push(message.id);
+
+    let nextMessageId =
+      message.childrenMessageIds?.[message.childrenMessageIds.length - 1];
+
+    while (nextMessageId != null) {
+      let nextMessage = messageTree?.messages[nextMessageId];
+
+      newActivePath.push(nextMessageId);
+
+      nextMessageId =
+        nextMessage?.childrenMessageIds?.[
+          nextMessage.childrenMessageIds.length - 1
+        ];
+    }
+
+    setActivePath(newActivePath);
+  }
+
+  function handleSendMessage(content: UserContentBlock[]) {
     sendMessage({
       params: { chatId: chatId! },
       request: {
         id: uuid(),
-        content: [{ type: "text", id: uuid(), text: message }],
+        content,
         parentMessageId:
           messageTree?.latestPath[messageTree.latestPath.length - 1],
       },
     });
   }
 
-  function handleStopStreaming() {
-    abortControllerRef.current?.abort();
-
-    queryClient.invalidateQueries({ queryKey: ["chats"] });
-    queryClient.invalidateQueries({ queryKey: ["messages", chatId] });
+  function handleEditMessage(
+    content: UserContentBlock[],
+    parentMessageId?: string | null
+  ) {
+    sendMessage({
+      params: { chatId: chatId! },
+      request: { id: uuid(), content, parentMessageId },
+    });
   }
-
-  const handleEditMessage = useCallback(
-    (content: UserContentBlock[], parentMessageId?: string | null) => {
-      sendMessage({
-        params: { chatId: chatId! },
-        request: { id: uuid(), content, parentMessageId },
-      });
-    },
-    [chatId, sendMessage]
-  );
-
-  const handleChangeMessageFeedback = useCallback(
-    (messageId: string, feedback: MessageFeedback | null) => {
-      updateMessage({
-        params: { chatId: chatId!, messageId },
-        request: { feedback },
-      });
-    },
-    [chatId, updateMessage]
-  );
 
   function handleContinueMessage() {
     sendMessage({
       params: { chatId: chatId! },
       request: {
         id: uuid(),
-        content: [{ type: "text", id: uuid(), text: t("continue") }],
+        content: [{ type: "text", id: uuid(), text: t("chat.text.continue") }],
         parentMessageId:
           messageTree?.latestPath[messageTree.latestPath.length - 1],
       },
     });
+  }
+
+  function handleStopStream() {
+    abortCreateChat();
+    abortSendMessage();
+
+    queryClient.invalidateQueries({ queryKey: ["chats"] });
+    queryClient.invalidateQueries({ queryKey: ["messages", chatId] });
   }
 
   if (pendingChat == null && !isLoadingChat && chat == null) {
@@ -229,8 +181,8 @@ export function ChatPage() {
           <Box>
             <MessageCircleOffIcon size="24px" />
           </Box>
-          <Text>{t("chat_not_found")}</Text>
-          <Link to="/new">{t("start_a_new_chat")}</Link>
+          <Text>{t("chat.error.chat_not_found")}</Text>
+          <Link to="/new">{t("chat.link.start_new_chat")}</Link>
         </Box>
       </ContentPanel>
     );
@@ -238,13 +190,7 @@ export function ChatPage() {
 
   return (
     <ContentPanel>
-      {chat != null && (
-        <ChatTitleMenu
-          chat={chat}
-          onRenameChat={() => setIsRenameChatDialogOpen(true)}
-          onDeleteChat={() => setIsDeleteChatDialogOpen(true)}
-        />
-      )}
+      {chat != null && <ChatTitleMenu chat={chat} />}
       <Box
         ref={messagesContainerRef}
         sx={{
@@ -254,6 +200,7 @@ export function ChatPage() {
           width: "100%",
           height: "100%",
           maxWidth: "800px",
+          marginTop: "32px",
           overflow: "auto",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
@@ -278,9 +225,8 @@ export function ChatPage() {
                 messageTree?.rootMessageIds ?? [message.id]
               }
               message={message}
-              onSelectMessage={handleSelectMessage}
-              onEditMessage={handleEditMessage}
-              onChangeMessageFeedback={handleChangeMessageFeedback}
+              onSelect={handleSelectMessage}
+              onEdit={handleEditMessage}
             />
           );
         })}
@@ -290,9 +236,8 @@ export function ChatPage() {
               key={streamingMessage.id}
               messageIds={[streamingMessage.id]}
               message={streamingMessage}
-              onSelectMessage={handleSelectMessage}
-              onEditMessage={handleEditMessage}
-              onChangeMessageFeedback={handleChangeMessageFeedback}
+              onSelect={handleSelectMessage}
+              onEdit={handleEditMessage}
               isStreaming
             />
           )}
@@ -304,34 +249,18 @@ export function ChatPage() {
         )}
       </Box>
       <ChatInput
-        containerSx={{ marginTop: "32px", maxWidth: "600px" }}
-        placeholder={t("reply_to_assistant")}
+        containerSx={{ maxWidth: "600px", marginTop: "32px" }}
+        placeholder={t("chat.placeholder.new_message")}
         isStreaming={isPendingCreateChat || isPendingSendMessage}
-        value={message}
-        onChange={(event) => setMessage(event.target.value)}
-        onSubmit={handleSendMessage}
-        onStop={handleStopStreaming}
-        uploadMap={uploadMap}
-        onAddDocuments={handleAddDocuments}
-        onRemoveDocument={handleRemoveDocument}
-        disabled={
-          !isPendingCreateChat &&
-          !isPendingSendMessage &&
-          StringUtils.isNullOrWhitespace(message) &&
-          ObjectUtils.isEmpty(uploadMap)
-        }
+        onSendMessage={handleSendMessage}
+        onStopStream={handleStopStream}
       />
-      <RenameChatDialog
-        isOpen={isRenameChatDialogOpen}
-        title={chat?.title ?? ""}
-        onRenameChat={handleRenameChat}
-        onCancel={() => setIsRenameChatDialogOpen(false)}
-      />
-      <DeleteChatDialog
-        isOpen={isDeleteChatDialogOpen}
-        onDeleteChat={handleDeleteChat}
-        onCancel={() => setIsDeleteChatDialogOpen(false)}
-      />
+      <Text
+        sx={{ maxWidth: "600px", marginTop: "8px", color: "secondary.main" }}
+        variant="caption"
+      >
+        {t("common.text.transparency_notice")}
+      </Text>
     </ContentPanel>
   );
 }

@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import {
   ProcessDocumentToolCallContentBlock,
   ReadDocumentToolCallContentBlock,
-  ToolCallContentBlock,
 } from "../../models/entities/message";
 import { Text } from "../ui/text";
 
@@ -31,7 +30,7 @@ export function ProcessDocumentToolCallIndicator(
       >
         <CircularProgress size={16} />
         <Text>
-          {t("processing_document_name", {
+          {t("chat.message.processing_document", {
             name: props.contentBlock.input?.name ?? "",
           })}
         </Text>
@@ -47,13 +46,13 @@ export function ProcessDocumentToolCallIndicator(
           alignItems: "center",
           gap: "8px",
           padding: "6px 8px",
-          borderRadius: "8px",
+          color: "#F5F5F5",
           backgroundColor: "error.main",
         }}
       >
         <XIcon size="16px" />
         <Text>
-          {t("failed_to_process_document_name", {
+          {t("chat.error.process_document", {
             name: props.contentBlock.input.name,
           })}
         </Text>
@@ -69,12 +68,13 @@ export function ProcessDocumentToolCallIndicator(
         gap: "8px",
         padding: "6px 8px",
         borderRadius: "8px",
+        color: "#F5F5F5",
         backgroundColor: "success.main",
       }}
     >
       <CheckIcon size="16px" />
       <Text>
-        {t("processed_document_name_successfully", {
+        {t("chat.message.process_document", {
           name: props.contentBlock.input.name,
         })}
       </Text>
@@ -105,7 +105,7 @@ export function ReadDocumentToolCallIndicator(
       >
         <CircularProgress size={16} />
         <Text>
-          {t("reading_document_name", {
+          {t("chat.message.reading_document", {
             name: props.contentBlock.input?.name ?? "",
           })}
         </Text>
@@ -121,13 +121,13 @@ export function ReadDocumentToolCallIndicator(
           alignItems: "center",
           gap: "8px",
           padding: "6px 8px",
-          borderRadius: "8px",
+          color: "#F5F5F5",
           backgroundColor: "error.main",
         }}
       >
         <XIcon size="16px" />
         <Text>
-          {t("failed_to_read_document_name", {
+          {t("chat.error.read_document", {
             name: props.contentBlock.input.name,
           })}
         </Text>
@@ -143,27 +143,16 @@ export function ReadDocumentToolCallIndicator(
         gap: "8px",
         padding: "6px 8px",
         borderRadius: "8px",
+        color: "#F5F5F5",
         backgroundColor: "success.main",
       }}
     >
       <CheckIcon size="16px" />
       <Text>
-        {t("read_document_name_successfully", {
+        {t("chat.message.read_document", {
           name: props.contentBlock.input.name,
         })}
       </Text>
     </Box>
-  );
-}
-
-export type ToolCallIndicatorProps = {
-  contentBlock: ToolCallContentBlock;
-};
-
-export function ToolCallIndicator(props: ToolCallIndicatorProps) {
-  return props.contentBlock.name === "processDocument" ? (
-    <ProcessDocumentToolCallIndicator contentBlock={props.contentBlock} />
-  ) : (
-    <ReadDocumentToolCallIndicator contentBlock={props.contentBlock} />
   );
 }

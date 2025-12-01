@@ -13,7 +13,7 @@ export type UploadItem = {
   id: string;
   name: string;
   mimetype: string;
-  progress: number;
+  status: "uploading" | "complete";
 };
 
 export type UploadMap = Record<string, UploadItem>;
@@ -34,65 +34,58 @@ export function useUploadDocuments(projectId?: string) {
           id: args.request.id,
           name: args.request.file.name,
           mimetype: args.request.file.type,
-          progress: 0,
+          status: "uploading",
         },
       }));
 
-      uploadDocument(
-        {
-          request: args.request,
-          onProgress: (event) => {
-            const progress = Math.round((event.loaded * 100) / event.total);
-
-            setUploadMap((uploadMap) => ({
-              ...uploadMap,
-              [args.request.id]: {
-                id: args.request.id,
-                name: args.request.file.name,
-                mimetype: args.request.file.type,
-                progress,
-              },
-            }));
-          },
+      uploadDocument(args, {
+        onSuccess: (documentId) => {
+          setUploadMap((previousUploadMap) => ({
+            ...previousUploadMap,
+            [documentId]: {
+              ...previousUploadMap[documentId],
+              status: "complete",
+            },
+          }));
         },
-        {
-          onError: (error) => {
-            setUploadMap((uploadMap) => {
-              const newUploadMap = { ...uploadMap };
+        onError: (error) => {
+          setUploadMap((previousUploadMap) => {
+            const uploadMap = { ...previousUploadMap };
 
-              delete newUploadMap[args.request.id];
+            delete uploadMap[args.request.id];
 
-              return newUploadMap;
-            });
+            return uploadMap;
+          });
 
-            displayError(ApplicationError.copy(error));
-          },
-        }
-      );
+          displayError(ApplicationError.copy(error));
+        },
+      });
     },
     [uploadDocument]
   );
 
   const deleteDocumentWithProgress = useCallback(
     (args: { params: DeleteDocumentParams }) => {
-      setUploadMap((uploadMap) => {
-        const newUploadMap = { ...uploadMap };
+      setUploadMap((previousUploadMap) => {
+        const uploadMap = { ...previousUploadMap };
 
-        delete newUploadMap[args.params.documentId];
+        delete uploadMap[args.params.documentId];
 
-        return newUploadMap;
+        return uploadMap;
       });
 
       deleteDocument(args);
     },
-    [deleteDocument]
+    [setUploadMap, deleteDocument]
   );
+
+  const clearUploadMap = useCallback(() => setUploadMap({}), [setUploadMap]);
 
   return {
     uploadMap,
     uploadDocument: uploadDocumentWithProgress,
     deleteDocument: deleteDocumentWithProgress,
-    clearUploadMap: () => setUploadMap({}),
+    clearUploadMap,
   };
 }
 
@@ -100,10 +93,8 @@ export function useUploadDocument(projectId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (args: {
-      request: UploadDocumentRequest;
-      onProgress: (event: ProgressEvent) => void;
-    }) => services.document.uploadDocument(args.request, args.onProgress),
+    mutationFn: (args: { request: UploadDocumentRequest }) =>
+      services.document.uploadDocument(args.request),
     onMutate: async (args) => {
       if (projectId == null) {
         return;
@@ -125,6 +116,7 @@ export function useUploadDocument(projectId?: string) {
 
           const documents = project.documents?.concat({
             id: args.request.id,
+            key: "",
             name: args.request.file.name,
             mimetype: args.request.file.type,
             sizeInBytes: args.request.file.size,

@@ -12,8 +12,5 @@ export const useErrorStore = create<ErrorStore>((set) => ({
   showError: false,
   error: null,
   displayError: (error) => set({ showError: true, error }),
-  clearError: () => {
-    set({ showError: false });
-    setTimeout(() => set({ error: null }), 100);
-  },
+  clearError: () => set({ showError: false }),
 }));

@@ -12,18 +12,19 @@ export const queryClient = new QueryClient({
     mutations: {
       retry: false,
       onError: (error) =>
-        useErrorStore.setState({ error: ApplicationError.copy(error) }),
+        useErrorStore.setState({
+          showError: true,
+          error: ApplicationError.copy(error),
+        }),
     },
   },
   queryCache: new QueryCache({
     onError: (error) => {
       const applicationError = ApplicationError.copy(error);
 
-      if (applicationError.code === ApplicationErrorCode.NotFound) {
-        return;
+      if (applicationError.code !== ApplicationErrorCode.NotFound) {
+        useErrorStore.setState({ showError: true, error: applicationError });
       }
-
-      useErrorStore.setState({ error: applicationError });
     },
   }),
 });

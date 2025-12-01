@@ -14,7 +14,7 @@ import { Input } from "../ui/input";
 export type RenameChatDialogProps = {
   isOpen: boolean;
   title: string;
-  onRenameChat: (title: string) => void;
+  onRename: (title: string) => void;
   onCancel: () => void;
 };
 
@@ -29,7 +29,7 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    props.onRenameChat(title);
+    props.onRename(title);
   }
 
   return (
@@ -41,7 +41,7 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
         backdrop: {
           sx: {
             backgroundColor: (theme) =>
-              alpha(theme.palette.secondary.main, 0.3),
+              alpha(theme.palette.secondary.main, 0.2),
           },
         },
       }}
@@ -49,11 +49,12 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
       onClose={props.onCancel}
     >
       <DialogTitle sx={{ padding: "16px" }} variant="body1">
-        {t("rename_chat")}
+        {t("chat.title.rename_chat")}
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
         <form id="rename-chat-form" onSubmit={handleSubmit}>
           <Input
+            placeholder={t("chat.placeholder.chat_title")}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
@@ -61,11 +62,11 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>
         <ShadowButton color="primary" onClick={props.onCancel}>
-          {t("cancel")}
+          {t("chat.button.cancel")}
         </ShadowButton>
         <ShadowButton type="submit" form="rename-chat-form">
           <PencilIcon size="16px" />
-          {t("rename")}
+          {t("chat.button.rename")}
         </ShadowButton>
       </DialogActions>
     </Dialog>

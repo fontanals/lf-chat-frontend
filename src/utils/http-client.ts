@@ -39,7 +39,6 @@ export type UploadRequestOptions<TQuery extends Query = Query> = {
   url: string;
   query?: TQuery;
   request: FormData;
-  onProgress?: (event: ProgressEvent) => void;
 };
 
 export type StreamResponse = ReadableStream<Uint8Array<ArrayBuffer>>;
@@ -200,16 +199,16 @@ export class HttpClient implements IHttpClient {
 
     const response = await fetch(url.toString(), {
       method: args.method,
-      headers: new Headers(this.headers),
+      headers: this.headers,
       body: JSON.stringify(args.request),
       credentials: "include",
       signal: args.abortSignal,
     });
 
-    const authorizationHeader = response.headers.get("authorization");
+    const authorizationHeader = response.headers.get("Authorization");
 
     if (authorizationHeader != null) {
-      this.headers.set("authorization", authorizationHeader);
+      this.headers.set("Authorization", authorizationHeader);
     }
 
     const data = await response.json();
@@ -249,39 +248,21 @@ export class HttpClient implements IHttpClient {
   async upload<TResponse = unknown, TQuery extends Query = Query>(
     args: UploadRequestOptions<TQuery>
   ): Promise<TResponse> {
-    return new Promise((resolve, reject) => {
-      const url = this.getUrl(args.url, args.query);
+    const url = this.getUrl(args.url, args.query);
 
-      const headers = new Headers(this.headers);
-      headers.delete("Content-Type");
+    const headers = new Headers(this.headers);
 
-      const xhr = new XMLHttpRequest();
+    headers.delete("Content-Type");
 
-      xhr.withCredentials = true;
-
-      xhr.open("POST", url, true);
-
-      headers.forEach((value, key) => xhr.setRequestHeader(key, value));
-
-      if (args.onProgress != null) {
-        xhr.upload.onprogress = args.onProgress;
-      }
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const response = JSON.parse(xhr.response) as TResponse;
-
-          resolve(response);
-        } else {
-          reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-      };
-
-      xhr.send(args.request);
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers,
+      body: args.request,
+      credentials: "include",
     });
+
+    const data = await response.json();
+
+    return data as TResponse;
   }
 }

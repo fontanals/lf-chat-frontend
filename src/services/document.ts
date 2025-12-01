@@ -10,8 +10,7 @@ import { IBaseService } from "./base";
 
 export interface IDocumentService {
   uploadDocument(
-    request: UploadDocumentRequest,
-    onProgress?: (event: ProgressEvent) => void
+    request: UploadDocumentRequest
   ): Promise<UploadDocumentResponse>;
   deleteDocument(params: DeleteDocumentParams): Promise<DeleteDocumentResponse>;
 }
@@ -24,8 +23,7 @@ export class DocumentService implements IDocumentService {
   }
 
   async uploadDocument(
-    request: UploadDocumentRequest,
-    onProgress?: (event: ProgressEvent) => void
+    request: UploadDocumentRequest
   ): Promise<UploadDocumentResponse> {
     const formData = new FormData();
 
@@ -39,7 +37,6 @@ export class DocumentService implements IDocumentService {
     const response = await this.baseService.upload<UploadDocumentResponse>({
       url: "/api/documents/upload",
       request: formData,
-      onProgress,
     });
 
     return response;

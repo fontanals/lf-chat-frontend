@@ -1,21 +1,19 @@
-import { Box, alpha } from "@mui/material";
+import { Box, LinearProgress, alpha } from "@mui/material";
 import { FileIcon, XIcon } from "lucide-react";
-import { MouseEventHandler, useState } from "react";
+import { MouseEventHandler } from "react";
 import { useTranslation } from "react-i18next";
 import { IconButton } from "../ui/button";
 import { Text } from "../ui/text";
 import { Tooltip } from "../ui/tooltip";
 
 export type DocumentIndicatorProps = {
-  document: { id: string; name: string };
+  document: { id: string; name: string; status?: "uploading" | "complete" };
   onRemoveDocument?: MouseEventHandler<HTMLButtonElement>;
   disableRemove?: boolean;
 };
 
 export function DocumentIndicator(props: DocumentIndicatorProps) {
   const { t } = useTranslation();
-
-  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <Box
@@ -24,13 +22,10 @@ export function DocumentIndicator(props: DocumentIndicatorProps) {
         display: "grid",
         alignItems: "center",
         gap: "4px",
-        cursor: "pointer",
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      {!props.disableRemove && isHovered && (
-        <Tooltip title={t("remove_document")} variant="error">
+      {!props.disableRemove && (
+        <Tooltip title={t("chat.tooltip.remove_document")}>
           <IconButton
             sx={{
               position: "absolute",
@@ -46,6 +41,9 @@ export function DocumentIndicator(props: DocumentIndicatorProps) {
                   alpha(theme.palette.error.main, 0.2),
               },
             }}
+            aria-label={t("chat.label.remove_document", {
+              name: props.document.name,
+            })}
             onClick={props.onRemoveDocument}
           >
             <Box
@@ -64,6 +62,9 @@ export function DocumentIndicator(props: DocumentIndicatorProps) {
         <FileIcon size="16px" />
       </Box>
       <Text noWrap>{props.document.name}</Text>
+      {props.document.status === "uploading" && (
+        <LinearProgress color="secondary" />
+      )}
     </Box>
   );
 }

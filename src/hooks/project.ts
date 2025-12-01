@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate, useParams } from "react-router";
 import {
   CreateProjectRequest,
   DeleteProjectParams,
@@ -6,6 +7,7 @@ import {
   UpdateProjectParams,
   UpdateProjectRequest,
 } from "../models/requests/project";
+import { GetChatsResponse } from "../models/responses/chat";
 import { GetProjectsResponse } from "../models/responses/project";
 import { services } from "../services/provider";
 
@@ -16,15 +18,12 @@ export function useProjects() {
   });
 }
 
-export function useProject(
-  projectId: string,
-  query?: GetProjectQuery,
-  enabled = true
-) {
+export function useProject(projectId?: string | null, query?: GetProjectQuery) {
   return useQuery({
-    enabled,
+    enabled: projectId != null,
     queryKey: ["projects", projectId],
-    queryFn: () => services.project.getProject({ projectId }, query),
+    queryFn: () =>
+      services.project.getProject({ projectId: projectId! }, query),
   });
 }
 
@@ -87,6 +86,9 @@ export function useUpdateProject() {
 }
 
 export function useDeleteProject() {
+  const location = useLocation();
+  const { projectId } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -101,13 +103,52 @@ export function useDeleteProject() {
         projects?.filter((project) => project.id !== args.params.projectId)
       );
 
-      return { previousProjects };
+      await queryClient.cancelQueries({ queryKey: ["chats"] });
+
+      const previousChats = queryClient.getQueryData<GetChatsResponse>([
+        "chats",
+        "previous",
+      ]);
+
+      queryClient.setQueryData<GetChatsResponse>(
+        ["chats", "previous"],
+        (response) => {
+          if (response == null) {
+            return response;
+          }
+
+          const items = response.items.filter(
+            (chat) => chat.projectId !== args.params.projectId
+          );
+
+          const totalItems =
+            response.totalItems - (response.items.length - items.length);
+
+          return { ...response, items, totalItems };
+        }
+      );
+
+      if (
+        /^\/projects\/([^\/]+)$/.test(location.pathname) &&
+        projectId === args.params.projectId
+      ) {
+        navigate("/new");
+      }
+
+      return { previousProjects, previousChats };
     },
     onError: (_, __, context) => {
       queryClient.setQueryData(["projects"], context?.previousProjects);
+
+      queryClient.setQueryData<GetChatsResponse>(
+        ["chats", "previous"],
+        context?.previousChats
+      );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
 }

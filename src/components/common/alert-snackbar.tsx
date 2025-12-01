@@ -1,4 +1,4 @@
-import { Alert as MuiAlert, Snackbar } from "@mui/material";
+import { Alert, Snackbar } from "@mui/material";
 import { useAlertStore } from "../../state/alert";
 
 export function AlertSnackbar() {
@@ -11,14 +11,14 @@ export function AlertSnackbar() {
       open={showAlert}
       onClose={clearAlert}
     >
-      <MuiAlert
-        sx={{ width: "100%" }}
+      <Alert
+        sx={{ alignItems: "center", width: "100%", borderRadius: "8px" }}
         variant="filled"
         severity={alert?.severity}
         onClose={clearAlert}
       >
         {alert?.message}
-      </MuiAlert>
+      </Alert>
     </Snackbar>
   );
 }

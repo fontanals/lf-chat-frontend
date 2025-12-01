@@ -2,8 +2,12 @@ import { alpha, Box } from "@mui/material";
 import { FileIcon, FilePlus2Icon } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
+import { v4 as uuid } from "uuid";
+import { useUploadDocuments } from "../../hooks/document";
 import { Project } from "../../models/entities/project";
+import { useAlertStore } from "../../state/alert";
 import { ArrayUtils } from "../../utils/arrays";
+import { allowedFileTypes } from "../../utils/constants";
 import { DocumentIndicator } from "../document/document-indicator";
 import { IconButton, TextButton } from "../ui/button";
 import { Text } from "../ui/text";
@@ -11,15 +15,34 @@ import { Tooltip } from "../ui/tooltip";
 
 export type ProjectDocumentsProps = {
   project: Project;
-  onAddDocument: (files?: File[]) => void;
-  onRemoveDocument: (documentId: string) => void;
 };
 
 export function ProjectDocuments(props: ProjectDocumentsProps) {
   const { t } = useTranslation();
 
+  const displayAlert = useAlertStore((state) => state.displayAlert);
+
+  const { uploadMap, uploadDocument, deleteDocument } = useUploadDocuments(
+    props.project.id
+  );
+
   const { getRootProps, getInputProps, open, isDragActive } = useDropzone({
-    onDrop: props.onAddDocument,
+    onDrop: (files) => {
+      if (files.some((file) => !allowedFileTypes.includes(file.type))) {
+        displayAlert({
+          severity: "error",
+          message: t("project.error.invalid_document_type"),
+        });
+
+        return;
+      }
+
+      files.forEach((file) =>
+        uploadDocument({
+          request: { id: uuid(), file, projectId: props.project.id },
+        })
+      );
+    },
     noClick: true,
   });
 
@@ -37,8 +60,7 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
         ...(isDragActive
           ? {
               borderRadius: "16px",
-              border: (theme) =>
-                `1px dashed ${alpha(theme.palette.secondary.main, 0.5)}`,
+              border: (theme) => `1px dashed ${theme.palette.secondary.main}`,
               backgroundColor: (theme) =>
                 alpha(theme.palette.secondary.main, 0.2),
             }
@@ -57,7 +79,7 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
             color: "secondary.main",
           }}
         >
-          {t("drop_to_upload")}
+          {t("project.text.drop_files")}
         </Text>
       )}
       <Box
@@ -68,10 +90,14 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
         }}
       >
         <Text sx={{ paddingInline: "16px", color: "text.secondary" }}>
-          {t("documents")}
+          {t("project.title.documents")}
         </Text>
-        <Tooltip title={t("add_document")}>
-          <IconButton onClick={open}>
+
+        <Tooltip title={t("project.tooltip.add_document")}>
+          <IconButton
+            aria-label={t("project.label.add_document")}
+            onClick={open}
+          >
             <FilePlus2Icon size="16px" />
           </IconButton>
         </Tooltip>
@@ -96,17 +122,17 @@ export function ProjectDocuments(props: ProjectDocumentsProps) {
             <Box>
               <FileIcon size="16px" />
             </Box>
-            <Text>{t("no_documents_yet")}</Text>
-            <TextButton>
-              {t("add_a_document_as_context_to_the_project")}
-            </TextButton>
+            <Text>{t("project.text.no_documents")}</Text>
+            <TextButton>{t("project.text.add_documents")}</TextButton>
           </Box>
         ) : (
-          props.project.documents?.map((document) => (
+          props.project.documents!.map((document) => (
             <DocumentIndicator
               key={document.id}
-              document={document}
-              onRemoveDocument={() => props.onRemoveDocument(document.id)}
+              document={{ ...document, status: uploadMap[document.id]?.status }}
+              onRemoveDocument={() =>
+                deleteDocument({ params: { documentId: document.id } })
+              }
             />
           ))
         )}

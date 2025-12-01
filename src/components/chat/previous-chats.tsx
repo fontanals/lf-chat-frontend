@@ -3,8 +3,8 @@ import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import {
-  usePreviousChats,
   useDeleteChat,
+  usePreviousChats,
   useUpdateChat,
 } from "../../hooks/chat";
 import { Chat } from "../../models/entities/chat";
@@ -27,8 +27,9 @@ export function PreviousChats() {
     useSidebarStore();
 
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [isRenameChatDialogOpen, setIsRenameChatDialogOpen] = useState(false);
-  const [isDeleteChatDialogOpen, setIsDeleteChatDialogOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState<
+    "rename-chat" | "delete-chat" | "none"
+  >("none");
 
   const { data: chats } = usePreviousChats();
   const { mutate: updateChat } = useUpdateChat();
@@ -45,8 +46,8 @@ export function PreviousChats() {
       updateChat({ params: { chatId: selectedChat.id }, request: { title } });
     }
 
-    setIsRenameChatDialogOpen(false);
     setSelectedChat(null);
+    setOpenDialog("none");
   }
 
   function handleDeleteChat() {
@@ -54,8 +55,8 @@ export function PreviousChats() {
       deleteChat({ params: { chatId: selectedChat.id } });
     }
 
-    setIsDeleteChatDialogOpen(false);
     setSelectedChat(null);
+    setOpenDialog("none");
   }
 
   return (
@@ -67,16 +68,24 @@ export function PreviousChats() {
           marginTop: "16px",
           marginBottom: "16px",
           textWrap: "nowrap",
-          overflowX: "hidden",
-          overflowY: "auto",
+          overflow: "hidden",
         }}
       >
         {!ArrayUtils.isNullOrEmpty(chats?.items) && (
           <Text sx={{ padding: "0px 8px", color: "text.secondary" }}>
-            {t("previous_chats")}
+            {t("chat.text.previous_chats")}
           </Text>
         )}
-        <ChatList sx={{ marginTop: "8px", padding: "0px" }}>
+        <ChatList
+          sx={{
+            height: "90%",
+            marginTop: "16px",
+            padding: "0px",
+            overflowY: "auto",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
           {chats?.items.map((chat) => (
             <ChatListItem
               key={chat.id}
@@ -88,43 +97,39 @@ export function PreviousChats() {
                 "&:hover": { backgroundColor: "background.paper" },
               }}
               chat={chat}
-              onSelectChat={handleSelectChat}
-              onRenameChat={() => {
+              onSelect={handleSelectChat}
+              onRename={() => {
                 setSelectedChat(chat);
-                setIsRenameChatDialogOpen(true);
+                setOpenDialog("rename-chat");
               }}
-              onDeleteChat={() => {
+              onDelete={() => {
                 setSelectedChat(chat);
-                setIsDeleteChatDialogOpen(true);
+                setOpenDialog("delete-chat");
               }}
             />
           ))}
           {(chats?.totalItems ?? 0) > 25 && (
-            <LinkButton
-              style={{ justifyContent: "center" }}
-              primary
-              to="/history"
-            >
-              {t("view_complete_history")}
+            <LinkButton style={{ justifyContent: "center" }} to="/history">
+              {t("chat.button.complete_history")}
             </LinkButton>
           )}
         </ChatList>
       </Box>
       <RenameChatDialog
-        isOpen={isRenameChatDialogOpen}
+        isOpen={openDialog === "rename-chat"}
         title={selectedChat?.title ?? ""}
-        onRenameChat={handleRenameChat}
+        onRename={handleRenameChat}
         onCancel={() => {
-          setIsRenameChatDialogOpen(false);
           setSelectedChat(null);
+          setOpenDialog("none");
         }}
       />
       <DeleteChatDialog
-        isOpen={isDeleteChatDialogOpen}
-        onDeleteChat={handleDeleteChat}
+        isOpen={openDialog === "delete-chat"}
+        onDelete={handleDeleteChat}
         onCancel={() => {
-          setIsDeleteChatDialogOpen(false);
           setSelectedChat(null);
+          setOpenDialog("none");
         }}
       />
     </Fragment>
