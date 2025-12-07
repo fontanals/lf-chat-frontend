@@ -2,15 +2,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, FormControl, Typography } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import z from "zod";
-import { ErrorAlert, SuccessAlert } from "../components/ui/alert";
+import { ErrorAlert, InfoAlert, SuccessAlert } from "../components/ui/alert";
 import { ContainedButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
-import { Text } from "../components/ui/text";
+import { Span, Text } from "../components/ui/text";
+import { config } from "../config";
 import { useRecoverPassword } from "../hooks/auth";
 import { useErrorStore } from "../state/error";
 import { ApplicationError, ApplicationErrorCode } from "../utils/errors";
@@ -96,6 +97,19 @@ export function RecoverPasswordPage() {
             <Link to="/signup">{t("auth.link.signup")}</Link>
           </Text>
         </Box>
+        <InfoAlert>
+          <Trans
+            i18nKey="auth.message.use_demo_account"
+            values={{
+              email: config.VITE_DEMO_ACCOUNT_EMAIL,
+              password: config.VITE_DEMO_ACCOUNT_PASSWORD,
+            }}
+            components={{
+              Link: <Link style={{ fontWeight: "bold" }} to="/signin" />,
+              Bold: <Span sx={{ fontWeight: "bold" }} />,
+            }}
+          />
+        </InfoAlert>
         {result === "success" && (
           <SuccessAlert>{t("auth.message.recovery_email_sent")}</SuccessAlert>
         )}
@@ -124,7 +138,7 @@ export function RecoverPasswordPage() {
                 </Typography>
               )}
             </FormControl>
-            <ContainedButton sx={{ marginTop: "16px" }} type="submit">
+            <ContainedButton sx={{ marginTop: "16px" }} type="submit" disabled>
               {t("auth.button.recover_password")}
             </ContainedButton>
           </Box>

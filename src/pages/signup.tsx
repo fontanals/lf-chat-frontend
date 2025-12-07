@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import z from "zod";
-import { ErrorAlert, SuccessAlert } from "../components/ui/alert";
+import { ErrorAlert, InfoAlert, SuccessAlert } from "../components/ui/alert";
 import { ContainedButton, IconButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -109,6 +109,19 @@ export function SignupPage() {
             <Link to="/signin">{t("auth.link.signin")}</Link>
           </Text>
         </Box>
+        <InfoAlert>
+          <Trans
+            i18nKey="auth.message.use_demo_account"
+            values={{
+              email: config.VITE_DEMO_ACCOUNT_EMAIL,
+              password: config.VITE_DEMO_ACCOUNT_PASSWORD,
+            }}
+            components={{
+              Link: <Link style={{ fontWeight: "bold" }} to="/signin" />,
+              Bold: <Span sx={{ fontWeight: "bold" }} />,
+            }}
+          />
+        </InfoAlert>
         {result === "success" && (
           <SuccessAlert>
             {t("auth.message.verification_email_sent")}
@@ -179,7 +192,7 @@ export function SignupPage() {
                 </Text>
               )}
             </FormControl>
-            <ContainedButton sx={{ marginTop: "16px" }} type="submit">
+            <ContainedButton sx={{ marginTop: "16px" }} type="submit" disabled>
               {t("auth.button.signup")}
             </ContainedButton>
           </Box>

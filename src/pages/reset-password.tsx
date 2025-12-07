@@ -6,13 +6,14 @@ import { useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import z from "zod";
-import { ErrorAlert, SuccessAlert } from "../components/ui/alert";
+import { ErrorAlert, InfoAlert, SuccessAlert } from "../components/ui/alert";
 import { ContainedButton, IconButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
-import { Text } from "../components/ui/text";
+import { Span, Text } from "../components/ui/text";
+import { config } from "../config";
 import { useResetPassword } from "../hooks/auth";
 import { useErrorStore } from "../state/error";
 import { ApplicationError, ApplicationErrorCode } from "../utils/errors";
@@ -111,6 +112,19 @@ export function ResetPasswordPage() {
             LF CHAT
           </Text>
         </Box>
+        <InfoAlert>
+          <Trans
+            i18nKey="auth.message.use_demo_account"
+            values={{
+              email: config.VITE_DEMO_ACCOUNT_EMAIL,
+              password: config.VITE_DEMO_ACCOUNT_PASSWORD,
+            }}
+            components={{
+              Link: <Link style={{ fontWeight: "bold" }} to="/signin" />,
+              Bold: <Span sx={{ fontWeight: "bold" }} />,
+            }}
+          />
+        </InfoAlert>
         {result === "success" && (
           <SuccessAlert>
             <Trans
@@ -216,7 +230,7 @@ export function ResetPasswordPage() {
                 </Typography>
               )}
             </FormControl>
-            <ContainedButton sx={{ marginTop: "16px" }} type="submit">
+            <ContainedButton sx={{ marginTop: "16px" }} type="submit" disabled>
               {t("auth.button.reset_password")}
             </ContainedButton>
           </Box>

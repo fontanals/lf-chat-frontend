@@ -10,6 +10,7 @@ import { ChatMessage } from "../components/chat/chat-message";
 import { ChatTitleMenu } from "../components/chat/chat-title-menu";
 import { ContinueMessage } from "../components/chat/continue-message";
 import { ContentPanel } from "../components/layout/content-panel";
+import { InfoAlert } from "../components/ui/alert";
 import { Link } from "../components/ui/link";
 import { Text } from "../components/ui/text";
 import {
@@ -191,6 +192,9 @@ export function ChatPage() {
   return (
     <ContentPanel>
       {chat != null && <ChatTitleMenu chat={chat} />}
+      <InfoAlert sx={{ maxWidth: "800px" }}>
+        {t("common.text.input_notice")}
+      </InfoAlert>
       <Box
         ref={messagesContainerRef}
         sx={{

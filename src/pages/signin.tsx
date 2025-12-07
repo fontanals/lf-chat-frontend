@@ -7,13 +7,14 @@ import { useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import z from "zod";
-import { ErrorAlert } from "../components/ui/alert";
+import { ErrorAlert, InfoAlert } from "../components/ui/alert";
 import { ContainedButton, IconButton } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
-import { Text } from "../components/ui/text";
+import { Span, Text } from "../components/ui/text";
+import { config } from "../config";
 import { useSignin } from "../hooks/auth";
 import { GetUserResponse } from "../models/responses/user";
 import { useErrorStore } from "../state/error";
@@ -107,6 +108,19 @@ export function SigninPage() {
             <Link to="/signup">{t("auth.link.signup")}</Link>
           </Text>
         </Box>
+        <InfoAlert>
+          <Trans
+            i18nKey="auth.message.use_demo_account"
+            values={{
+              email: config.VITE_DEMO_ACCOUNT_EMAIL,
+              password: config.VITE_DEMO_ACCOUNT_PASSWORD,
+            }}
+            components={{
+              Link: <Link style={{ fontWeight: "bold" }} to="/signin" />,
+              Bold: <Span sx={{ fontWeight: "bold" }} />,
+            }}
+          />
+        </InfoAlert>
         {showInvalidEmailOrPasswordError && (
           <ErrorAlert>{t("auth.error.email_or_password_invalid")}</ErrorAlert>
         )}

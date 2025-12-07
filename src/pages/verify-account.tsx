@@ -2,11 +2,12 @@ import { Box, useTheme } from "@mui/material";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
-import { ErrorAlert, SuccessAlert } from "../components/ui/alert";
+import { ErrorAlert, InfoAlert, SuccessAlert } from "../components/ui/alert";
 import { ShadowButton } from "../components/ui/button";
 import { Link } from "../components/ui/link";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
-import { Text } from "../components/ui/text";
+import { Span, Text } from "../components/ui/text";
+import { config } from "../config";
 import { useVerifyAccount } from "../hooks/auth";
 import { useErrorStore } from "../state/error";
 import { ApplicationError, ApplicationErrorCode } from "../utils/errors";
@@ -77,10 +78,23 @@ export function VerifyAccountPage() {
             LF CHAT
           </Text>
           <Text sx={{ marginTop: "8px" }}>
-            {t("auth.text.verify_account")}{" "}
+            {t("auth.text.already_have_account")}{" "}
             <Link to="/signin">{t("auth.link.signin")}</Link>
           </Text>
         </Box>
+        <InfoAlert>
+          <Trans
+            i18nKey="auth.message.use_demo_account"
+            values={{
+              email: config.VITE_DEMO_ACCOUNT_EMAIL,
+              password: config.VITE_DEMO_ACCOUNT_PASSWORD,
+            }}
+            components={{
+              Link: <Link style={{ fontWeight: "bold" }} to="/signin" />,
+              Bold: <Span sx={{ fontWeight: "bold" }} />,
+            }}
+          />
+        </InfoAlert>
         {result === "success" && (
           <SuccessAlert>
             <Trans
@@ -118,7 +132,7 @@ export function VerifyAccountPage() {
           </ErrorAlert>
         )}
         <Text>{t("auth.text.verify_account")}</Text>
-        <ShadowButton onClick={handleVerifyAccount}>
+        <ShadowButton onClick={handleVerifyAccount} disabled>
           {t("auth.button.verify_account")}
         </ShadowButton>
         <Text>{t("auth.text.dismiss_account_verification")}</Text>

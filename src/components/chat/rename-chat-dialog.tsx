@@ -1,4 +1,5 @@
 import {
+  Box,
   Dialog,
   DialogActions,
   DialogContent,
@@ -8,6 +9,7 @@ import {
 import { PencilIcon } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { InfoAlert } from "../ui/alert";
 import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 
@@ -53,11 +55,14 @@ export function RenameChatDialog(props: RenameChatDialogProps) {
       </DialogTitle>
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
         <form id="rename-chat-form" onSubmit={handleSubmit}>
-          <Input
-            placeholder={t("chat.placeholder.chat_title")}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-          />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <InfoAlert>{t("common.text.input_notice")}</InfoAlert>
+            <Input
+              placeholder={t("chat.placeholder.chat_title")}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </Box>
         </form>
       </DialogContent>
       <DialogActions sx={{ padding: "16px" }}>

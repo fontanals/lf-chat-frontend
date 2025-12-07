@@ -1,12 +1,9 @@
-name: CI
+name: Demo CI/CD
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - demo
 
 jobs:
   test:
@@ -17,6 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/lf-chat-backend
+          ref: demo
           token: ${{ secrets.BACKEND_REPO_TOKEN }}
           path: backend
 
@@ -71,6 +69,8 @@ jobs:
           cat << EOF > .env.test
           VITE_SERVICE_TYPE="web"
           VITE_API_BASE_URL="http://localhost:3001/api"
+          VITE_DEMO_ACCOUNT_EMAIL="demo@lfchat.lucasfontana.dev"
+          VITE_DEMO_ACCOUNT_PASSWORD="@lfchatdemo"
           EOF
 
       - name: Install dependencies
@@ -100,3 +100,37 @@ jobs:
         run: |
           cd backend && docker compose --env-file .env.test -f docker-compose.test.yml down -v
           cd ../frontend && docker compose -f docker-compose.test.yml down -v
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            cd /home/${{ secrets.EC2_USER }}/lf-chat-frontend
+
+            git fetch origin demo
+            git checkout demo
+            git pull origin demo
+
+            cat << EOF > .env
+            VITE_SERVICE_TYPE="web"
+            VITE_API_BASE_URL="https://lfchat.lucasfontana.dev/api"
+            VITE_DEMO_ACCOUNT_EMAIL="demo@lfchat.lucasfontana.dev"
+            VITE_DEMO_ACCOUNT_PASSWORD="@lfchatdemo"
+            EOF
+
+            docker compose -f docker-compose.prod.yml down --remove-orphans
+            docker compose -f docker-compose.prod.yml up -d --build --wait
+
+            docker compose -f docker-compose.prod.yml ps
+
+            docker image prune -f

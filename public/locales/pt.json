@@ -5,6 +5,8 @@
       "error": "Erro"
     },
     "text": {
+      "input_notice": "Está a utilizar uma conta demo partilhada. Não forneça informações pessoais, sensíveis ou confidenciais",
+      "disabled_actions_notice": "Está a utilizar uma conta demo partilhada. Certas ações estão restritas para garantir uma experiência segura e consistente para todos os utilizadores",
       "transparency_notice": "Esta é uma aplicação demo alimentada pelos modelos da OpenAI. Os resultados podem ser imprecisos, verifique informações importantes"
     },
     "button": {
@@ -50,6 +52,7 @@
       "reset_password": "Redefinir Palavra-passe"
     },
     "message": {
+      "use_demo_account": "O registo foi desabilitado para esta demo. <Link>Inicie sessão</Link> utilizando a conta demo <Bold>\"{{email}}\"</Bold> com a palavra-passe <Bold>\"{{password}}\"</Bold> para testar a aplicação.",
       "verification_email_sent": "Um email de verificação de conta foi enviado para a sua caixa de entrada",
       "account_verified": "A sua conta foi verificada. Já pode <Link>iniciar sessão</Link>",
       "recovery_email_sent": "Um email de recuperação de palavra-passe foi enviado para a sua caixa de entrada",

@@ -11,6 +11,7 @@ import {
 } from "../components/project/edit-project-dialog";
 import { ProjectChats } from "../components/project/project-chats";
 import { ProjectDocuments } from "../components/project/project-documents";
+import { InfoAlert } from "../components/ui/alert";
 import { IconButton } from "../components/ui/button";
 import { LoadingBackdrop } from "../components/ui/loading-backdrop";
 import { Text } from "../components/ui/text";
@@ -65,6 +66,9 @@ export function ProjectPage() {
 
   return (
     <ContentPanel>
+      <InfoAlert sx={{ maxWidth: "800px" }}>
+        {t("common.text.input_notice")}
+      </InfoAlert>
       <Box
         sx={{
           display: "flex",

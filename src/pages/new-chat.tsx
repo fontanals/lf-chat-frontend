@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { v4 as uuid } from "uuid";
 import { ChatInput } from "../components/chat/chat-input";
 import { ContentPanel } from "../components/layout/content-panel";
+import { InfoAlert } from "../components/ui/alert";
 import { Link } from "../components/ui/link";
 import { Text } from "../components/ui/text";
 import { useProject } from "../hooks/project";
@@ -50,6 +51,9 @@ export function NewChatPage() {
           </Text>
         </Link>
       )}
+      <InfoAlert sx={{ maxWidth: "800px" }}>
+        {t("common.text.input_notice")}
+      </InfoAlert>
       <Box
         sx={{
           flex: 0.5,

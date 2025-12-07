@@ -61,6 +61,7 @@ export function AccountTab() {
         <ShadowButton
           color="error"
           onClick={() => setIsDeleteAccountDialogOpen(true)}
+          disabled
         >
           <Trash2Icon size="16px" />
           {t("profile.button.delete_account")}

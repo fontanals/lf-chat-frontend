@@ -144,7 +144,11 @@ export function ProfileTab(props: ProfileTabProps) {
               </ShadowButton>
             </Fragment>
           ) : (
-            <ShadowButton type="button" onClick={() => setIsEditing(true)}>
+            <ShadowButton
+              type="button"
+              onClick={() => setIsEditing(true)}
+              disabled
+            >
               <PencilIcon size="16px" />
               {t("profile.button.edit")}
             </ShadowButton>

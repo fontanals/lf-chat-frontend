@@ -12,6 +12,7 @@ import { PlusIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import z from "zod";
+import { InfoAlert } from "../ui/alert";
 import { ShadowButton } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -65,6 +66,7 @@ export function CreateProjectDialog(props: CreateProjectDialogProps) {
       <DialogContent sx={{ padding: "16px", paddingBottom: "0px" }}>
         <form id="edit-project-form" onSubmit={handleSubmit(onSubmit)}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <InfoAlert>{t("common.text.input_notice")}</InfoAlert>
             <FormControl>
               <Label htmlFor="title">{t("project.field.title")}</Label>
               <Input
