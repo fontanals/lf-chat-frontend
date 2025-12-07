@@ -19,6 +19,9 @@ export function ContainedButton(props: ButtonProps) {
         backgroundColor: "secondary.main",
         borderRadius: "8px",
         "&:hover": { backgroundColor: "secondary.main" },
+        "&.Mui-disabled": {
+          backgroundColor: (theme) => alpha(theme.palette.secondary.main, 0.3),
+        },
         ...sx,
       }}
       {...rest}

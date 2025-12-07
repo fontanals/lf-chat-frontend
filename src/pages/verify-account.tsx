@@ -77,7 +77,7 @@ export function VerifyAccountPage() {
             LF CHAT
           </Text>
           <Text sx={{ marginTop: "8px" }}>
-            {t("auth.text.verify_account")}{" "}
+            {t("auth.text.already_have_account")}{" "}
             <Link to="/signin">{t("auth.link.signin")}</Link>
           </Text>
         </Box>

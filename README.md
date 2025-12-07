@@ -15,6 +15,7 @@ Web application for an AI chat interface similar to ChatGPT and Claude.ai. Users
 - **Profile Management**: User settings, data management, and account deletion options
 - **Docker Multi-Environment Setup**: Dedicated environment setups using Docker Compose
 - **Automated Tests**: End-to-end tests using Playwright
+- **CI/CD**: CI/CD with Github Actions
 
 ## Technologies
 
@@ -31,7 +32,7 @@ Web application for an AI chat interface similar to ChatGPT and Claude.ai. Users
 - Playwright (E2E Testing)
 - Docker
 - Docker Compose
-- CI with GitHub Actions
+- CI/CD with GitHub Actions
 
 ## Prerequisites
 
@@ -61,9 +62,6 @@ docker compose up
 
 # Test (for running Playwright tests)
 docker compose --env-file .env.test -f docker-compose.test.yml up
-
-# Production Build (using nginx)
-docker compose -f docker-compose.prod.yml up
 ```
 
 5. Open `http://localhost:5173` in your browser (or `http://localhost:5174` for test environment)

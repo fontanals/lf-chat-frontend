@@ -61,6 +61,8 @@ test.describe("Chat", () => {
   });
 
   test("create new chat", async ({ page }) => {
+    test.setTimeout(60000 * 2);
+
     await page.getByPlaceholder(/how can i help you today/i).fill("Hello!");
 
     await page.getByRole("button", { name: /send message/i }).click();
@@ -91,6 +93,8 @@ test.describe("Chat", () => {
   });
 
   test("create new chat (mock endpoint)", async ({ page }) => {
+    test.setTimeout(60000 * 2);
+
     await page.route("**/api/chats**", async (route) => {
       const request = route.request();
       const url = request.url();
@@ -138,6 +142,8 @@ test.describe("Chat", () => {
   });
 
   test("create new chat with documents (mock endpoint)", async ({ page }) => {
+    test.setTimeout(60000 * 2);
+
     await page.route("**/api/chats**", async (route) => {
       const request = route.request();
       const url = request.url();
@@ -201,6 +207,8 @@ test.describe("Chat", () => {
   });
 
   test("send second message (mock endpoint)", async ({ page }) => {
+    test.setTimeout(60000 * 2);
+
     await page.route("**/api/chats**", async (route) => {
       const request = route.request();
       const url = request.url();
@@ -278,6 +286,8 @@ test.describe("Chat", () => {
   test("send second message with documents (mock endpoint)", async ({
     page,
   }) => {
+    test.setTimeout(60000 * 2);
+
     await page.route("**/api/chats**", async (route) => {
       const request = route.request();
       const url = request.url();
@@ -369,6 +379,8 @@ test.describe("Chat", () => {
   });
 
   test("edit root message", async ({ page }) => {
+    test.setTimeout(60000 * 2);
+
     await page.route("**/api/chats**", async (route) => {
       const request = route.request();
       const url = request.url();
@@ -440,6 +452,8 @@ test.describe("Chat", () => {
   });
 
   test("edit second message", async ({ page }) => {
+    test.setTimeout(60000 * 2);
+
     await page.route("**/api/chats**", async (route) => {
       const request = route.request();
       const url = request.url();

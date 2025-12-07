@@ -253,7 +253,7 @@
       "add_document": "Add Document"
     },
     "message": {
-      "delete_project": "Are you sure you want to delete the project \"{{name}}\"?"
+      "delete_project": "Are you sure you want to delete this project?"
     },
     "error": {
       "title_required": "Title is required",

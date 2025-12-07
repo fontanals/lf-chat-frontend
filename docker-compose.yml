@@ -7,9 +7,14 @@ services:
       target: development
     ports:
       - "5173:5173"
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5173 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

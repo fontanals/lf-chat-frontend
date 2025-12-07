@@ -38,8 +38,6 @@ test.describe("Profile", () => {
       chats,
     });
 
-    console.log("URL ", `${process.env.VITE_API_BASE_URL}/signin`);
-
     const response = await request.post(
       `${process.env.VITE_API_BASE_URL}/signin`,
       { data: { email: "user1@example.com", password: "password" } }
