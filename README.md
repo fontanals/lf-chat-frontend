@@ -123,3 +123,9 @@ Tests are located in the `tests/` directory and cover:
 ## License
 
 MIT
+
+## Demo
+
+Live demo at: https://lfchat.lucasfontana.dev
+
+https://github.com/user-attachments/assets/8f78e671-8e94-459f-9cac-f2c22673ce07
