@@ -72,7 +72,7 @@ export function RecoverPasswordPage() {
         alignItems: "center",
         justifyContent: "center",
         width: "100vw",
-        height: "100vh",
+        height: "100dvh",
         backgroundColor: "background.paper",
       }}
     >

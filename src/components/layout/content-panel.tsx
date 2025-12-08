@@ -14,7 +14,7 @@ export function ContentPanel(props: PropsWithChildren) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        height: "100vh",
+        height: "100dvh",
         marginLeft: { xs: "0px", sm: isOpen ? "256px" : "72px" },
         paddingTop: "64px",
         paddingBottom: "32px",

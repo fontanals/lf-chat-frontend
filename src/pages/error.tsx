@@ -16,7 +16,7 @@ export function ErrorPage() {
         justifyContent: "center",
         gap: "16px",
         width: "100%",
-        height: "100vh",
+        height: "100dvh",
       }}
       component="main"
     >
