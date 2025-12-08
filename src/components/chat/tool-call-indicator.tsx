@@ -53,7 +53,7 @@ export function ProcessDocumentToolCallIndicator(
         <XIcon size="16px" />
         <Text>
           {t("chat.error.process_document", {
-            name: props.contentBlock.input.name,
+            name: props.contentBlock.input?.name ?? "",
           })}
         </Text>
       </Box>
@@ -128,7 +128,7 @@ export function ReadDocumentToolCallIndicator(
         <XIcon size="16px" />
         <Text>
           {t("chat.error.read_document", {
-            name: props.contentBlock.input.name,
+            name: props.contentBlock.input?.name ?? "",
           })}
         </Text>
       </Box>

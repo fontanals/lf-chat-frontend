@@ -26,7 +26,10 @@ export const useChatStore = create<ChatStore>((set) => ({
     })),
   setStreamingMessage: (chatId, message) =>
     set((state) => ({
-      streamingMessages: { ...state.streamingMessages, [chatId]: message },
+      streamingMessages: {
+        ...state.streamingMessages,
+        [chatId]: { ...message },
+      },
     })),
   removePendingChat: (chatId) =>
     set((state) => {
