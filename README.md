@@ -2,6 +2,19 @@
 
 Web application for an AI chat interface similar to ChatGPT and Claude.ai. Users can have conversations with an AI assistant, create projects, and upload documents for context-aware responses using RAG (Retrieval-Augmented Generation).
 
+## DEMO BRANCH
+
+This branch is configured for a **live public demo** with a shared demo account.
+
+The following features are **disabled** for security and demo purposes:
+
+- **Signup**
+- **Password Recovery**
+- **Profile Update**
+- **Account Deletion**
+
+Live demo: https://lfchat.lucasfontana.dev
+
 ## Features
 
 - **Real-time AI Chat**: Streaming conversations with AI assistant using Server-Sent Events (SSE)
