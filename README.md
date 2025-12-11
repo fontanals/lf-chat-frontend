@@ -4,35 +4,41 @@ Web application for an AI chat interface similar to ChatGPT and Claude.ai. Users
 
 ## Features
 
-- **Real-time AI Chat**: Streaming conversations with AI assistant using Server-Sent Events (SSE)
-- **Conversation Branching**: Edit and resend messages from any point in the conversation to explore different response paths while maintaining full conversation history in a tree structure
+- **Real-time AI Chat**: Streaming conversations with Server-Sent Events (SSE) and ability to cancel ongoing responses
+- **Conversation Branching**: Edit and resend messages from any point to explore different response paths with full conversation history in a tree structure
+- **AI Tool Transparency**: Visual indicators showing AI actions like document processing and reading
+- **RAG (Retrieval-Augmented Generation)**: Upload and query PDF/TXT documents for context-aware AI responses
 - **Project Organization**: Group related chats and documents into projects for better organization
-- **Document Processing**: Upload PDF and TXT documents that can be processed and queried by the AI assistant for context-aware responses
-- **Authentication**: Secure authentication with JWT tokens, including account verification and password recovery flows
-- **Theme Support**: Light, dark, and system theme modes with Material Design 3
+- **Chat History**: Browse all conversations with infinite scroll pagination
+- **JWT Authentication**: Secure authentication with email verification and password recovery flows
+- **Profile Management**: Customizable user settings, display name, and custom AI prompts
+- **Data Management**: Delete individual chats or bulk delete all conversation history
+- **Theme Support**: Light, dark, and system-auto theme modes with Material Design 3
 - **Internationalization**: Multi-language support using i18next
-- **Responsive Design**: Mobile-friendly interface with sidebar navigation
-- **Profile Management**: User settings, data management, and account deletion options
-- **Docker Multi-Environment Setup**: Dedicated environment setups using Docker Compose
-- **Automated Tests**: End-to-end tests using Playwright
-- **CI/CD**: CI/CD with Github Actions
+- **Responsive Design**: Mobile-friendly interface with collapsible sidebar navigation
+- **Markdown Rendering**: Rich text display with syntax-highlighted code blocks
+- **Automated Testing**: End-to-end tests with Playwright
+- **Docker Multi-Environment**: Separate development and test environments with Docker Compose
+- **CI/CD Pipelines**: Automated workflows with GitHub Actions
 
 ## Technologies
 
-- TypeScript
-- React 19
-- Vite 7
-- Material-UI (MUI)
-- TanStack React Query
-- Zustand (State Management)
-- React Router 7
-- React Hook Form with Zod Validation
-- i18next (Internationalization)
-- React Markdown with Syntax Highlighting
-- Playwright (E2E Testing)
-- Docker
-- Docker Compose
-- CI/CD with GitHub Actions
+- **TypeScript** - Type-safe development
+- **React** - UI library
+- **Vite** - Fast build tool and dev server
+- **Material-UI (MUI)** - Component library with Material Design 3
+- **TanStack React Query** - Server state management and caching
+- **Zustand** - Lightweight client state management
+- **React Router** - Client-side routing
+- **React Hook Form** - Performant form management
+- **Zod** - Runtime schema validation
+- **React Markdown** - Markdown rendering with syntax highlighting
+- **i18next** - Internationalization framework
+- **React Dropzone** - Drag-and-drop file uploads
+- **Playwright** - End-to-end testing
+- **ESLint** - Code linting and quality
+- **Docker & Docker Compose** - Containerization
+- **GitHub Actions** - CI/CD automation
 
 ## Prerequisites
 
