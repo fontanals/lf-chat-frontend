@@ -62,9 +62,15 @@ const chats: Chat[] = [
     projectId: projects[0].id,
     createdAt: addDays(new Date(), -5).toISOString(),
   },
+  {
+    id: uuid(),
+    title: "New Chat",
+    projectId: null,
+    createdAt: addDays(new Date(), -8).toISOString(),
+  },
 ];
 
-const userMessageIds = [uuid(), uuid(), uuid()];
+const userMessageIds = [uuid(), uuid(), uuid(), uuid()];
 const messages: Message[] = [
   {
     id: userMessageIds[0],
@@ -171,6 +177,37 @@ const messages: Message[] = [
     parentMessageId: userMessageIds[2],
     chatId: chats[2].id,
     createdAt: addSeconds(chats[2].createdAt!, 12).toISOString(),
+  },
+  {
+    id: userMessageIds[3],
+    role: "user",
+    content: [
+      {
+        type: "text",
+        id: uuid(),
+        text: "This message can not be shown because it violates our terms of use.",
+      },
+    ],
+    finishReason: "content-filter",
+    parentMessageId: null,
+    chatId: chats[3].id,
+    createdAt: chats[3].createdAt,
+  },
+  {
+    id: uuid(),
+    role: "assistant",
+    content: [
+      {
+        type: "text",
+        id: uuid(),
+        text: "This message can not be answered because it violates our terms of use.",
+      },
+    ],
+    feedback: null,
+    finishReason: "content-filter",
+    parentMessageId: userMessageIds[3],
+    chatId: chats[3].id,
+    createdAt: addSeconds(chats[3].createdAt!, 5).toISOString(),
   },
 ];
 

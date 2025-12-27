@@ -78,6 +78,7 @@ export function UserMessageComponent(props: UserMessageComponentProps) {
           alignItems: "center",
           gap: "8px",
           padding: "12px",
+          color: "#F5F5F5",
           backgroundColor: "error.main",
           borderRadius: "8px",
         }}
@@ -86,7 +87,9 @@ export function UserMessageComponent(props: UserMessageComponentProps) {
         <Text>
           <Trans
             i18nKey="chat.message.user_content_filter"
-            components={{ Link: <Link color="error" to="/terms-of-use" /> }}
+            components={{
+              Link: <Link color="#F5F5F5" to="/terms-of-use" />,
+            }}
           />
         </Text>
       </Box>
