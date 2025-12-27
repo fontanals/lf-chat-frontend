@@ -62,6 +62,7 @@ export function AssistantMessageComponent(
           alignItems: "center",
           gap: "8px",
           padding: "12px",
+          color: "#F5F5F5",
           backgroundColor: "error.main",
           borderRadius: "8px",
         }}
@@ -74,7 +75,7 @@ export function AssistantMessageComponent(
                 ? "chat.message.assistant_content_filter"
                 : "chat.error.assistant_message"
             }
-            components={{ Link: <Link color="error" to="/term-of-use" /> }}
+            components={{ Link: <Link color="#F5F5F5" to="/term-of-use" /> }}
           />
         </Text>
       </Box>
