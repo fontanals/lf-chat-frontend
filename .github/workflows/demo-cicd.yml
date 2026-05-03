@@ -101,36 +101,36 @@ jobs:
           cd backend && docker compose --env-file .env.test -f docker-compose.test.yml down -v
           cd ../frontend && docker compose -f docker-compose.test.yml down -v
 
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
+  # deploy:
+  #   needs: test
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -euo pipefail
+  #   steps:
+  #     - name: Deploy
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: ${{ secrets.EC2_HOST }}
+  #         username: ${{ secrets.EC2_USER }}
+  #         key: ${{ secrets.EC2_SSH_KEY }}
+  #         script: |
+  #           set -euo pipefail
 
-            cd /home/${{ secrets.EC2_USER }}/lf-chat-frontend
+  #           cd /home/${{ secrets.EC2_USER }}/lf-chat-frontend
 
-            git fetch origin demo
-            git checkout demo
-            git pull origin demo
+  #           git fetch origin demo
+  #           git checkout demo
+  #           git pull origin demo
 
-            cat << EOF > .env
-            VITE_SERVICE_TYPE="web"
-            VITE_API_BASE_URL="https://lfchat.lucasfontana.dev/api"
-            VITE_DEMO_ACCOUNT_EMAIL="demo@lfchat.lucasfontana.dev"
-            VITE_DEMO_ACCOUNT_PASSWORD="@lfchatdemo"
-            EOF
+  #           cat << EOF > .env
+  #           VITE_SERVICE_TYPE="web"
+  #           VITE_API_BASE_URL="https://lfchat.lucasfontana.dev/api"
+  #           VITE_DEMO_ACCOUNT_EMAIL="demo@lfchat.lucasfontana.dev"
+  #           VITE_DEMO_ACCOUNT_PASSWORD="@lfchatdemo"
+  #           EOF
 
-            docker compose -f docker-compose.prod.yml down --remove-orphans
-            docker compose -f docker-compose.prod.yml up -d --build --wait
+  #           docker compose -f docker-compose.prod.yml down --remove-orphans
+  #           docker compose -f docker-compose.prod.yml up -d --build --wait
 
-            docker compose -f docker-compose.prod.yml ps
+  #           docker compose -f docker-compose.prod.yml ps
 
-            docker image prune -f
+  #           docker image prune -f

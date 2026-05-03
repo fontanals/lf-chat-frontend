@@ -13,7 +13,7 @@ The following features are **disabled** for security and demo purposes:
 - **Profile Update**
 - **Account Deletion**
 
-Live demo: https://lfchat.lucasfontana.dev
+Live demo: deactivated
 
 ## Features
 
